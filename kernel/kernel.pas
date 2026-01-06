@@ -1,10 +1,6 @@
-unit Kernel;
-
-interface
+program Kernel;
 
 uses Limine, Framebuffer;
-
-implementation
 
 const
   LimineBeginRequests: array[0..3] of UInt64 = ($F6B8F4B39DE7D1AE, $FAB91A6940FCB9CF, $785C6ED015D3E316, $181E920A7852B9D9); export;
@@ -23,7 +19,6 @@ asm
   jmp @loop
 end;
 
-procedure KernelInit(); export; alias: 'KernelInit';
 begin
   if LimineRequestBaseRevision[2] <> 0 then Halt;
 
@@ -31,6 +26,4 @@ begin
   Framebuffer.Clear(ColorBlue);
 
   Halt;
-end;
-
 end.
