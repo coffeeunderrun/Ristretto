@@ -19,6 +19,9 @@ asm
   jmp @loop
 end;
 
+var
+  Ch: Char;
+
 begin
   if LimineRequestBaseRevision[2] <> 0 then Halt;
 
@@ -26,7 +29,11 @@ begin
   Framebuffer.Clear(ColorBlack);
 
   Terminal.Initialize;
-  Terminal.PutText(0, 0, ColorYellow, ColorBlack, 'Ristretto v0.1');
+  Terminal.Write('Ristretto v0.1' + #10, ColorYellow);
+
+  for Ch := #0 to #255 do begin
+    Terminal.Write(PChar(@Ch));
+  end;
 
   Halt;
 end.

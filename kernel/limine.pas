@@ -4,7 +4,7 @@ interface
 
 type
   PLimineVideoMode = ^TLimineVideoMode;
-  TLimineVideoMode = record
+  TLimineVideoMode = packed record
     Pitch: UInt64;
     Width: UInt64;
     Height: UInt64;
@@ -20,7 +20,7 @@ type
   ALimineVideoMode = array of TLimineVideoMode;
 
   PLimineFramebuffer = ^TLimineFramebuffer;
-  TLimineFramebuffer = record
+  TLimineFramebuffer = packed record
     Address: Pointer;
     Width: UInt64;
     Height: UInt64;

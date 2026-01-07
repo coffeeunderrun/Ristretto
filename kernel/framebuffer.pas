@@ -33,12 +33,17 @@ procedure Initialize();
 procedure Clear(Color: TColor);
 procedure PutPixel(X, Y: UInt64; Color: TColor);
 
+function GetHeight(): UInt64;
+function GetWidth(): UInt64;
+
 implementation
 
 var
   LimineRequestFramebuffer: TLimineFramebufferRequest; external;
   AddressBeginPtr: PUInt8;
   AddressEndPtr: PUInt8;
+  ResolutionHeight: UInt64;
+  ResolutionWidth: UInt64;
   BytesPerRow: UInt64;
   BytesPerPixel: UInt16;
   RedIndex: UInt8;
@@ -55,6 +60,8 @@ begin
     with Framebuffers^[0] do begin
       AddressBeginPtr := PUInt8(Address);
       AddressEndPtr := AddressBeginPtr + (Pitch * Height);
+      ResolutionHeight := Height;
+      ResolutionWidth := Width;
       BytesPerRow := Pitch;
       BytesPerPixel := BitsPerPixel shr 3;
       RedIndex := RedMaskShift shr 3;
@@ -86,5 +93,8 @@ begin
   AddressBeginPtr[Offset + GreenIndex] := Color.Green;
   AddressBeginPtr[Offset + BlueIndex] := Color.Blue;
 end;
+
+function GetHeight(): UInt64; begin GetHeight := ResolutionHeight; end;
+function GetWidth(): UInt64; begin GetWidth := ResolutionWidth; end;
 
 end.
