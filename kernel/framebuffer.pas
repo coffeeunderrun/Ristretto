@@ -31,14 +31,15 @@ const
 
 procedure Initialize();
 procedure Clear(Color: TColor);
+procedure PutPixel(X, Y: UInt64; Color: TColor);
 
 implementation
 
 var
   LimineRequestFramebuffer: TLimineFramebufferRequest; external;
-  FramebufferPtr: PLimineFramebuffer;
-  AddressBeginPtr : PUInt8;
+  AddressBeginPtr: PUInt8;
   AddressEndPtr: PUInt8;
+  BytesPerRow: UInt64;
   BytesPerPixel: UInt16;
   RedIndex: UInt8;
   GreenIndex: UInt8;
@@ -46,13 +47,21 @@ var
 
 procedure Initialize();
 begin
-  FramebufferPtr := PLimineFramebuffer(LimineRequestFramebuffer.Response^.Framebuffers[0]);
-  AddressBeginPtr := PUInt8(FramebufferPtr^.Address);
-  AddressEndPtr := AddressBeginPtr + (FramebufferPtr^.Pitch * FramebufferPtr^.Height);
-  BytesPerPixel := FramebufferPtr^.BitsPerPixel shr 3;
-  RedIndex := FramebufferPtr^.RedMaskShift shr 3;
-  GreenIndex := FramebufferPtr^.GreenMaskShift shr 3;
-  BlueIndex := FramebufferPtr^.BlueMaskShift shr 3;
+  if LimineRequestFramebuffer.Response = nil then exit;
+
+  with LimineRequestFramebuffer.Response^ do begin
+    if (FramebufferCount = 0) or (Framebuffers = nil) then exit;
+
+    with Framebuffers^[0] do begin
+      AddressBeginPtr := PUInt8(Address);
+      AddressEndPtr := AddressBeginPtr + (Pitch * Height);
+      BytesPerRow := Pitch;
+      BytesPerPixel := BitsPerPixel shr 3;
+      RedIndex := RedMaskShift shr 3;
+      GreenIndex := GreenMaskShift shr 3;
+      BlueIndex := BlueMaskShift shr 3;
+    end;
+  end;
 end;
 
 procedure Clear(Color: TColor);
@@ -60,13 +69,22 @@ var
   AddressPtr: PUInt8;
 begin
   AddressPtr := AddressBeginPtr;
-  while AddressPtr < AddressEndPtr do
-  begin
+  while AddressPtr < AddressEndPtr do begin
     AddressPtr[RedIndex] := Color.Red;
     AddressPtr[GreenIndex] := Color.Green;
     AddressPtr[BlueIndex] := Color.Blue;
     AddressPtr := AddressPtr + BytesPerPixel;
   end;
+end;
+
+procedure PutPixel(X, Y: UInt64; Color: TColor);
+var
+  Offset: UInt64;
+begin
+  Offset := (X * BytesPerPixel) + (Y * BytesPerRow);
+  AddressBeginPtr[Offset + RedIndex] := Color.Red;
+  AddressBeginPtr[Offset + GreenIndex] := Color.Green;
+  AddressBeginPtr[Offset + BlueIndex] := Color.Blue;
 end;
 
 end.

@@ -1,6 +1,6 @@
 program Kernel;
 
-uses Limine, Framebuffer;
+uses Limine, Framebuffer, Terminal;
 
 const
   LimineBeginRequests: array[0..3] of UInt64 = ($F6B8F4B39DE7D1AE, $FAB91A6940FCB9CF, $785C6ED015D3E316, $181E920A7852B9D9); export;
@@ -23,7 +23,10 @@ begin
   if LimineRequestBaseRevision[2] <> 0 then Halt;
 
   Framebuffer.Initialize;
-  Framebuffer.Clear(ColorBlue);
+  Framebuffer.Clear(ColorBlack);
+
+  Terminal.Initialize;
+  Terminal.PutText(0, 0, ColorYellow, ColorBlack, 'Ristretto v0.1');
 
   Halt;
 end.

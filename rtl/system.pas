@@ -10,6 +10,7 @@ type
   DWord = LongWord;
 
   PByte = ^Byte;
+  PChar = ^Char;
   PWord = ^Word;
   PDWord = ^DWord;
   PQWord = ^QWord;
