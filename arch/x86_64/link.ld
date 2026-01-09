@@ -1,5 +1,5 @@
 OUTPUT_FORMAT(elf64-x86-64)
-ENTRY(PASCALMAIN)
+ENTRY(_entry)
 
 PHDRS {
   limine_requests PT_LOAD;
@@ -12,9 +12,7 @@ SECTIONS {
   . = 0xFFFFFFFF80000000;
 
   .limine_requests : {
-    KEEP(*(.data.*LimineBeginRequests*))
-    KEEP(*(.data.*LimineRequest*))
-    KEEP(*(.data.*LimineEndRequests*))
+    KEEP(*(.data.*_limine_request_*))
   } :limine_requests
 
   .text BLOCK(CONSTANT(MAXPAGESIZE)) : {

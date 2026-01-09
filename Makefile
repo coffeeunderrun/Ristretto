@@ -4,6 +4,7 @@ $(BUILDDIR):
 	@mkdir -p $@
 
 $(BUILDDIR)kernel.elf: $(BUILDDIR)
+	@make -Carch/$(ARCH)
 	@make -Crtl
 	@make -Ckernel
 

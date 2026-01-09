@@ -3,3 +3,6 @@ $(BUILDDIR)%.asm.o: %.asm
 
 $(BUILDDIR)%.o: %.pas
 	$(FP) $(FPFLAGS) -o$@ $<
+
+$(BUILDDIR)%.o: %.pp
+	$(FP) $(FPFLAGS) -o$@ $<

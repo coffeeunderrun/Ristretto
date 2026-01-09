@@ -39,7 +39,6 @@ function GetWidth(): UInt64;
 implementation
 
 var
-  LimineRequestFramebuffer: TLimineFramebufferRequest; external;
   AddressBeginPtr: PUInt8;
   AddressEndPtr: PUInt8;
   ResolutionHeight: UInt64;
@@ -51,23 +50,24 @@ var
   BlueIndex: UInt8;
 
 procedure Initialize();
+var
+  FramebufferPtr: PLimineFramebuffer;
 begin
-  if LimineRequestFramebuffer.Response = nil then exit;
+  if Limine.GetFramebufferCount = 0 then exit;
 
-  with LimineRequestFramebuffer.Response^ do begin
-    if (FramebufferCount = 0) or (Framebuffers = nil) then exit;
+  FramebufferPtr := Limine.GetFramebuffer(0);
+  if FramebufferPtr = nil then exit;
 
-    with Framebuffers^[0] do begin
-      AddressBeginPtr := PUInt8(Address);
-      AddressEndPtr := AddressBeginPtr + (Pitch * Height);
-      ResolutionHeight := Height;
-      ResolutionWidth := Width;
-      BytesPerRow := Pitch;
-      BytesPerPixel := BitsPerPixel shr 3;
-      RedIndex := RedMaskShift shr 3;
-      GreenIndex := GreenMaskShift shr 3;
-      BlueIndex := BlueMaskShift shr 3;
-    end;
+  with FramebufferPtr^ do begin
+    AddressBeginPtr := PUInt8(Address);
+    AddressEndPtr := AddressBeginPtr + (Pitch * Height);
+    ResolutionHeight := Height;
+    ResolutionWidth := Width;
+    BytesPerRow := Pitch;
+    BytesPerPixel := BitsPerPixel shr 3;
+    RedIndex := RedMaskShift shr 3;
+    GreenIndex := GreenMaskShift shr 3;
+    BlueIndex := BlueMaskShift shr 3;
   end;
 end;
 

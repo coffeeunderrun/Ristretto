@@ -99,20 +99,18 @@ begin
 end;
 
 procedure Write(Text: PChar; FgColor, BgColor: TColor);
-var
-  I: UInt16 = 0;
 begin
-  while Text[I] <> Char(0) do begin
-    // Wrap to next line if character will go beyond the screen width.
-    if (TerminalX + 8) >= Framebuffer.GetWidth then begin
-      TerminalX := 0;
-      TerminalY := TerminalY + KernelFontPtr^.GlyphSize;
-    end;
-
-    case Text[I] of
+  while Text^ <> Char(0) do begin
+    case Text^ of
       // Printable characters.
       #32..#255: begin
-        PutChar(TerminalX, TerminalY, FgColor, BgColor, Text[I]);
+        // Wrap to next line if character will go beyond the screen width.
+        if (TerminalX + 8) >= Framebuffer.GetWidth then begin
+          TerminalX := 0;
+          TerminalY := TerminalY + KernelFontPtr^.GlyphSize;
+        end;
+
+        PutChar(TerminalX, TerminalY, FgColor, BgColor, Text^);
         TerminalX := TerminalX + 8;
       end;
 
@@ -126,7 +124,7 @@ begin
       #13: TerminalX := 0;
     end;
 
-    I := I + 1;
+    inc(Text);
   end;
 end;
 

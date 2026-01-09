@@ -1,16 +1,21 @@
 include ../vars.mk
 include ../rules.mk
 
+LDFLAGS += -T$(ARCHDIR)link.ld
+
 SRCS := kernel.pas limine.pas framebuffer.pas terminal.pas
-OBJS := system.o
-RESOBJS := kernel.psf.o
+RSRC := kernel.psf
+OBJS := system.o arch.o
 
 OBJS += $(patsubst %.pas, %.o, $(SRCS))
-OBJS := $(patsubst %.asm, %.asm.o, $(OBJS))
+OBJS += $(patsubst %.psf, %.psf.o, $(RSRC))
 OBJS := $(addprefix $(BUILDDIR), $(OBJS))
 
 $(BUILDDIR)kernel.elf: $(OBJS)
-	$(LD) $(LDFLAGS) -o$@ $^ $(RESOBJS)
+	$(LD) $(LDFLAGS) -o$@ $^
+
+$(BUILDDIR)%.psf.o: %.psf
+	$(LD) -r -bbinary -o$@ $<
 
 all:
 	$(BUILDDIR)kernel.elf
