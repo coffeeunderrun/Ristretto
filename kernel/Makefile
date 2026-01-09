@@ -3,7 +3,7 @@ include ../rules.mk
 
 LDFLAGS += -T$(ARCHDIR)link.ld
 
-SRCS := kernel.pas limine.pas framebuffer.pas terminal.pas
+SRCS := kernel.pas limine.pas log.pas framebuffer.pas terminal.pas
 RSRC := kernel.psf
 OBJS := system.o arch.o
 

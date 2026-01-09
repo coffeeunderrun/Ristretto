@@ -4,11 +4,17 @@ interface
 
 uses Framebuffer;
 
-procedure Initialize();
+procedure Initialize;
+
 procedure SetX(X: UInt64);
 procedure SetY(Y: UInt64);
+
 procedure SetBackground(Color: TColor);
 procedure SetForeground(Color: TColor);
+
+function GetBackground: TColor;
+function GetForeground: TColor;
+
 procedure Write(Text: PChar);
 procedure Write(Text: PChar; FgColor: TColor);
 procedure Write(Text: PChar; FgColor, BgColor: TColor);
@@ -40,7 +46,7 @@ var
   TerminalBgColor: TColor;
   TerminalFgColor: TColor;
 
-procedure Initialize();
+procedure Initialize;
 begin
   KernelFontPtr := PPCScreenFont(@RawKernelFontStart);
   TerminalX := 0;
@@ -87,6 +93,9 @@ procedure SetY(Y: UInt64); begin TerminalY := Y; end;
 
 procedure SetBackground(Color: TColor); begin TerminalBgColor := Color; end;
 procedure SetForeground(Color: TColor); begin TerminalFgColor := Color; end;
+
+function GetBackground: TColor; begin GetBackground := TerminalBgColor; end;
+function GetForeground: TColor; begin GetForeground := TerminalFgColor; end;
 
 procedure Write(Text: PChar);
 begin

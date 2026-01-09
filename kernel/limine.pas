@@ -54,8 +54,8 @@ type
     Response: PLimineFramebufferResponse;
   end;
 
-function BaseRevisionSupported(): Boolean;
-function GetFramebufferCount(): UInt64;
+function BaseRevisionSupported: Boolean;
+function GetFramebufferCount: UInt64;
 function GetFramebuffer(FramebufferIndex: UInt64): PLimineFramebuffer;
 
 implementation
@@ -64,9 +64,9 @@ var
   LimineRequestBaseRevision: array[0..3] of UInt64; external name '_limine_request_base_revision';
   LimineRequestFramebuffer: TLimineFramebufferRequest; external name '_limine_request_frambuffer';
 
-function BaseRevisionSupported(): Boolean; begin BaseRevisionSupported := LimineRequestBaseRevision[2] = 0; end;
+function BaseRevisionSupported: Boolean; begin BaseRevisionSupported := LimineRequestBaseRevision[2] = 0; end;
 
-function GetFramebufferCount(): UInt64;
+function GetFramebufferCount: UInt64;
 begin
   if LimineRequestFramebuffer.Response = nil then exit(0);
   GetFramebufferCount := LimineRequestFramebuffer.Response^.FramebufferCount;

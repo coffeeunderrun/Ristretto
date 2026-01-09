@@ -29,12 +29,12 @@ const
   ColorWhite: TColor = (Red: $FF; Green: $FF; Blue: $FF);
   ColorYellow: TColor = (Red: $FF; Green: $FF; Blue: $55);
 
-procedure Initialize();
+procedure Initialize;
 procedure Clear(Color: TColor);
 procedure PutPixel(X, Y: UInt64; Color: TColor);
 
-function GetHeight(): UInt64;
-function GetWidth(): UInt64;
+function GetHeight: UInt64;
+function GetWidth: UInt64;
 
 implementation
 
@@ -49,7 +49,7 @@ var
   GreenIndex: UInt8;
   BlueIndex: UInt8;
 
-procedure Initialize();
+procedure Initialize;
 var
   FramebufferPtr: PLimineFramebuffer;
 begin
@@ -94,7 +94,7 @@ begin
   AddressBeginPtr[Offset + BlueIndex] := Color.Blue;
 end;
 
-function GetHeight(): UInt64; begin GetHeight := ResolutionHeight; end;
-function GetWidth(): UInt64; begin GetWidth := ResolutionWidth; end;
+function GetHeight: UInt64; begin GetHeight := ResolutionHeight; end;
+function GetWidth: UInt64; begin GetWidth := ResolutionWidth; end;
 
 end.
