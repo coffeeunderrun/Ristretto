@@ -1,0 +1,21 @@
+{
+    This file is part of the Free Pascal run time library.
+    Copyright (c) 2000-2002 by Jonas Maebe and other members of the
+    Free Pascal development team
+
+    SetJmp/Longjmp declarations
+
+    See the file COPYING.FPC, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+ **********************************************************************}
+
+type
+  PJmp_Buf = ^Jmp_Buf;
+  Jmp_Buf = packed record
+    rbx, rbp, r12, r13, r14, r15, rsp, rip: QWord;
+  end;

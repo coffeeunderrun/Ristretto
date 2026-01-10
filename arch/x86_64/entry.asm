@@ -1,9 +1,7 @@
-bits 64
+.extern PASCALMAIN
 
-extern PASCALMAIN
+.section .text
 
-section .text
-
-global _entry
+.global _entry
 _entry:
   jmp PASCALMAIN

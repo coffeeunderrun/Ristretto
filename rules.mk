@@ -1,8 +1,11 @@
-$(BUILDDIR)%.asm.o: %.asm
+$(OUTDIR)%.asm.o: %.asm
 	$(AS) $(ASFLAGS) -o$@ $<
 
-$(BUILDDIR)%.o: %.pas
+$(OUTDIR)%.o: %.pas
 	$(FP) $(FPFLAGS) -o$@ $<
 
-$(BUILDDIR)%.o: %.pp
+$(RTL_OUTDIR)%.asm.o: %.asm
+	$(AS) $(ASFLAGS) -o$@ $<
+
+$(RTL_OUTDIR)%.o: %.pas
 	$(FP) $(FPFLAGS) -o$@ $<

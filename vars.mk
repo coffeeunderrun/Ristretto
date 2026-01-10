@@ -1,25 +1,29 @@
-ARCH ?= x86_64
-
 DEBUG ?= 1
 
 ROOTDIR ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-ARCHDIR ?= $(ROOTDIR)arch/$(ARCH)/
-BUILDDIR ?= $(ROOTDIR)build/
+OUTDIR ?= $(ROOTDIR)build/
+
+ARCH ?= x86_64
+ARCH_SRCDIR ?= $(ROOTDIR)arch/$(ARCH)/
+ARCH_OUTDIR ?= $(OUTDIR)
+
+RTL_SRCDIR ?= $(ROOTDIR)rtl/
+RTL_OUTDIR ?= $(OUTDIR)rtl/
 
 OVMFCODE ?= /usr/share/edk2/x64/OVMF_CODE.4m.fd
 OVMFVARS ?= /usr/share/edk2/x64/OVMF_VARS.4m.fd
 
-AR ?= $(ARCH)-elf-ar
-ARFLAGS ?=
-
-AS ?= nasm
-ASFLAGS ?= -felf64
+AS ?= $(ARCH)-elf-as
+ASFLAGS ?=
 ifeq ($(DEBUG), 1)
 ASFLAGS += -g
 endif
+ifeq ($(ARCH), x86_64)
+ASFLAGS += -mintel64
+endif
 
 FP ?= fpc
-FPFLAGS ?= -Aelf -Cn -Fu$(BUILDDIR) -n -P$(ARCH) -Rintel -Sagic -Tlinux -vehinw
+FPFLAGS ?= -Aelf -Cn -Fu$(OUTDIR) -Fu$(RTL_OUTDIR) -n -P$(ARCH) -Rintel -Sagic -Tlinux -vehinw
 ifeq ($(DEBUG), 1)
 FPFLAGS += -g -O-
 else
