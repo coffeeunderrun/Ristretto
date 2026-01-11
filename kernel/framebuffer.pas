@@ -4,34 +4,11 @@ interface
 
 uses Limine;
 
-type
-  TColor = record
-    Red: UInt8;
-    Green: UInt8;
-    Blue: UInt8;
-  end;
-
-const
-  ColorBlack: TColor = (Red: $00; Green: $00; Blue: $00);
-  ColorBlue: TColor = (Red: $00; Green: $00; Blue: $AA);
-  ColorBrown: TColor = (Red: $AA; Green: $55; Blue: $00);
-  ColorCyan: TColor = (Red: $00; Green: $AA; Blue: $AA);
-  ColorGray: TColor = (Red: $55; Green: $55; Blue: $55);
-  ColorGreen: TColor = (Red: $00; Green: $AA; Blue: $00);
-  ColorLightBlue: TColor = (Red: $55; Green: $55; Blue: $FF);
-  ColorLightCyan: TColor = (Red: $55; Green: $FF; Blue: $FF);
-  ColorLightGray: TColor = (Red: $AA; Green: $AA; Blue: $AA);
-  ColorLightGreen: TColor = (Red: $55; Green: $FF; Blue: $55);
-  ColorLightMagenta: TColor = (Red: $FF; Green: $55; Blue: $FF);
-  ColorLightRed: TColor = (Red: $FF; Green: $55; Blue: $55);
-  ColorMagenta: TColor = (Red: $AA; Green: $00; Blue: $AA);
-  ColorRed: TColor = (Red: $AA; Green: $00; Blue: $00);
-  ColorWhite: TColor = (Red: $FF; Green: $FF; Blue: $FF);
-  ColorYellow: TColor = (Red: $FF; Green: $FF; Blue: $55);
-
 procedure Initialize;
 procedure Clear(Color: TColor);
 procedure PutPixel(X, Y: UInt64; Color: TColor);
+procedure MoveDown(Delta: UInt64; FillColor: TColor);
+procedure MoveUp(Delta: UInt64; FillColor: TColor);
 
 function GetHeight: UInt64;
 function GetWidth: UInt64;
@@ -39,8 +16,8 @@ function GetWidth: UInt64;
 implementation
 
 var
-  AddressBeginPtr: PUInt8;
-  AddressEndPtr: PUInt8;
+  FramebufferAddress: Pointer;
+  FramebufferSize: SizeUInt;
   ResolutionHeight: UInt64;
   ResolutionWidth: UInt64;
   BytesPerRow: UInt64;
@@ -54,13 +31,11 @@ var
   FramebufferPtr: PLimineFramebuffer;
 begin
   if Limine.GetFramebufferCount = 0 then exit;
-
   FramebufferPtr := Limine.GetFramebuffer(0);
-  if FramebufferPtr = nil then exit;
 
-  with FramebufferPtr^ do begin
-    AddressBeginPtr := PUInt8(Address);
-    AddressEndPtr := AddressBeginPtr + (Pitch * Height);
+  if FramebufferPtr <> nil then with FramebufferPtr^ do begin
+    FramebufferAddress := Address;
+    FramebufferSize := Height * Pitch;
     ResolutionHeight := Height;
     ResolutionWidth := Width;
     BytesPerRow := Pitch;
@@ -73,25 +48,72 @@ end;
 
 procedure Clear(Color: TColor);
 var
-  AddressPtr: PUInt8;
+  FramebufferPtr: PUInt8;
+  FramebufferEndPtr: PUInt8;
 begin
-  AddressPtr := AddressBeginPtr;
-  while AddressPtr < AddressEndPtr do begin
-    AddressPtr[RedIndex] := Color.Red;
-    AddressPtr[GreenIndex] := Color.Green;
-    AddressPtr[BlueIndex] := Color.Blue;
-    AddressPtr := AddressPtr + BytesPerPixel;
+  FramebufferPtr := PUInt8(FramebufferAddress);
+  FramebufferEndPtr := PUInt8(FramebufferAddress) + FramebufferSize;
+
+  while FramebufferPtr < FramebufferEndPtr do begin
+    FramebufferPtr[RedIndex] := Color.Red;
+    FramebufferPtr[GreenIndex] := Color.Green;
+    FramebufferPtr[BlueIndex] := Color.Blue;
+    FramebufferPtr += BytesPerPixel;
   end;
 end;
 
 procedure PutPixel(X, Y: UInt64; Color: TColor);
 var
-  Offset: UInt64;
+  FramebufferPtr: PUInt8;
 begin
-  Offset := (X * BytesPerPixel) + (Y * BytesPerRow);
-  AddressBeginPtr[Offset + RedIndex] := Color.Red;
-  AddressBeginPtr[Offset + GreenIndex] := Color.Green;
-  AddressBeginPtr[Offset + BlueIndex] := Color.Blue;
+  FramebufferPtr := PUInt8(FramebufferAddress) + (X * BytesPerPixel) + (Y * BytesPerRow);
+  FramebufferPtr[RedIndex] := Color.Red;
+  FramebufferPtr[GreenIndex] := Color.Green;
+  FramebufferPtr[BlueIndex] := Color.Blue;
+end;
+
+procedure MoveDown(Delta: UInt64; FillColor: TColor);
+var
+  Count: SizeUInt;
+  FramebufferPtr: PUInt8;
+  FramebufferEndPtr: PUInt8;
+begin
+  Count := FramebufferSize - (Delta * BytesPerRow);
+  FramebufferPtr := PUInt8(FramebufferAddress);
+  FramebufferEndPtr := FramebufferPtr + ((Delta - 1) * BytesPerRow);
+
+  Move(FramebufferPtr^, FramebufferEndPtr^, Count);
+
+  // Fill gap after moving framebuffer content.
+  while FramebufferPtr < FramebufferEndPtr do begin
+    FramebufferPtr[RedIndex] := FillColor.Red;
+    FramebufferPtr[GreenIndex] := FillColor.Green;
+    FramebufferPtr[BlueIndex] := FillColor.Blue;
+    FramebufferPtr += BytesPerPixel;
+  end;
+end;
+
+procedure MoveUp(Delta: UInt64; FillColor: TColor);
+var
+  Count: SizeUInt;
+  FramebufferPtr: PUInt8;
+  FramebufferEndPtr: PUInt8;
+begin
+  Count := FramebufferSize - (Delta * BytesPerRow);
+  FramebufferPtr := PUInt8(FramebufferAddress);
+  FramebufferEndPtr := FramebufferPtr + (Delta * BytesPerRow);
+
+  Move(FramebufferEndPtr^, FramebufferPtr^, Count);
+
+  // Fill gap after moving framebuffer content.
+  FramebufferPtr += Count;
+  FramebufferEndPtr += Count;
+  while FramebufferPtr < FramebufferEndPtr do begin
+    FramebufferPtr[RedIndex] := FillColor.Red;
+    FramebufferPtr[GreenIndex] := FillColor.Green;
+    FramebufferPtr[BlueIndex] := FillColor.Blue;
+    FramebufferPtr += BytesPerPixel;
+  end;
 end;
 
 function GetHeight: UInt64; begin GetHeight := ResolutionHeight; end;

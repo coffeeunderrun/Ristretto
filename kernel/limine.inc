@@ -1,5 +1,5 @@
 const
-  LimineRequestStartMarker: array[0..3] of UInt64 = (
+  LimineRequestStartMarker: array [0..3] of UInt64 = (
     UInt64($F6B8F4B39DE7D1AE),
     UInt64($FAB91A6940FCB9CF),
     UInt64($785C6ED015D3E316),
@@ -10,7 +10,7 @@ const
 {$IFNDEF LIMINE_BASE_REVISION}
 {$DEFINE LIMINE_BASE_REVISION := 4}
 {$ENDIF}
-  LimineRequestBaseRevision: array[0..3] of UInt64 = (
+  LimineRequestBaseRevision: array [0..3] of UInt64 = (
     UInt64($F9562B2D5C95A6C8),
     UInt64($6A7B384944536BDC),
     LIMINE_BASE_REVISION,
@@ -31,7 +31,7 @@ const
   ); export name '_limine_request_frambuffer';
 {$ENDIF}
 
-  LimineRequestEndMarker: array[0..1] of UInt64 = (
+  LimineRequestEndMarker: array [0..1] of UInt64 = (
     UInt64($ADC0E0531BB10D03),
     UInt64($9572709F31764C62)
   ); export name '_limine_request_end_marker';

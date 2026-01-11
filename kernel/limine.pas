@@ -33,7 +33,7 @@ type
     GreenMaskShift: UInt8;
     BlueMaskSize: UInt8;
     BlueMaskShift: UInt8;
-    Unused: array[0..6] of UInt8;
+    Unused: array [0..6] of UInt8;
     EdidSize: UInt64;
     Edid: Pointer;
     ModeCount: UInt64;
@@ -49,7 +49,7 @@ type
   end;
 
   TLimineFramebufferRequest = record
-    Id: array[0..3] of UInt64;
+    Id: array [0..3] of UInt64;
     Revision: UInt64;
     Response: PLimineFramebufferResponse;
   end;
@@ -61,7 +61,7 @@ function GetFramebuffer(FramebufferIndex: UInt64): PLimineFramebuffer;
 implementation
 
 var
-  LimineRequestBaseRevision: array[0..3] of UInt64; external name '_limine_request_base_revision';
+  LimineRequestBaseRevision: array [0..3] of UInt64; external name '_limine_request_base_revision';
   LimineRequestFramebuffer: TLimineFramebufferRequest; external name '_limine_request_frambuffer';
 
 function BaseRevisionSupported: Boolean; begin BaseRevisionSupported := LimineRequestBaseRevision[2] = 0; end;

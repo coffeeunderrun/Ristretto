@@ -19,7 +19,7 @@ ifeq ($(DEBUG), 1)
 ASFLAGS += -g
 endif
 ifeq ($(ARCH), x86_64)
-ASFLAGS += -mintel64
+ASFLAGS += -mintel64 -mnaked-reg
 endif
 
 FP ?= fpc

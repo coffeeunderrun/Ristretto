@@ -52,7 +52,7 @@ begin
   TerminalX := 0;
   TerminalY := 0;
   TerminalBgColor := ColorBlack;
-  TerminalFgColor := ColorWhite;
+  TerminalFgColor := ColorAmber;
 end;
 
 procedure PutChar(X, Y: UInt64; FgColor, BgColor: TColor; Ch: Char);
@@ -66,7 +66,7 @@ begin
   with KernelFontPtr^ do begin
     // Glyphs immediately follow the PSF1 header.
     // Offset by character multiplied by glyph size in bytes.
-    Glyph := PUInt8(KernelFontPtr) + sizeof(TPCScreenFont) + (GlyphSize * ord(Ch));
+    Glyph := PUInt8(KernelFontPtr) + SizeOf(TPCScreenFont) + (GlyphSize * Ord(Ch));
 
     for GlyphY := 0 to GlyphSize - 1 do begin
       // Start at bit 7 of current glyph byte (row).
@@ -83,7 +83,7 @@ begin
       end;
 
       // Next glyph byte (row).
-      inc(Glyph);
+      Inc(Glyph);
     end;
   end;
 end;
@@ -96,6 +96,15 @@ procedure SetForeground(Color: TColor); begin TerminalFgColor := Color; end;
 
 function GetBackground: TColor; begin GetBackground := TerminalBgColor; end;
 function GetForeground: TColor; begin GetForeground := TerminalFgColor; end;
+
+procedure NewLine;
+begin
+  TerminalX := 0;
+  if (TerminalY + KernelFontPtr^.GlyphSize) >= Framebuffer.GetHeight then
+    Framebuffer.MoveUp(KernelFontPtr^.GlyphSize, TerminalBgColor)
+  else
+    TerminalY += KernelFontPtr^.GlyphSize;
+end;
 
 procedure Write(Text: PChar);
 begin
@@ -114,26 +123,19 @@ begin
       // Printable characters.
       #32..#255: begin
         // Wrap to next line if character will go beyond the screen width.
-        if (TerminalX + 8) >= Framebuffer.GetWidth then begin
-          TerminalX := 0;
-          TerminalY := TerminalY + KernelFontPtr^.GlyphSize;
-        end;
-
+        if (TerminalX + 8) >= Framebuffer.GetWidth then NewLine;
         PutChar(TerminalX, TerminalY, FgColor, BgColor, Text^);
-        TerminalX := TerminalX + 8;
+        TerminalX += 8;
       end;
 
       // Line feed.
-      #10: begin
-        TerminalX := 0;
-        TerminalY := TerminalY + KernelFontPtr^.GlyphSize;
-      end;
+      #10: NewLine;
 
       // Carriage return.
       #13: TerminalX := 0;
     end;
 
-    inc(Text);
+    Inc(Text);
   end;
 end;
 

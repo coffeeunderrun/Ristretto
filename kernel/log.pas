@@ -2,7 +2,7 @@ unit Log;
 
 interface
 
-uses Framebuffer, Terminal;
+uses Terminal;
 
 type
   TLogLevel = (
