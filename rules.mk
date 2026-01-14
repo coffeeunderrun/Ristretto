@@ -4,8 +4,8 @@ $(OUTDIR)%.asm.o: %.asm
 $(OUTDIR)%.o: %.pas
 	$(FP) $(FPFLAGS) -o$@ $<
 
-$(RTL_OUTDIR)%.asm.o: %.asm
+$(RTLDIR)%.asm.o: %.asm
 	$(AS) $(ASFLAGS) -o$@ $<
 
-$(RTL_OUTDIR)%.o: %.pas
+$(RTLDIR)%.o: %.pas
 	$(FP) $(FPFLAGS) -o$@ $<

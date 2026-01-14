@@ -2,7 +2,7 @@ unit Framebuffer;
 
 interface
 
-uses Limine;
+uses Color;
 
 procedure Initialize;
 procedure Clear(Color: TColor);
@@ -14,6 +14,8 @@ function GetHeight: UInt64;
 function GetWidth: UInt64;
 
 implementation
+
+uses Limine;
 
 var
   FramebufferAddress: Pointer;

@@ -2,9 +2,10 @@ unit Terminal;
 
 interface
 
-uses Framebuffer;
+uses Color;
 
 procedure Initialize;
+procedure Clear;
 
 procedure SetX(X: UInt64);
 procedure SetY(Y: UInt64);
@@ -20,6 +21,8 @@ procedure Write(Text: PChar; FgColor: TColor);
 procedure Write(Text: PChar; FgColor, BgColor: TColor);
 
 implementation
+
+uses Framebuffer;
 
 const
   PCScreenFontMagic: UInt16 = $0436;
@@ -49,10 +52,16 @@ var
 procedure Initialize;
 begin
   KernelFontPtr := PPCScreenFont(@RawKernelFontStart);
+  Clear;
+end;
+
+procedure Clear;
+begin
   TerminalX := 0;
   TerminalY := 0;
   TerminalBgColor := ColorBlack;
   TerminalFgColor := ColorAmber;
+  Framebuffer.Clear(TerminalBgColor);
 end;
 
 procedure PutChar(X, Y: UInt64; FgColor, BgColor: TColor; Ch: Char);

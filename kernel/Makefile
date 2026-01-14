@@ -1,9 +1,10 @@
 include ../vars.mk
 include ../rules.mk
 
-LDFLAGS += -T$(ARCH_SRCDIR)link.ld
+FPFLAGS += -Fi$(ARCH)
+LDFLAGS += -T$(ARCH)/link.ld
 
-SRCS := kernel.pas limine.pas log.pas framebuffer.pas terminal.pas
+SRCS := $(wildcard *.pas)
 RSRC := kernel.psf
 OBJS := arch.o rtl.o
 
@@ -16,3 +17,6 @@ $(OUTDIR)kernel.elf: $(OBJS)
 
 $(OUTDIR)%.psf.o: %.psf
 	$(LD) -r -bbinary -o$@ $<
+
+$(OUTDIR)arch.o:
+	@make -C$(ARCH)

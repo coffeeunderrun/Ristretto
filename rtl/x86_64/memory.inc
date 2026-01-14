@@ -1,5 +1,5 @@
-procedure Move(const Source; var Dest; Count: SizeUInt); assembler; nostackframe;
 { TODO: Optimize this for kernel and user }
+procedure Move(const Source; var Dest; Count: SizeUInt); assembler; nostackframe;
 asm
   pushfq
   mov rcx, rdi // RCX = Source (temporary)
