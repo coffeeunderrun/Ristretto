@@ -14,6 +14,7 @@
  **********************************************************************}
 
 {$I-,Q-,H-,R-,V-,S-}
+{$MODE ObjFPC}
 
 Type
   HResult  = type LongInt;
@@ -55,11 +56,7 @@ Type
   PtrInt   = Int64;
   PtrUInt  = Uint64;
 
-{$IF DECLARED(AnsiChar)}
-  Char = AnsiChar;
-{$ELSE}
-  AnsiChar = Char;
-{$ENDIF}
+  PShortString = ^ShortString;
 
 {$I setjumph.inc}
 {$I rttih.inc}
@@ -70,6 +67,8 @@ Type
 
 procedure fpc_initializeunits; export; compilerproc;
 procedure fpc_do_exit; export; compilerproc;
+
+procedure fpc_shortstr_to_shortstr(out Res: ShortString; const Str: ShortString); compilerproc;
 
 {****************************************************************************
                         Processor specific routines

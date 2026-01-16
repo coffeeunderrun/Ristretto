@@ -51,3 +51,33 @@ type
       node: array [0 .. 5] of Byte;
     );
   end;
+
+{*****************************************************************************
+                              Array of const support
+*****************************************************************************}
+
+{ NOTE: stripped down version of FPC's implementation }
+const
+  vtInteger       = 0;
+  vtBoolean       = 1;
+  vtChar          = 2;
+  vtString        = 4;
+  vtPointer       = 5;
+  vtPChar         = 6;
+  vtInterface     = 14;
+  vtInt64         = 16;
+  vtQWord         = 17;
+
+type
+  PVarRec = ^TVarRec;
+  TVarRec = record case VType : SizeInt of
+    vtInteger:   (VInteger: LongInt);
+    vtBoolean:   (VBoolean: Boolean);
+    vtChar:      (VChar: Char);
+    vtString:    (VString: PShortString);
+    vtPointer:   (VPointer: Pointer);
+    vtPChar:     (VPChar: PChar);
+    vtInterface: (VInterface: Pointer);
+    vtInt64:     (VInt64: PInt64);
+    vtQWord:     (VQWord: PQWord);
+  end;

@@ -16,9 +16,9 @@ procedure SetForeground(Color: TColor);
 function GetBackground: TColor;
 function GetForeground: TColor;
 
-procedure Write(Text: PChar);
-procedure Write(Text: PChar; FgColor: TColor);
-procedure Write(Text: PChar; FgColor, BgColor: TColor);
+procedure Write(const Text: ShortString);
+procedure Write(const Text: ShortString; FgColor: TColor);
+procedure Write(const Text: ShortString; FgColor, BgColor: TColor);
 
 implementation
 
@@ -115,25 +115,26 @@ begin
     TerminalY += KernelFontPtr^.GlyphSize;
 end;
 
-procedure Write(Text: PChar);
+procedure Write(const Text: ShortString);
 begin
   Write(Text, TerminalFgColor, TerminalBgColor);
 end;
 
-procedure Write(Text: PChar; FgColor: TColor);
+procedure Write(const Text: ShortString; FgColor: TColor);
 begin
   Write(Text, FgColor, TerminalBgColor);
 end;
 
-procedure Write(Text: PChar; FgColor, BgColor: TColor);
+procedure Write(const Text: ShortString; FgColor, BgColor: TColor);
+var
+  Ch: Char;
 begin
-  while Text^ <> Char(0) do begin
-    case Text^ of
+  for Ch in Text do case Ch of
       // Printable characters.
       #32..#255: begin
         // Wrap to next line if character will go beyond the screen width.
         if (TerminalX + 8) >= Framebuffer.GetWidth then NewLine;
-        PutChar(TerminalX, TerminalY, FgColor, BgColor, Text^);
+        PutChar(TerminalX, TerminalY, FgColor, BgColor, Ch);
         TerminalX += 8;
       end;
 
@@ -142,9 +143,6 @@ begin
 
       // Carriage return.
       #13: TerminalX := 0;
-    end;
-
-    Inc(Text);
   end;
 end;
 

@@ -19,6 +19,16 @@ procedure fpc_do_exit;
 begin
 end;
 
+procedure fpc_shortstr_to_shortstr(out Res: ShortString; const Str: ShortString); compilerproc;
+var
+  StrLen: Byte;
+begin
+  StrLen := Length(Str);
+  if StrLen > High(Res) then StrLen := High(Res);
+  Move(Str[0], Res[0], StrLen + 1);
+  Res[0] := Char(StrLen);
+end;
+
 {****************************************************************************
                         Processor specific routines
 ****************************************************************************}

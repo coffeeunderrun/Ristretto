@@ -6,7 +6,7 @@ uses Cpu, Limine, Framebuffer, Terminal;
 {$I limine.inc}
 
 const
-  Logo: PChar =
+  Logo: ShortString =
   '     _     _           _   _       '#10 +
   ' ___|_|___| |_ ___ ___| |_| |_ ___ '#10 +
   '|  _| |_ -|  _|  _| -_|  _|  _| _ |'#10 +
