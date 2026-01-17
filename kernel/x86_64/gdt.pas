@@ -38,7 +38,7 @@ var
 
 procedure Initialize;
 begin
-  LogDebug('GDT initialization...');
+  Log.Debug('GDT initialization...');
 
   GdtPointer.Limit := SizeOf(GdtEntries) - 1;
   GdtPointer.Base := PtrUInt(@GdtEntries);
@@ -62,7 +62,7 @@ begin
   @code_seg:
   end;
 
-  LogDebug('GDT initialized.');
+  Log.Debug('GDT initialized.');
 end;
 
 end.

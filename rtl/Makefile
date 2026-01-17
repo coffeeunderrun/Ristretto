@@ -3,14 +3,11 @@ include ../rules.mk
 
 FPFLAGS += -Fiinc -Fi$(ARCH)
 
-SRCS := $(wildcard *.pas)
+# Do NOT change the order of sources
+SRCS := system.pas objpas.pas si_prc.pas fpintres.pas
 
 OBJS := $(patsubst %.pas, %.o, $(SRCS))
-OBJS += objpas.o
 OBJS := $(addprefix $(RTLDIR), $(OBJS))
 
 $(OUTDIR)rtl.o: $(OBJS)
 	$(LD) -r -o $@ $^
-
-$(RTLDIR)objpas.o:
-	@make -Cobjpas

@@ -14,6 +14,17 @@ type
     LogLevelTrace
   );
 
+procedure Debug(const Text: ShortString);
+procedure Error(const Text: ShortString);
+procedure Fatal(const Text: ShortString);
+procedure Info(const Text: ShortString);
+procedure Trace(const Text: ShortString);
+procedure Warn(const Text: ShortString);
+
+implementation
+
+uses Terminal;
+
 const
   LogLevelColor: array [TLogLevel] of PColor = (
     @ColorWhite,
@@ -33,19 +44,7 @@ const
     'TRACE: '
   );
 
-procedure Log(Level: TLogLevel; const Text: ShortString);
-procedure LogDebug(const Text: ShortString);
-procedure LogError(const Text: ShortString);
-procedure LogFatal(const Text: ShortString);
-procedure LogInfo(const Text: ShortString);
-procedure LogTrace(const Text: ShortString);
-procedure LogWarn(const Text: ShortString);
-
-implementation
-
-uses Terminal;
-
-procedure Log(Level: TLogLevel; const Text: ShortString);
+procedure Log(const Level: TLogLevel; const Text: ShortString);
 var
   BgColor: TColor;
   FgColor: TColor;
@@ -57,17 +56,17 @@ begin
   Terminal.Write(#10);
 end;
 
-procedure LogDebug(const Text: ShortString);
+procedure Debug(const Text: ShortString);
 begin
 {$IFNDEF NDEBUG}
   Log(LogLevelDebug, Text);
 {$ENDIF}
 end;
 
-procedure LogError(const Text: ShortString); begin Log(LogLevelError, Text); end;
-procedure LogFatal(const Text: ShortString); begin Log(LogLevelFatal, Text); end;
-procedure LogInfo(const Text: ShortString); begin Log(LogLevelInfo, Text); end;
-procedure LogTrace(const Text: ShortString); begin Log(LogLevelTrace, Text); end;
-procedure LogWarn(const Text: ShortString); begin Log(LogLevelWarn, Text); end;
+procedure Error(const Text: ShortString); begin Log(LogLevelError, Text); end;
+procedure Fatal(const Text: ShortString); begin Log(LogLevelFatal, Text); end;
+procedure Info(const Text: ShortString); begin Log(LogLevelInfo, Text); end;
+procedure Trace(const Text: ShortString); begin Log(LogLevelTrace, Text); end;
+procedure Warn(const Text: ShortString); begin Log(LogLevelWarn, Text); end;
 
 end.

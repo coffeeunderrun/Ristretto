@@ -7,18 +7,18 @@ uses Color;
 procedure Initialize;
 procedure Clear;
 
-procedure SetX(X: UInt64);
-procedure SetY(Y: UInt64);
+procedure SetX(const X: UInt64);
+procedure SetY(const Y: UInt64);
 
-procedure SetBackground(Color: TColor);
-procedure SetForeground(Color: TColor);
+procedure SetBackground(const Color: TColor);
+procedure SetForeground(const Color: TColor);
 
 function GetBackground: TColor;
 function GetForeground: TColor;
 
 procedure Write(const Text: ShortString);
-procedure Write(const Text: ShortString; FgColor: TColor);
-procedure Write(const Text: ShortString; FgColor, BgColor: TColor);
+procedure Write(const Text: ShortString; const FgColor: TColor);
+procedure Write(const Text: ShortString; const FgColor, BgColor: TColor);
 
 implementation
 
@@ -64,7 +64,7 @@ begin
   Framebuffer.Clear(TerminalBgColor);
 end;
 
-procedure PutChar(X, Y: UInt64; FgColor, BgColor: TColor; Ch: Char);
+procedure PutChar(const X, Y: UInt64; const FgColor, BgColor: TColor; const Ch: Char);
 var
   GlyphBit: UInt8;
   GlyphX: UInt8;
@@ -97,11 +97,11 @@ begin
   end;
 end;
 
-procedure SetX(X: UInt64); begin TerminalX := X; end;
-procedure SetY(Y: UInt64); begin TerminalY := Y; end;
+procedure SetX(const X: UInt64); begin TerminalX := X; end;
+procedure SetY(const Y: UInt64); begin TerminalY := Y; end;
 
-procedure SetBackground(Color: TColor); begin TerminalBgColor := Color; end;
-procedure SetForeground(Color: TColor); begin TerminalFgColor := Color; end;
+procedure SetBackground(const Color: TColor); begin TerminalBgColor := Color; end;
+procedure SetForeground(const Color: TColor); begin TerminalFgColor := Color; end;
 
 function GetBackground: TColor; begin GetBackground := TerminalBgColor; end;
 function GetForeground: TColor; begin GetForeground := TerminalFgColor; end;
@@ -120,29 +120,29 @@ begin
   Write(Text, TerminalFgColor, TerminalBgColor);
 end;
 
-procedure Write(const Text: ShortString; FgColor: TColor);
+procedure Write(const Text: ShortString; const FgColor: TColor);
 begin
   Write(Text, FgColor, TerminalBgColor);
 end;
 
-procedure Write(const Text: ShortString; FgColor, BgColor: TColor);
+procedure Write(const Text: ShortString; const FgColor, BgColor: TColor);
 var
   Ch: Char;
 begin
   for Ch in Text do case Ch of
-      // Printable characters.
-      #32..#255: begin
-        // Wrap to next line if character will go beyond the screen width.
-        if (TerminalX + 8) >= Framebuffer.GetWidth then NewLine;
-        PutChar(TerminalX, TerminalY, FgColor, BgColor, Ch);
-        TerminalX += 8;
-      end;
+    // Printable characters.
+    #32..#255: begin
+      // Wrap to next line if character will go beyond the screen width.
+      if (TerminalX + 8) >= Framebuffer.GetWidth then NewLine;
+      PutChar(TerminalX, TerminalY, FgColor, BgColor, Ch);
+      TerminalX += 8;
+    end;
 
-      // Line feed.
-      #10: NewLine;
+    // Line feed.
+    #10: NewLine;
 
-      // Carriage return.
-      #13: TerminalX := 0;
+    // Carriage return.
+    #13: TerminalX := 0;
   end;
 end;
 

@@ -1,7 +1,7 @@
 unit ObjPas;
 
 {$I-}
-{$MODE OBJFPC}
+{$MODE ObjFPC}
 
 interface
 
