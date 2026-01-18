@@ -1,4 +1,4 @@
-{ TODO: Optimize this for kernel and user }
+{ TODO: Optimize this for kernel and userspace }
 procedure Move(const Source; var Dest; Count: SizeUInt); assembler; nostackframe;
 asm
   pushfq

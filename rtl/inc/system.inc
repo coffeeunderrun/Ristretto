@@ -11,30 +11,29 @@
 
  **********************************************************************}
 
-procedure fpc_initializeunits;
-begin
-end;
-
-procedure fpc_do_exit;
-begin
-end;
-
-procedure fpc_shortstr_to_shortstr(out Res: ShortString; const Str: ShortString); compilerproc;
-var
-  StrLen: Byte;
-begin
-  StrLen := Length(Str);
-  if StrLen > High(Res) then StrLen := High(Res);
-  Move(Str[0], Res[0], StrLen + 1);
-  Res[0] := Char(StrLen);
-end;
-
 {****************************************************************************
-                        Processor specific routines
+                    Include processor specific routines
 ****************************************************************************}
-{$I memory.inc}
 
-{*****************************************************************************
-                          Init / Exit / ExitProc
-*****************************************************************************}
-{$I cpu.inc}
+{$ifdef cpux86_64}
+  {$I x86_64.inc}
+{$endif cpux86_64}
+
+{ Include generic pascal only routines which are not defined in the processor
+  specific include file }
+{$I generic.inc}
+
+procedure fpc_initializeunits; compilerproc; export; alias: 'FPC_INITIALIZEUNITS';
+begin
+end;
+
+procedure fpc_do_exit; compilerproc; export; alias: 'FPC_DO_EXIT';
+begin
+end;
+
+procedure internal_do_exit; external name 'FPC_DO_EXIT';
+
+procedure Halt; inline; noreturn;
+begin
+  internal_do_exit;
+end;

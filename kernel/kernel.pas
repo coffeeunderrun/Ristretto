@@ -7,13 +7,13 @@ uses Cpu, Limine, Framebuffer, Terminal;
 
 const
   Logo: ShortString =
-  '     _     _           _   _       '#10 +
-  ' ___|_|___| |_ ___ ___| |_| |_ ___ '#10 +
-  '|  _| |_ -|  _|  _| -_|  _|  _| _ |'#10 +
-  '|_| |_|___|_| |_| |___|_| |_| |___|'#10#10;
+    ' ______ __       __              __   __         '#10 +
+    '|   __ |__.-----|  |_.----.-----|  |_|  |_.-----.'#10 +
+    '|      |  |__ --|   _|   _|  -__|   _|   _|  _  |'#10 +
+    '|___|__|__|_____|____|__| |_____|____|____|_____|'#10#10;
 
 begin
-  if not Limine.BaseRevisionSupported then Halt;
+  if not Limine.BaseRevisionSupported then exit;
 
   Framebuffer.Initialize;
 
@@ -21,6 +21,4 @@ begin
   Terminal.Write(Logo);
 
   Cpu.Initialize;
-
-  Halt;
 end.

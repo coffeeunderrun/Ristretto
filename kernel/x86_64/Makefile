@@ -1,7 +1,4 @@
 include ../../vars.mk
-include ../../rules.mk
-
-FPFLAGS += -Fu../
 
 SRCS := $(wildcard *.asm *.pas)
 
@@ -11,3 +8,9 @@ OBJS := $(addprefix $(OUTDIR), $(OBJS))
 
 $(OUTDIR)arch.o: $(OBJS)
 	$(LD) -r -o $@ $^
+
+$(OUTDIR)%.asm.o: %.asm
+	$(AS) $(ASFLAGS) -o$@ $<
+
+$(OUTDIR)%.o: %.pas
+	$(FP) $(FPFLAGS) -Fu../ -o$@ $<

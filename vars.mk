@@ -20,7 +20,7 @@ endif
 
 # Compiler (Pascal)
 FP ?= fpc
-FPFLAGS ?= -Aelf -Cn -Fu$(OUTDIR) -Fu$(RTLDIR) -n -P$(ARCH) -Rintel -Sagic -Tlinux -vehinw
+FPFLAGS ?= -Aelf -Cn -Fu$(RTLDIR) -n -P$(ARCH) -Rintel -Sagic -Tlinux -vehinw
 ifeq ($(DEBUG), 1)
 FPFLAGS += -g -O-
 else
@@ -35,7 +35,7 @@ FPFLAGS +=
 endif
 
 QEMU ?= qemu-system-$(ARCH)
-QEMUFLAGS ?= -cpu qemu64 -m 256M -net none
+QEMUFLAGS ?= -cpu qemu64 -m 256M -net none -d int -no-shutdown -no-reboot -monitor stdio
 ifeq ($(DEBUG), 1)
 QEMUFLAGS += -gdb tcp::1234 -S
 endif
