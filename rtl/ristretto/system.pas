@@ -6,6 +6,8 @@ interface
 
 implementation
 
+{$implicitexceptions off}
+
 {$I system.inc}
 
 procedure system_exit; noreturn; external name '_halt';

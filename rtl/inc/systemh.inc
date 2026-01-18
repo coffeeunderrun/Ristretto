@@ -74,6 +74,8 @@ type
 
   PShortString = ^ShortString;
 
+  TProcedure = Procedure;
+
 {*****************************************************************************
                    TextRec/FileRec exported to allow compiler to take size
 *****************************************************************************}

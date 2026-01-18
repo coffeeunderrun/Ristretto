@@ -1,7 +1,8 @@
 unit ObjPas;
 
 {$I-}
-{$MODE ObjFPC}
+{$mode ObjFPC}
+{$implicitexceptions off}
 
 interface
 

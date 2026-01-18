@@ -16,24 +16,65 @@
 ****************************************************************************}
 
 {$ifdef cpux86_64}
-  {$I x86_64.inc}
+{$I x86_64.inc}
 {$endif cpux86_64}
 
 { Include generic pascal only routines which are not defined in the processor
   specific include file }
 {$I generic.inc}
 
+{*****************************************************************************
+                        Initialization / Finalization
+*****************************************************************************}
+
+type
+  TInitFinalRec = record
+    InitProc: TProcedure;
+    FinalProc: TProcedure;
+  end;
+
+  PInitFinalTable = ^TInitFinalTable;
+  TInitFinalTable = record
+    TableCount: SizeUInt;
+    InitCount: SizeUInt;
+    Procs: array [1..1024] of TInitFinalRec;
+  end;
+
+var
+  InitFinalTable: TInitFinalTable; external name 'INITFINAL';
+
 procedure fpc_initializeunits; compilerproc; export; alias: 'FPC_INITIALIZEUNITS';
+var
+  TablePtr: PInitFinalTable;
+  I: SizeUInt;
 begin
+  TablePtr := @InitFinalTable;
+  if not Assigned(TablePtr) then exit;
+
+  with TablePtr^ do begin
+    for I := 1 to TableCount do begin
+      if Assigned(Procs[I].InitProc) then Procs[I].InitProc;
+      InitCount := I;
+    end;
+  end;
 end;
+
+procedure internal_initializeunits; external name 'FPC_INITIALIZEUNITS';
+
+{*****************************************************************************
+                          Error / Exit / ExitProc
+*****************************************************************************}
+
+procedure system_exit; noreturn; forward;
 
 procedure fpc_do_exit; compilerproc; export; alias: 'FPC_DO_EXIT';
 begin
+  system_exit;
 end;
 
 procedure internal_do_exit; external name 'FPC_DO_EXIT';
 
-procedure Halt; inline; noreturn;
+procedure Halt; noreturn;
 begin
   internal_do_exit;
 end;
