@@ -1,6 +1,6 @@
 program Kernel;
 
-uses Cpu, Limine, Framebuffer, Terminal;
+uses Arch, Limine, Framebuffer, Terminal;
 
 {$DEFINE LIMINE_REQUEST_FRAMEBUFFER}
 {$I limine.inc}
@@ -15,10 +15,5 @@ const
 begin
   if not Limine.BaseRevisionSupported then exit;
 
-  Framebuffer.Initialize;
-
-  Terminal.Initialize;
   Terminal.Write(Logo);
-
-  Cpu.Initialize;
 end.

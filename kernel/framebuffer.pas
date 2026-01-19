@@ -4,7 +4,6 @@ interface
 
 uses Color;
 
-procedure Initialize;
 procedure Clear(Color: TColor);
 procedure PutPixel(X, Y: UInt64; Color: TColor);
 procedure MoveDown(Delta: UInt64; FillColor: TColor);
@@ -27,26 +26,6 @@ var
   RedIndex: UInt8;
   GreenIndex: UInt8;
   BlueIndex: UInt8;
-
-procedure Initialize;
-var
-  FramebufferPtr: PLimineFramebuffer;
-begin
-  if Limine.GetFramebufferCount = 0 then exit;
-  FramebufferPtr := Limine.GetFramebuffer(0);
-
-  if FramebufferPtr <> nil then with FramebufferPtr^ do begin
-    FramebufferAddress := Address;
-    FramebufferSize := Height * Pitch;
-    ResolutionHeight := Height;
-    ResolutionWidth := Width;
-    BytesPerRow := Pitch;
-    BytesPerPixel := BitsPerPixel shr 3;
-    RedIndex := RedMaskShift shr 3;
-    GreenIndex := GreenMaskShift shr 3;
-    BlueIndex := BlueMaskShift shr 3;
-  end;
-end;
 
 procedure Clear(Color: TColor);
 var
@@ -120,5 +99,24 @@ end;
 
 function GetHeight: UInt64; begin GetHeight := ResolutionHeight; end;
 function GetWidth: UInt64; begin GetWidth := ResolutionWidth; end;
+
+var
+  FramebufferPtr: PLimineFramebuffer;
+
+initialization
+  if Limine.GetFramebufferCount = 0 then exit;
+  FramebufferPtr := Limine.GetFramebuffer(0);
+
+  if FramebufferPtr <> nil then with FramebufferPtr^ do begin
+    FramebufferAddress := Address;
+    FramebufferSize := Height * Pitch;
+    ResolutionHeight := Height;
+    ResolutionWidth := Width;
+    BytesPerRow := Pitch;
+    BytesPerPixel := BitsPerPixel shr 3;
+    RedIndex := RedMaskShift shr 3;
+    GreenIndex := GreenMaskShift shr 3;
+    BlueIndex := BlueMaskShift shr 3;
+  end;
 
 end.

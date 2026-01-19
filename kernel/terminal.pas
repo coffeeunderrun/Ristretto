@@ -4,7 +4,6 @@ interface
 
 uses Color;
 
-procedure Initialize;
 procedure Clear;
 
 procedure SetX(const X: UInt64);
@@ -48,12 +47,6 @@ var
   TerminalY: UInt64;
   TerminalBgColor: TColor;
   TerminalFgColor: TColor;
-
-procedure Initialize;
-begin
-  KernelFontPtr := PPCScreenFont(@RawKernelFontStart);
-  Clear;
-end;
 
 procedure Clear;
 begin
@@ -145,5 +138,9 @@ begin
     #13: TerminalX := 0;
   end;
 end;
+
+initialization
+  KernelFontPtr := PPCScreenFont(@RawKernelFontStart);
+  Clear;
 
 end.

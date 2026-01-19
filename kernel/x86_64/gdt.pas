@@ -2,8 +2,6 @@ unit Gdt;
 
 interface
 
-procedure Initialize;
-
 implementation
 
 uses Log;
@@ -36,10 +34,7 @@ var
     (Limit: 0; BaseLow: 0; BaseMid: 0; Access: $F2; Flags: $00; BaseHigh: 0)  // $20 User Data
   );
 
-procedure Initialize;
-begin
-  Log.Debug('GDT initialization...');
-
+initialization
   GdtPointer.Limit := SizeOf(GdtEntries) - 1;
   GdtPointer.Base := PtrUInt(@GdtEntries);
 
@@ -62,7 +57,6 @@ begin
   @code_seg:
   end;
 
-  Log.Debug('GDT initialized.');
-end;
+  Log.Debug('Unit initialized: GDT');
 
 end.

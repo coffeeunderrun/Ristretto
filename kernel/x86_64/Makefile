@@ -6,7 +6,7 @@ OBJS := $(patsubst %.pas, %.o, $(SRCS))
 OBJS := $(patsubst %.asm, %.asm.o, $(OBJS))
 OBJS := $(addprefix $(OUTDIR), $(OBJS))
 
-$(OUTDIR)arch.o: $(OBJS)
+$(OUTDIR)$(ARCH).o: $(OBJS)
 	$(LD) -r -o $@ $^
 
 $(OUTDIR)%.asm.o: %.asm

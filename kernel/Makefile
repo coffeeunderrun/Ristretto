@@ -2,7 +2,7 @@ include ../vars.mk
 
 SRCS := $(wildcard *.pas)
 RSRC := kernel.psf
-OBJS := arch.o rtl.o
+OBJS := $(ARCH).o rtl.o
 
 OBJS += $(patsubst %.pas, %.o, $(SRCS))
 OBJS += $(patsubst %.psf, %.psf.o, $(RSRC))
@@ -14,7 +14,7 @@ $(OUTDIR)kernel.elf: $(OBJS)
 $(OUTDIR)%.psf.o: %.psf
 	$(LD) -r -bbinary -o$@ $<
 
-$(OUTDIR)arch.o:
+$(OUTDIR)$(ARCH).o:
 	@make -C$(ARCH)
 
 $(OUTDIR)%.o: %.pas
