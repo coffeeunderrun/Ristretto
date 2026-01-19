@@ -3,6 +3,21 @@ unit Limine;
 interface
 
 type
+  { Executable Address Request }
+  PLimineExecutableAddressResponse = ^TLimineExecutableAddressResponse;
+  TLimineExecutableAddressResponse = packed record
+    Revision: UInt64;
+    PhysicalBase: UInt64;
+    VirtualBase: UInt64;
+  end;
+
+  TLimineExecutableAddressRequest = packed record
+    Id: array [0..3] of UInt64;
+    Revision: UInt64;
+    Response: PLimineExecutableAddressResponse;
+  end;
+
+  { Framebuffer Request }
   PLimineVideoMode = ^TLimineVideoMode;
   TLimineVideoMode = packed record
     Pitch: UInt64;
@@ -54,32 +69,18 @@ type
     Response: PLimineFramebufferResponse;
   end;
 
-function BaseRevisionSupported: Boolean;
-function GetFramebufferCount: UInt64;
-function GetFramebuffer(FramebufferIndex: UInt64): PLimineFramebuffer;
+var
+  LimineRequestBaseRevision: array [0..3] of UInt64; external name '_limine_request_base_revision';
+  LimineExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';
+  LimineRequestFramebuffer: TLimineFramebufferRequest; external name '_limine_request_framebuffer';
+
+function BaseRevisionSupported: Boolean; inline;
 
 implementation
 
-var
-  LimineRequestBaseRevision: array [0..3] of UInt64; external name '_limine_request_base_revision';
-  LimineRequestFramebuffer: TLimineFramebufferRequest; external name '_limine_request_frambuffer';
-
-function BaseRevisionSupported: Boolean; begin BaseRevisionSupported := LimineRequestBaseRevision[2] = 0; end;
-
-function GetFramebufferCount: UInt64;
+function BaseRevisionSupported: Boolean; inline;
 begin
-  if LimineRequestFramebuffer.Response = nil then exit(0);
-  GetFramebufferCount := LimineRequestFramebuffer.Response^.FramebufferCount;
-end;
-
-function GetFramebuffer(FramebufferIndex: UInt64): PLimineFramebuffer;
-begin
-  if LimineRequestFramebuffer.Response = nil then exit(nil);
-
-  with LimineRequestFramebuffer.Response^ do begin
-    if FramebufferIndex >= FramebufferCount then exit(nil);
-    GetFramebuffer := @Framebuffers^[FramebufferIndex];
-  end;
+  BaseRevisionSupported := LimineRequestBaseRevision[2] = 0;
 end;
 
 end.

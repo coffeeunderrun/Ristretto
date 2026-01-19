@@ -6,19 +6,35 @@ const
     UInt64($181E920A7852B9D9)
   ); export name '_limine_request_start_marker';
 
-{$MACRO ON}
-{$IFNDEF LIMINE_BASE_REVISION}
-{$DEFINE LIMINE_BASE_REVISION := 4}
-{$ENDIF}
+{ Base Revision }
+{$macro on}
+{$ifndef LIMINE_BASE_REVISION}
+{$define LIMINE_BASE_REVISION := 4}
+{$endif}
   LimineRequestBaseRevision: array [0..3] of UInt64 = (
     UInt64($F9562B2D5C95A6C8),
     UInt64($6A7B384944536BDC),
     LIMINE_BASE_REVISION,
     0
   ); export name '_limine_request_base_revision';
-{$MACRO OFF}
+{$macro off}
 
-{$IFDEF LIMINE_REQUEST_FRAMEBUFFER}
+{ Executable Address Request }
+{$ifdef LIMINE_REQUEST_EXECUTABLE_ADDRESS}
+  LimineRequestExecutableAddress: TLimineExecutableAddressRequest = (
+    Id: (
+      UInt64($C7B1DD30DF4C8B88),
+      UInt64($0A82E883A194F07B),
+      UInt64($71BA76863CC55F63),
+      UInt64($B2644A48C516A487)
+    );
+    Revision: 0;
+    Response: nil;
+  ); export name '_limine_request_executable_address';
+{$endif}
+
+{ Framebuffer Request }
+{$ifdef LIMINE_REQUEST_FRAMEBUFFER}
   LimineRequestFramebuffer: TLimineFramebufferRequest = (
     Id: (
       UInt64($C7B1DD30DF4C8B88),
@@ -28,8 +44,8 @@ const
     );
     Revision: 0;
     Response: nil;
-  ); export name '_limine_request_frambuffer';
-{$ENDIF}
+  ); export name '_limine_request_framebuffer';
+{$endif}
 
   LimineRequestEndMarker: array [0..1] of UInt64 = (
     UInt64($ADC0E0531BB10D03),

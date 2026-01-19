@@ -58,9 +58,9 @@ end;
 
 procedure Debug(const Text: ShortString);
 begin
-{$IFNDEF NDEBUG}
+{$ifndef NDEBUG}
   Log(LogLevelDebug, Text);
-{$ENDIF}
+{$endif}
 end;
 
 procedure Error(const Text: ShortString); begin Log(LogLevelError, Text); end;

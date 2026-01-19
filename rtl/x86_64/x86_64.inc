@@ -1,7 +1,6 @@
 { TODO: Optimize this for kernel and userspace }
 procedure Move(const Source; var Dest; Count: SizeUInt); assembler; nostackframe;
 asm
-  pushfq
   mov rcx, rdi // RCX = Source (temporary)
   mov rdi, rsi // RDI = Dest
   mov rsi, rcx // RSI = Source
@@ -20,5 +19,5 @@ asm
   rep movsb
 
 @done:
-  popfq
+  cld
 end;

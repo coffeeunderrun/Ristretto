@@ -104,19 +104,22 @@ var
   FramebufferPtr: PLimineFramebuffer;
 
 initialization
-  if Limine.GetFramebufferCount = 0 then exit;
-  FramebufferPtr := Limine.GetFramebuffer(0);
+  if not Assigned(LimineRequestFramebuffer.Response) then exit;
 
-  if FramebufferPtr <> nil then with FramebufferPtr^ do begin
-    FramebufferAddress := Address;
-    FramebufferSize := Height * Pitch;
-    ResolutionHeight := Height;
-    ResolutionWidth := Width;
-    BytesPerRow := Pitch;
-    BytesPerPixel := BitsPerPixel shr 3;
-    RedIndex := RedMaskShift shr 3;
-    GreenIndex := GreenMaskShift shr 3;
-    BlueIndex := BlueMaskShift shr 3;
+  with LimineRequestFramebuffer.Response^ do begin
+    if (FramebufferCount = 0) or not Assigned(Framebuffers) then exit;
+
+    with Framebuffers^[0] do begin
+      FramebufferAddress := Address;
+      FramebufferSize := Height * Pitch;
+      ResolutionHeight := Height;
+      ResolutionWidth := Width;
+      BytesPerRow := Pitch;
+      BytesPerPixel := BitsPerPixel shr 3;
+      RedIndex := RedMaskShift shr 3;
+      GreenIndex := GreenMaskShift shr 3;
+      BlueIndex := BlueMaskShift shr 3;
+    end;
   end;
 
 end.

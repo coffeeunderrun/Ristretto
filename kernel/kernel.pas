@@ -2,7 +2,7 @@ program Kernel;
 
 uses Arch, Limine, Framebuffer, Terminal;
 
-{$DEFINE LIMINE_REQUEST_FRAMEBUFFER}
+{$define LIMINE_REQUEST_FRAMEBUFFER}
 {$I limine.inc}
 
 const
