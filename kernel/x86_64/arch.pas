@@ -6,7 +6,6 @@ implementation
 
 uses Gdt, Log;
 
-initialization
+begin
   Log.Debug('Unit initialized: Arch');
-
 end.

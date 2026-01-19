@@ -1,4 +1,5 @@
 { TODO: Optimize this for kernel and userspace }
+{ NOTE: This assumes default 'register' calling convention using 'Linux' target, i.e., System V ABI }
 procedure Move(const Source; var Dest; Count: SizeUInt); assembler; nostackframe;
 asm
   mov rcx, rdi // RCX = Source (temporary)

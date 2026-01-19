@@ -22,7 +22,7 @@ endif
 FP ?= fpc
 FPFLAGS ?= -Aelf -Cn -Fu$(RTLDIR) -n -P$(ARCH) -Rintel -Sagic -Tlinux -vehinw
 ifeq ($(DEBUG), 1)
-FPFLAGS += -g -O-
+FPFLAGS += -g -O- -Si-
 else
 FPFLAGS += -O2 -dNDEBUG
 endif

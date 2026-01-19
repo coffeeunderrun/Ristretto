@@ -34,7 +34,7 @@ var
     (Limit: 0; BaseLow: 0; BaseMid: 0; Access: $F2; Flags: $00; BaseHigh: 0)  // $20 User Data
   );
 
-initialization
+begin
   GdtPointer.Limit := SizeOf(GdtEntries) - 1;
   GdtPointer.Base := PtrUInt(@GdtEntries);
 
@@ -55,8 +55,7 @@ initialization
     retfq
 
   @code_seg:
-  end;
+  end ['rax'];
 
   Log.Debug('Unit initialized: GDT');
-
 end.

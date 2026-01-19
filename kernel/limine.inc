@@ -1,3 +1,28 @@
+(*
+  CAUTION: This is a work-in-progress and requires further development and testing.
+
+  HOW TO USE
+  ----------
+  Include limine.inc in your program or one of your units:
+  {$I limine.inc}
+
+  NOTE: Since FreePascal does not provide a way to specify section names, a
+  common prefix, '_limine_request_', has been used for the exported symbol.
+  If you want to contain the requests within a specific section, you will
+  need to do so via the linker script.
+
+  The default base revision is currently 4.
+  To set a specific revision, you will need to enable C-style macros:
+  {$macro on}
+  {$define LIMINE_BASE_REVISION := 4}
+  {$macro off}
+  {$I limine.inc}
+
+  To request specific features, include the defines prior to including limine.inc:
+  {$define LIMINE_REQUEST_EXECUTABLE_ADDRESS}
+  {$define LIMINE_REQUEST_FRAMEBUFFER}
+*)
+
 const
   LimineRequestStartMarker: array [0..3] of UInt64 = (
     UInt64($F6B8F4B39DE7D1AE),

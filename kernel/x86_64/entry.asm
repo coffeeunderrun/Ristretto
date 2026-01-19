@@ -4,6 +4,8 @@
 .global _entry
 _entry:
   mov rsp, stack_top
+  // Limine protocol states interrupt and direction flags will be cleared on entry.
+  // FPC default 'register' calling convention expects direction flag to be cleared.
   call PASCALMAIN
 
 .global _halt
