@@ -139,8 +139,7 @@ begin
   end;
 end;
 
-initialization
+begin
   KernelFontPtr := PPCScreenFont(@RawKernelFontStart);
   Clear;
-
 end.

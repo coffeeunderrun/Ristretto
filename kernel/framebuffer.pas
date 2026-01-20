@@ -100,13 +100,10 @@ end;
 function GetHeight: UInt64; begin GetHeight := ResolutionHeight; end;
 function GetWidth: UInt64; begin GetWidth := ResolutionWidth; end;
 
-var
-  FramebufferPtr: PLimineFramebuffer;
+begin
+  if not Assigned(LimineFramebufferRequest.Response) then exit;
 
-initialization
-  if not Assigned(LimineRequestFramebuffer.Response) then exit;
-
-  with LimineRequestFramebuffer.Response^ do begin
+  with LimineFramebufferRequest.Response^ do begin
     if (FramebufferCount = 0) or not Assigned(Framebuffers) then exit;
 
     with Framebuffers^[0] do begin
@@ -121,5 +118,4 @@ initialization
       BlueIndex := BlueMaskShift shr 3;
     end;
   end;
-
 end.
