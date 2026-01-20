@@ -3,9 +3,9 @@ unit Limine;
 interface
 
 const
-  LimineMediaTypeGeneric = 0;
-  LimineMediaTypeOptical = 1;
-  LimineMediaTypeTftp = 2;
+  LIMINE_MEDIA_TYPE_GENERIC = 0;
+  LIMINE_MEDIA_TYPE_OPTICAL = 1;
+  LIMINE_MEDIA_TYPE_TFTP = 2;
 
 type
   TLimineUuid = record
@@ -217,10 +217,10 @@ var
 
 { ** Firmware Type ********************************************************** }
 const
-  LimineFirmwareTypeX86Bios = 0;
-  LimineFirmwareTypeEfi32 = 1;
-  LimineFirmwareTypeEfi64 = 2;
-  LimineFirmwareTypeSbi = 3;
+  LIMINE_FIRMWARE_TYPE_X86BIOS = 0;
+  LIMINE_FIRMWARE_TYPE_EFI32 = 1;
+  LIMINE_FIRMWARE_TYPE_EFI64 = 2;
+  LIMINE_FIRMWARE_TYPE_SBI = 3;
 
 type
   PLimineFirmwareTypeResponse = ^TLimineFirmwareTypeResponse;
@@ -313,15 +313,15 @@ var
 
 { ** Memory Map ************************************************************* }
 const
-  LimineMemoryMapUsable = 0;
-  LimineMemoryMapReserved = 1;
-  LimineMemoryMapAcpiReclaimable = 2;
-  LimineMemoryMapAcpiNvs = 3;
-  LimineMemoryMapBadMemory = 4;
-  LimineMemoryMapBootloaderReclaimable = 5;
-  LimineMemoryMapExecutableAndModules = 6;
-  LimineMemoryMapFramebuffer = 7;
-  LimineMemoryMapAcpiTables = 8;
+  LIMINE_MEMMAP_USABLE = 0;
+  LIMINE_MEMMAP_RESERVED = 1;
+  LIMINE_MEMMAP_ACPI_RECLAIMABLE = 2;
+  LIMINE_MEMMAP_ACPI_NVS = 3;
+  LIMINE_MEMMAP_BAD_MEMORY = 4;
+  LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE = 5;
+  LIMINE_MEMMAP_EXECUTABLE_AND_MODULES = 6;
+  LIMINE_MEMMAP_FRAMEBUFFER = 7;
+  LIMINE_MEMMAP_ACPI_TABLES = 8;
 
 type
   PLimineMemoryMapEntry = ^TLimineMemoryMapEntry;
@@ -350,8 +350,8 @@ var
 
 { ** Module ***************************************************************** }
 const
-  LimineInternalModuleRequired = 1;
-  LimineInternalModuleCompressed = 2;
+  LIMINE_INTERNAL_MODULE_REQUIRED = 1;
+  LIMINE_INTERNAL_MODULE_COMPRESSED = 2;
 
 type
   PLimineInternalModule = ^TLimineInternalModule;
@@ -381,6 +381,59 @@ type
 var
   LimineModuleRequest: TLimineModuleRequest; external name '_limine_request_module';
 
+{ ** Multiprocessor ********************************************************* }
+const
+  LIMINE_MULTIPROCESSOR_REQUEST_X86_64_X2APIC = 1;
+
+type
+  PLimineMultiprocessorInfo = ^TLimineMultiprocessorInfo;
+
+  TLimineGotoAddress = Procedure(Info: PLimineMultiprocessorInfo);
+
+  TLimineMultiprocessorInfo = record
+    ProcessorId: UInt32;
+{$if defined(CPUX86_64)}
+    LapicId: UInt32;
+    Reserved: UInt64;
+{$elseif defined(CPUAARCH64)}
+    Reserved1: UInt32;
+    Mpidr: UInt32;
+    Reserved2: UInt32;
+{$elseif defined(CPURISCV64)}
+    Hartid: UInt64;
+    Reserved: UInt64;
+{$endif}
+    GotoAddress: TLimineGotoAddress;
+    ExtraArgument: UInt64;
+  end;
+  ALimineMultiprocessorInfo = array of TLimineMultiprocessorInfo;
+
+  PLimineMultiprocessorResponse = ^TLimineMultiprocessorResponse;
+  TLimineMultiprocessorResponse = record
+    Revision: UInt64;
+{$if defined(CPUX86_64)}
+    Flags: UInt32;
+    BspLapicId: UInt32;
+{$elseif defined(CPUAARCH64)}
+    Flags: UInt64;
+    BspMpidr: UInt64;
+{$elseif defined(CPURISCV64)}
+    Flags: UInt64;
+    BspHartId: UInt64;
+{$endif}
+    CpuCount: UInt64;
+    Cpus: ^ALimineMultiprocessorInfo;
+  end;
+
+  TLimineMultiprocessorRequest = record
+    Id: array [0..3] of UInt64;
+    Revision: UInt64;
+    Response: PLimineMultiprocessorResponse;
+    Flags: UInt64;
+  end;
+
+var
+  LimineMultiprocessorRequest: TLimineMultiprocessorRequest; external name '_limine_request_multiprocessor';
 
 function BaseRevisionSupported: Boolean; inline;
 

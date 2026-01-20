@@ -40,9 +40,9 @@
   {$define LIMINE_REQUEST_HIGHER_HALF_DIRECT_MAP}
   {$define LIMINE_REQUEST_MEMORY_MAP}
   {$define LIMINE_REQUEST_MODULE}
+  {$define LIMINE_REQUEST_MULTIPROCESSOR}
 
   Not implemented yet:
-  {$define LIMINE_REQUEST_MULTIPROCESSOR}
   {$define LIMINE_REQUEST_PAGING_MODE}
   {$define LIMINE_REQUEST_RISCV_BSP_HART_ID}
   {$define LIMINE_REQUEST_RSDP}
@@ -212,6 +212,16 @@ const
     InternalModuleCount: 0;
     InternalModules: nil;
   ); export name '_limine_request_module';
+{$endif}
+
+{ ** Multiprocessor ********************************************************* }
+{$ifdef LIMINE_REQUEST_MULTIPROCESSOR}
+  LimineRequestMultiprocessor: TLimineMultiprocessorRequest = (
+    Id: (LIMINE_COMMON_MAGIC, UInt64($95A67B819A1B857E), UInt64($A0B61B723B6A73E0));
+    Revision: 0;
+    Response: nil;
+    Flags: 0;
+  ); export name '_limine_request_multiprocessor';
 {$endif}
 
 { ** End Marker ************************************************************* }
