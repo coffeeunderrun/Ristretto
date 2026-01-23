@@ -1,5 +1,7 @@
 unit Gdt;
 
+{$asmmode intel}
+
 interface
 
 implementation

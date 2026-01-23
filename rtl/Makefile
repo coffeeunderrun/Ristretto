@@ -1,20 +1,34 @@
 include ../vars.mk
 
+ifeq ($(KERNEL), 1)
+SRCDIR := kernel
+ARCHDIR := kernel/$(ARCH)
+else
+SRCDIR := ristretto
+ARCHDIR := $(ARCH)
+endif
+
 # Do NOT change the order of objects
 OBJS := system.o objpas.o si_prc.o fpintres.o
-OBJS := $(addprefix $(RTLDIR), $(OBJS))
+OBJS := $(addprefix $(OUTDIR)/, $(OBJS))
 
-$(OUTDIR)rtl.o: $(OBJS)
+all: | $(OUTDIR)
+all: $(OUTDIR)/rtl.o
+
+$(OUTDIR):
+	@mkdir -p $@
+
+$(OUTDIR)/rtl.o: $(OBJS)
 	$(LD) -r -o $@ $^
 
-$(RTLDIR)system.o: ristretto/system.pas
-	$(FP) $(FPFLAGS) -Fiinc -Firistretto -Fi$(ARCH) -Us -Sf- -o$@ $<
+$(OUTDIR)/system.o: $(SRCDIR)/system.pas
+	$(FP) $(FPFLAGS) -Fiinc -Fi$(SRCDIR) -Fi$(ARCHDIR) -Us -Sf- -o$@ $<
 
-$(RTLDIR)objpas.o: objpas/objpas.pas
-	$(FP) $(FPFLAGS) -Fiinc -Fi$(ARCH) -o$@ $<
+$(OUTDIR)/objpas.o: objpas/objpas.pas
+	$(FP) $(FPFLAGS) -Fiinc -Fi$(ARCHDIR) -o$@ $<
 
-$(RTLDIR)si_prc.o: ristretto/si_prc.pas
+$(OUTDIR)/si_prc.o: $(SRCDIR)/si_prc.pas
 	$(FP) $(FPFLAGS) -o$@ $<
 
-$(RTLDIR)fpintres.o: ristretto/fpintres.pas
+$(OUTDIR)/fpintres.o: $(SRCDIR)/fpintres.pas
 	$(FP) $(FPFLAGS) -o$@ $<
