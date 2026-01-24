@@ -23,6 +23,7 @@
     {$define LIMINE_ENTRY_POINT := @procedure_name}
     {$macro off}
     {$define LIMINE_REQUEST_ENTRY_POINT}
+    {$I limine.inc}
 
   To request specific features, include the defines prior to including limine.inc:
   {$define LIMINE_REQUEST_BOOTLOADER_INFO}
@@ -50,6 +51,7 @@
   {$define LIMINE_REQUEST_STACK_SIZE}
 *)
 
+{$push}
 {$macro on}
 
 {$define LIMINE_COMMON_MAGIC := UInt64($C7B1DD30DF4C8B88), UInt64($0A82E883A194F07B)}
@@ -230,4 +232,4 @@ const
     UInt64($9572709F31764C62)
   ); export name '_limine_request_end_marker';
 
-{$macro off}
+{$pop}

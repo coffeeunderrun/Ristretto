@@ -25,4 +25,9 @@ procedure fpc_initializeunits; compilerproc;
 
 procedure fpc_do_exit; compilerproc;
 
-procedure fpc_shortstr_to_shortstr(out Res: String; const Str: String); compilerproc;
+procedure fpc_shortstr_to_shortstr(out Res: ShortString; const Str: ShortString); compilerproc;
+
+procedure fpc_shortstr_concat(var Dest: ShortString; const Str1, Str2: ShortString); compilerproc;
+
+procedure fpc_shortstr_sint(Value: ValSInt; Len: SizeInt; out Str: ShortString); compilerproc;
+procedure fpc_shortstr_uint(Value: ValUInt; Len: SizeInt; out Str: ShortString); compilerproc;

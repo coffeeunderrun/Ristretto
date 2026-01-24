@@ -12,7 +12,7 @@
  **********************************************************************}
 
 {$push}
-{$minenumsize 1}
+{$Z1}
 
 type
   TTypeKind = (
@@ -48,5 +48,4 @@ type
     tkPointer
   );
 
-{$minenumsize default}
 {$pop}

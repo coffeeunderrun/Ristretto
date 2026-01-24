@@ -441,7 +441,7 @@ function BaseRevisionSupported: Boolean; inline;
 
 implementation
 
-function BaseRevisionSupported: Boolean; inline;
+function BaseRevisionSupported: Boolean;
 begin
   BaseRevisionSupported := LimineBaseRevision[2] = 0;
 end;

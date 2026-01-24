@@ -2,11 +2,13 @@ program Kernel;
 
 uses Arch, Limine, Framebuffer, Terminal;
 
+{$H-}
+
 {$define LIMINE_REQUEST_FRAMEBUFFER}
 {$I limine.inc}
 
 const
-  Logo: ShortString =
+  Logo: String =
     ' ______ __       __              __   __         '#10 +
     '|   __ |__.-----|  |_.----.-----|  |_|  |_.-----.'#10 +
     '|      |  |__ --|   _|   _|  -__|   _|   _|  _  |'#10 +

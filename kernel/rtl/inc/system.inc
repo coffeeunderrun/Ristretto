@@ -23,6 +23,13 @@
   specific include file }
 {$I generic.inc}
 
+{****************************************************************************
+                  Subroutines for String handling
+****************************************************************************}
+
+{ Needs to be before RTTI handling }
+{$I sstrings.inc}
+
 {*****************************************************************************
                         Initialization / Finalization
 *****************************************************************************}
@@ -43,7 +50,7 @@ type
 var
   InitFinalTable: TInitFinalTable; external name 'INITFINAL';
 
-procedure fpc_initializeunits; compilerproc; export; alias: 'FPC_INITIALIZEUNITS';
+procedure fpc_initializeunits; compilerproc; public name 'FPC_INITIALIZEUNITS';
 var
   TablePtr: PInitFinalTable;
   I: SizeUInt;
@@ -67,7 +74,7 @@ procedure internal_initializeunits; external name 'FPC_INITIALIZEUNITS';
 
 procedure system_exit; noreturn; forward;
 
-procedure fpc_do_exit; compilerproc; export; alias: 'FPC_DO_EXIT';
+procedure fpc_do_exit; compilerproc; public name 'FPC_DO_EXIT';
 begin
   system_exit;
 end;

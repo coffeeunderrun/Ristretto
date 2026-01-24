@@ -1,12 +1,12 @@
 include ../vars.mk
 
 # FPC does not provide a method for generating dependency files and PPDEP struggles with directives.
-# For now all INC files, within the same folder as a PAS file, will be considered a dependency.
+# For now, all INC files will be considered a dependency.
 
 FPFLAGS += -FE$(OUTDIR) -FU$(OUTDIR)
 
 # Do NOT change the order of the RTL objects
-RTLOBJS := system objpas si_prc fpintres
+RTLOBJS := system objpas sysutils si_prc fpintres
 RTLOBJS := $(patsubst %, $(OUTDIR)/%.o, $(RTLOBJS))
 
 ASMOBJS := $(notdir $(wildcard $(ARCH)/*.asm))
@@ -23,20 +23,30 @@ all: $(OUTDIR)/kernel.elf
 $(OUTDIR)/kernel.elf: $(RTLOBJS) $(ASMOBJS) $(PASOBJS) $(PSFOBJS)
 	$(LD) $(LDFLAGS) -T$(ARCH)/link.ld -o$@ $^
 
-$(OUTDIR)/system.o: rtl/system.pas $(wildcard rtl/*.inc rtl/$(ARCH)/*.inc)
-	$(FP) $(FPFLAGS) -Firtl/$(ARCH) -Us -Sf- -o$@ $<
+# RTL unit: system
+$(OUTDIR)/system.o: rtl/system.pas $(wildcard rtl/*.inc rtl/inc/*.inc rtl/$(ARCH)/*.inc)
+	$(FP) $(FPFLAGS) -Firtl/inc -Firtl/$(ARCH) -Us -Sf- -o$@ $<
 
-$(OUTDIR)/%.o: rtl/%.pas $(wildcard rtl/*.inc rtl/$(ARCH)/*.inc)
-	$(FP) $(FPFLAGS) -Firtl/$(ARCH) -o$@ $<
+# RTL unit: sysutils
+$(OUTDIR)/sysutils.o: rtl/sysutils.pas $(wildcard rtl/*.inc rtl/sysutils/*.inc)
+	$(FP) $(FPFLAGS) -Firtl/sysutils -o$@ $<
 
+# RTL units: objpas si_prc fpintres
+$(OUTDIR)/%.o: rtl/%.pas $(wildcard rtl/*.inc)
+	$(FP) $(FPFLAGS) -o$@ $<
+
+# Kernel units
 $(OUTDIR)/%.o: %.pas $(RTLOBJS) $(wildcard *.inc)
 	$(FP) $(FPFLAGS) -Furtl -Fu$(ARCH) -o$@ $<
 
+# Kerner arch-specific units
 $(OUTDIR)/%.o: $(ARCH)/%.pas $(RTLOBJS) $(wildcard $(ARCH)/*.inc)
 	$(FP) $(FPFLAGS) -Furtl -o$@ $<
 
+# Kerner arch-specific asm
 $(OUTDIR)/%.asm.o: $(ARCH)/%.asm
 	$(AS) $(ASFLAGS) -o$@ $<
 
+# Fonts
 $(OUTDIR)/%.psf.o: %.psf
 	$(LD) -r -bbinary -o$@ $<

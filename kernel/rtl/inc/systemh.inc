@@ -73,9 +73,15 @@ type
 
   HResult = type LongInt;
 
+  AnsiChar = Char;
+
+  PAnsiChar    = ^AnsiChar;
   PShortString = ^ShortString;
 
   TProcedure = Procedure;
+
+{ Numbers for routines that have compiler magic }
+{$I innr.inc}
 
 {*****************************************************************************
                           TextRec/FileRec
@@ -89,6 +95,16 @@ type
 ****************************************************************************}
 
 procedure Move(const Source; var Dest; Count: SizeUInt);
+
+procedure FillChar(var Dest; Count: SizeUInt; Value: Byte);
+
+{****************************************************************************
+                      Characters and String Handling
+****************************************************************************}
+
+{$if defined(VER3_2)}
+Function Chr(Value: Byte) : AnsiChar; [INTERNPROC: fpc_in_chr_byte];
+{$endif defined(VER3_2)}
 
 {*****************************************************************************
                           Init / Exit / ExitProc

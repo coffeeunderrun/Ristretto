@@ -1,5 +1,7 @@
 unit Terminal;
 
+{$H-}
+
 interface
 
 uses Color;
@@ -15,9 +17,9 @@ procedure SetForeground(const Color: TColor);
 function GetBackground: TColor;
 function GetForeground: TColor;
 
-procedure Write(const Text: ShortString);
-procedure Write(const Text: ShortString; const FgColor: TColor);
-procedure Write(const Text: ShortString; const FgColor, BgColor: TColor);
+procedure Write(const Text: String);
+procedure Write(const Text: String; const FgColor: TColor);
+procedure Write(const Text: String; const FgColor, BgColor: TColor);
 
 implementation
 
@@ -108,17 +110,17 @@ begin
     TerminalY += KernelFontPtr^.GlyphSize;
 end;
 
-procedure Write(const Text: ShortString);
+procedure Write(const Text: String);
 begin
   Write(Text, TerminalFgColor, TerminalBgColor);
 end;
 
-procedure Write(const Text: ShortString; const FgColor: TColor);
+procedure Write(const Text: String; const FgColor: TColor);
 begin
   Write(Text, FgColor, TerminalBgColor);
 end;
 
-procedure Write(const Text: ShortString; const FgColor, BgColor: TColor);
+procedure Write(const Text: String; const FgColor, BgColor: TColor);
 var
   Ch: Char;
 begin
