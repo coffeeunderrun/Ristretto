@@ -21,14 +21,14 @@ $(OUTDIR):
 $(OUTDIR)/rtl.o: $(OBJS)
 	$(LD) -r -o $@ $^
 
-$(OUTDIR)/system.o: $(SRCDIR)/system.pas
+$(OUTDIR)/system.o: $(SRCDIR)/system.pas $(wildcard $(SRCDIR)/*.inc)
 	$(FP) $(FPFLAGS) -Fiinc -Fi$(SRCDIR) -Fi$(ARCHDIR) -Us -Sf- -o$@ $<
 
-$(OUTDIR)/objpas.o: objpas/objpas.pas
+$(OUTDIR)/objpas.o: objpas/objpas.pas $(wildcard objpas/*.inc)
 	$(FP) $(FPFLAGS) -Fiinc -Fi$(ARCHDIR) -o$@ $<
 
-$(OUTDIR)/si_prc.o: $(SRCDIR)/si_prc.pas
+$(OUTDIR)/si_prc.o: $(SRCDIR)/si_prc.pas $(wildcard $(SRCDIR)/*.inc)
 	$(FP) $(FPFLAGS) -o$@ $<
 
-$(OUTDIR)/fpintres.o: $(SRCDIR)/fpintres.pas
+$(OUTDIR)/fpintres.o: $(SRCDIR)/fpintres.pas $(wildcard $(SRCDIR)/*.inc)
 	$(FP) $(FPFLAGS) -o$@ $<

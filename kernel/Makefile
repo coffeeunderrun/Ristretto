@@ -25,5 +25,5 @@ $(OUTDIR)/%.psf.o: %.psf
 $(OUTDIR)/$(ARCH).o:
 	@make -C$(ARCH) FPFLAGS="$(FPFLAGS)"
 
-$(OUTDIR)/%.o: %.pas
+$(OUTDIR)/%.o: %.pas $(wildcard *.inc)
 	$(FP) $(FPFLAGS) -Fi$(ARCH) -Fu$(ARCH) -o$@ $<

@@ -12,5 +12,5 @@ $(OUTDIR)/$(ARCH).o: $(OBJS)
 $(OUTDIR)/%.asm.o: %.asm
 	$(AS) $(ASFLAGS) -o$@ $<
 
-$(OUTDIR)/%.o: %.pas
+$(OUTDIR)/%.o: %.pas $(wildcard *.inc)
 	$(FP) $(FPFLAGS) -Fu../ -o$@ $<
