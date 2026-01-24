@@ -25,4 +25,4 @@ procedure fpc_initializeunits; compilerproc;
 
 procedure fpc_do_exit; compilerproc;
 
-procedure fpc_shortstr_to_shortstr(out Res: ShortString; const Str: ShortString); compilerproc;
+procedure fpc_shortstr_to_shortstr(out Res: String; const Str: String); compilerproc;

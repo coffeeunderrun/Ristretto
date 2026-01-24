@@ -13,8 +13,9 @@
 
  **********************************************************************}
 
-{$I-,Q-,H-,R-,V-,S-}
 {$mode ObjFPC}
+{$implicitexceptions off}
+{$I-,Q-,H-,R-,V-,S-}
 
 type
   DWord    = LongWord;
@@ -77,7 +78,7 @@ type
   TProcedure = Procedure;
 
 {*****************************************************************************
-                   TextRec/FileRec exported to allow compiler to take size
+                          TextRec/FileRec
 *****************************************************************************}
 
 {$I filerec.inc}

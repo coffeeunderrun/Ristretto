@@ -18,7 +18,7 @@
                                  String
 ****************************************************************************}
 
-procedure fpc_shortstr_to_shortstr(out Res: ShortString; const Str: ShortString); compilerproc; export; alias: 'FPC_SHORTSTR_TO_SHORTSTR';
+procedure fpc_shortstr_to_shortstr(out Res: String; const Str: String); compilerproc; export; alias: 'FPC_SHORTSTR_TO_SHORTSTR';
 var
   StrLen: Byte;
 begin

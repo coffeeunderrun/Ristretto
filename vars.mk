@@ -11,7 +11,7 @@ AS ?= as
 ASFLAGS ?=
 
 FP ?= fpc
-FPFLAGS ?= -Aelf -Cn -n -P$(ARCH) -Sagic -Tlinux -uLINUX -uUNIX
+FPFLAGS ?= -Aelf -Cn -n -P$(ARCH) -Sagic -Tlinux -uLINUX -uUNIX -vehinw
 
 LD ?= ld
 LDFLAGS ?= -nostdlib -zmax-page-size=0x1000 -znoexecstack --gc-sections

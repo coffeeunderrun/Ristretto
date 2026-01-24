@@ -1,26 +1,25 @@
 include vars.mk
 
-all: $(OUTDIR)/ristretto.img
+all: kernel
 
-kernel: krtl
-	@make -Ckernel OUTDIR=$(OUTDIR)/$@ RTLDIR=$(OUTDIR)/$<
+clean:
+	@rm -rf $(OUTDIR)
 
-krtl:
-	@make -Crtl OUTDIR=$(OUTDIR)/$@ KERNEL=1
+# Kernel uses its own slim RTL
+kernel:
+	@mkdir -p $(OUTDIR)/$@
+	@make -Ckernel OUTDIR=$(OUTDIR)/$@
 
-urtl:
-	@make -Crtl OUTDIR=$(OUTDIR)/$@ USER=1
+# RTL for userspace
+rtl:
+	@mkdir -p $(OUTDIR)/$@
+	@make -Crtl OUTDIR=$(OUTDIR)/$@
 
 run: $(OUTDIR)/ristretto.img
 	@$(QEMU) $(QEMUFLAGS) \
 		-drive format=raw,file=$< \
 		-drive if=pflash,format=raw,unit=0,file=$(OVMFCODE),readonly=on \
 		-drive if=pflash,format=raw,unit=1,file=$(OVMFVARS)
-
-clean:
-	@rm -rf $(OUTDIR)
-
-$(OUTDIR)/kernel.elf: kernel
 
 $(OUTDIR)/ristretto.img: kernel
 	@dd if=/dev/zero of=$@ bs=512 count=81920 \
@@ -29,3 +28,5 @@ $(OUTDIR)/ristretto.img: kernel
 		&& mcopy -i $@ vendor/limine/BOOTX64.EFI ::/EFI/BOOT \
 		&& mcopy -i $@ limine.conf ::/boot/limine \
 		&& mcopy -i $@ $(OUTDIR)/kernel/kernel.elf ::/boot
+
+.PHONY: all clean kernel rtl run
