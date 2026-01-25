@@ -1,8 +1,5 @@
 unit Log;
 
-{$H-}
-{$inline on}
-
 interface
 
 uses Color;
@@ -49,14 +46,11 @@ const
 
 procedure Log(const Level: TLogLevel; const Text: String);
 var
-  BgColor: TColor;
-  FgColor: TColor;
+  BgColor, FgColor: TColor;
 begin
   if Level = LogLevelFatal then BgColor := ColorLightRed else BgColor := Terminal.GetBackground;
   FgColor := LogLevelColor[Level]^;
-  Terminal.Write(LogLevelPrefix[Level], FgColor, BgColor);
-  Terminal.Write(Text, FgColor, BgColor);
-  Terminal.Write(#10);
+  Terminal.Write(LogLevelPrefix[Level] + Text + #10, FgColor, BgColor);
 end;
 
 procedure Debug(const Text: String);

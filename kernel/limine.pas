@@ -1,7 +1,5 @@
 unit Limine;
 
-{$inline on}
-
 interface
 
 const

@@ -9,8 +9,8 @@ procedure PutPixel(X, Y: UInt64; Color: TColor);
 procedure MoveDown(Delta: UInt64; FillColor: TColor);
 procedure MoveUp(Delta: UInt64; FillColor: TColor);
 
-function GetHeight: UInt64;
-function GetWidth: UInt64;
+function GetHeight: UInt64; inline;
+function GetWidth: UInt64; inline;
 
 implementation
 

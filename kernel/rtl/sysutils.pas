@@ -13,10 +13,9 @@
 
 unit SysUtils;
 
-{$mode ObjFPC}
-{$H-}
-
 interface
+
+uses SysConst;
 
 { Include platform independent interface part }
 {$I sysutilh.inc}

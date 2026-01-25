@@ -11,7 +11,20 @@
 
  **********************************************************************}
 
-{$inline on}
-
+function IntToStr(Value: LongInt): String; inline;
 function IntToStr(Value: Int64): String; inline;
-function UIntToStr(Value: Uint64): String; inline;
+function IntToStr(Value: QWord): String; inline;
+function UIntToStr(Value: QWord): String; inline;
+function UIntToStr(Value: Cardinal): String; inline;
+
+function IntToHex(Value: Longint; Digits: integer): string;
+function IntToHex(Value: Int64; Digits: integer): string;
+function IntToHex(Value: QWord; Digits: integer): string; inline;
+function IntToHex(Value: Int8): string; inline;
+function IntToHex(Value: UInt8): string; inline;
+function IntToHex(Value: Int16): string; inline;
+function IntToHex(Value: UInt16): string; inline;
+function IntToHex(Value: Int32): string; inline;
+function IntToHex(Value: UInt32): string; inline;
+function IntToHex(Value: Int64): string; inline;
+function IntToHex(Value: UInt64): string; inline;

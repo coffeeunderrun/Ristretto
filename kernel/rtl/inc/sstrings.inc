@@ -15,24 +15,36 @@
                     subroutines for string handling
 ****************************************************************************}
 
-function Space(Value: byte): ShortString;
+procedure fpc_Shortstr_SetLength(var s:shortstring;len:SizeInt);[Public,Alias : 'FPC_SHORTSTR_SETLENGTH']; compilerproc;
 begin
-  Space[0] := Chr(Value);
-  FillChar(Space[1], Value, Ord(' '));
+  if len<0 then
+    len:=0;
+  if len>high(s) then
+    len:=high(s);
+  s[0]:=chr(len);
+end;
+
+function space (b : byte): shortstring;
+begin
+  space[0] := chr(b);
+  FillChar (Space[1],b, Ord(' '));
 end;
 
 {*****************************************************************************
                               Str() Helpers
 *****************************************************************************}
 
-procedure fpc_shortstr_sint(Value: ValSInt; Len: SizeInt; out Str: ShortString); compilerproc; public name 'FPC_SHORTSTR_SINT';
+procedure fpc_shortstr_SInt(v : valSInt;len : SizeInt;out s : shortstring);[public,alias:'FPC_SHORTSTR_SINT']; compilerproc;
 begin
-  int_str(Value, Str);
-  if Length(Str) < Len then Str := Space(Len - Length(str)) + Str;
+  int_str(v,s);
+  if length(s)<len then
+    s:=space(len-length(s))+s;
 end;
 
-procedure fpc_shortstr_uint(Value: ValUInt; Len: SizeInt; out Str: ShortString); compilerproc; public name 'FPC_SHORTSTR_UINT';
+
+procedure fpc_shortstr_UInt(v : valUInt;len : SizeInt;out s : shortstring);[public,alias:'FPC_SHORTSTR_UINT']; compilerproc;
 begin
-  int_str_unsigned(Value, Str);
-  if Length(Str) < Len then Str := Space(Len - Length(Str)) + Str;
+  int_str_unsigned(v,s);
+  if length(s)<len then
+    s:=space(len-length(s))+s;
 end;

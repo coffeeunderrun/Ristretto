@@ -27,8 +27,7 @@
 
 type
   PGuid = ^TGuid;
-  TGuid = packed record
-    case Integer of
+  TGuid = packed record case Integer of
     1: (
       Data1: DWord;
       Data2: Word;
@@ -37,8 +36,8 @@ type
     );
     2: (
       D1: DWord;
-      D2: word;
-      D3: word;
+      D2: Word;
+      D3: Word;
       D4: array [0..7] of Byte;
     );
     3: (
@@ -48,7 +47,7 @@ type
       time_hi_and_version: Word;
       clock_seq_hi_and_reserved: Byte;
       clock_seq_low: Byte;
-      node: array [0 .. 5] of Byte;
+      node: array [0..5] of Byte;
     );
   end;
 
@@ -58,15 +57,15 @@ type
 
 { NOTE: stripped down version of FPC's implementation }
 const
-  vtInteger       = 0;
-  vtBoolean       = 1;
-  vtChar          = 2;
-  vtString        = 4;
-  vtPointer       = 5;
-  vtPChar         = 6;
-  vtInterface     = 14;
-  vtInt64         = 16;
-  vtQWord         = 17;
+  vtInteger   = 0;
+  vtBoolean   = 1;
+  vtChar      = 2;
+  vtString    = 4;
+  vtPointer   = 5;
+  vtPChar     = 6;
+  vtInterface = 14;
+  vtInt64     = 16;
+  vtQWord     = 17;
 
 type
   PVarRec = ^TVarRec;

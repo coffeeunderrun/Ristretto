@@ -13,9 +13,7 @@
 
  **********************************************************************}
 
-{$mode ObjFPC}
-{$implicitexceptions off}
-{$I-,Q-,H-,R-,V-,S-}
+{$P+}
 
 type
   DWord    = LongWord;
@@ -73,8 +71,7 @@ type
 
   HResult = type LongInt;
 
-  AnsiChar = Char;
-
+  AnsiChar     = Char;
   PAnsiChar    = ^AnsiChar;
   PShortString = ^ShortString;
 
@@ -94,16 +91,24 @@ type
                         Processor specific routines
 ****************************************************************************}
 
-procedure Move(const Source; var Dest; Count: SizeUInt);
+Procedure Move(const source;var dest;count:SizeInt);
+Procedure FillChar(var x;count:SizeInt;Value:Byte);
+Procedure FillChar(var x;count:SizeInt;Value:Boolean);
+Procedure FillChar(var x;count:SizeInt;Value:AnsiChar);
 
-procedure FillChar(var Dest; Count: SizeUInt; Value: Byte);
+{****************************************************************************
+                          Math Routines
+****************************************************************************}
+
+Function Align(Addr : PtrUInt; Alignment : PtrUInt) : PtrUInt; inline;
+Function Align(Addr : Pointer; Alignment : PtrUInt) : Pointer; inline;
 
 {****************************************************************************
                       Characters and String Handling
 ****************************************************************************}
 
 {$if defined(VER3_2)}
-Function Chr(Value: Byte) : AnsiChar; [INTERNPROC: fpc_in_chr_byte];
+Function Chr(Value: Byte): AnsiChar; [INTERNPROC: fpc_in_chr_byte];
 {$endif defined(VER3_2)}
 
 {*****************************************************************************

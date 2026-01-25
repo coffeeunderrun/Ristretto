@@ -26,8 +26,10 @@ QEMUFLAGS += -gdb tcp::1234 -S -d int -no-shutdown -no-reboot
 else
 ASFLAGS += -O2 -g
 FPFLAGS += -O2 -dNDEBUG
+LDFLAGS += -s
 endif
 
 ifeq ($(ARCH), x86_64)
 ASFLAGS += -mintel64 -mnaked-reg
+FPFLAGS += -Rintel
 endif

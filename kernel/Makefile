@@ -3,10 +3,11 @@ include ../vars.mk
 # FPC does not provide a method for generating dependency files and PPDEP struggles with directives.
 # For now, all INC files will be considered a dependency.
 
-FPFLAGS += -FE$(OUTDIR) -FU$(OUTDIR)
+# Do NOT add code to check for IO, overflow, range, stack errors
+FPFLAGS += -Ci-o-r-t- -Mobjfpc -FE$(OUTDIR) -FU$(OUTDIR)
 
 # Do NOT change the order of the RTL objects
-RTLOBJS := system objpas sysutils si_prc fpintres
+RTLOBJS := system objpas sysconst sysutils si_prc fpintres
 RTLOBJS := $(patsubst %, $(OUTDIR)/%.o, $(RTLOBJS))
 
 ASMOBJS := $(notdir $(wildcard $(ARCH)/*.asm))
@@ -21,7 +22,7 @@ PSFOBJS := $(patsubst %.psf, $(OUTDIR)/%.psf.o, $(PSFOBJS))
 all: $(OUTDIR)/kernel.elf
 
 $(OUTDIR)/kernel.elf: $(RTLOBJS) $(ASMOBJS) $(PASOBJS) $(PSFOBJS)
-	$(LD) $(LDFLAGS) -T$(ARCH)/link.ld -o$@ $^
+	$(LD) $(LDFLAGS) -T$(ARCH)/link.ld -o$@ $(wildcard $^)
 
 # RTL unit: system
 $(OUTDIR)/system.o: rtl/system.pas $(wildcard rtl/*.inc rtl/inc/*.inc rtl/$(ARCH)/*.inc)

@@ -11,6 +11,9 @@
 
  **********************************************************************}
 
+type
+  ObjpasInt = LongInt;
+
 {****************************************************************************
                     Include processor specific routines
 ****************************************************************************}
@@ -18,6 +21,17 @@
 {$ifdef cpux86_64}
 {$I x86_64.inc}
 {$endif cpux86_64}
+
+procedure fillchar(var x;count : SizeInt;value : boolean);
+begin
+  fillchar(x,count,byte(value));
+end;
+
+procedure fillchar(var x;count : SizeInt;value : AnsiChar);
+begin
+  fillchar(x,count,byte(value));
+end;
+
 
 { Include generic pascal only routines which are not defined in the processor
   specific include file }

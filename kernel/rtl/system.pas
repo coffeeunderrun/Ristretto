@@ -1,5 +1,7 @@
 unit System;
 
+{$implicitexceptions off}
+
 interface
 
 {$I systemh.inc}

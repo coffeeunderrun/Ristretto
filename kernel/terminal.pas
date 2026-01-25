@@ -1,24 +1,22 @@
 unit Terminal;
 
-{$H-}
-
 interface
 
 uses Color;
 
 procedure Clear;
 
-procedure SetX(const X: UInt64);
-procedure SetY(const Y: UInt64);
+procedure SetX(const X: UInt64); inline;
+procedure SetY(const Y: UInt64); inline;
 
-procedure SetBackground(const Color: TColor);
-procedure SetForeground(const Color: TColor);
+procedure SetBackground(const Color: TColor); inline;
+procedure SetForeground(const Color: TColor); inline;
 
-function GetBackground: TColor;
-function GetForeground: TColor;
+function GetBackground: TColor; inline;
+function GetForeground: TColor; inline;
 
-procedure Write(const Text: String);
-procedure Write(const Text: String; const FgColor: TColor);
+procedure Write(const Text: String); inline;
+procedure Write(const Text: String; const FgColor: TColor); inline;
 procedure Write(const Text: String; const FgColor, BgColor: TColor);
 
 implementation
@@ -61,9 +59,8 @@ end;
 
 procedure PutChar(const X, Y: UInt64; const FgColor, BgColor: TColor; const Ch: Char);
 var
+  GlyphX, GlyphY: UInt8;
   GlyphBit: UInt8;
-  GlyphX: UInt8;
-  GlyphY: UInt8;
   Glyph: PUInt8;
   Color: TColor;
 begin
