@@ -32,6 +32,10 @@ begin
   fillchar(x,count,byte(value));
 end;
 
+procedure FillByte(var x;count : SizeInt;value : byte );
+begin
+  FillChar (X,Count,VALUE);
+end;
 
 { Include generic pascal only routines which are not defined in the processor
   specific include file }

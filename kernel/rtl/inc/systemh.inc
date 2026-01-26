@@ -95,6 +95,7 @@ Procedure Move(const source;var dest;count:SizeInt);
 Procedure FillChar(var x;count:SizeInt;Value:Byte);
 Procedure FillChar(var x;count:SizeInt;Value:Boolean);
 Procedure FillChar(var x;count:SizeInt;Value:AnsiChar);
+procedure FillByte(var x;count:SizeInt;value:byte);
 
 {****************************************************************************
                           Math Routines

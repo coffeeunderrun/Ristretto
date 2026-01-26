@@ -7,6 +7,9 @@ OUTDIR ?= $(ROOTDIR)/build
 OVMFCODE ?= /usr/share/edk2/x64/OVMF_CODE.4m.fd
 OVMFVARS ?= /usr/share/edk2/x64/OVMF_VARS.4m.fd
 
+NASM ?= nasm
+NASMFLAGS ?= -felf64
+
 AS ?= as
 ASFLAGS ?=
 
@@ -22,14 +25,17 @@ QEMUFLAGS ?= -cpu qemu64 -m 256M -net none -monitor stdio
 ifeq ($(DEBUG), 1)
 ASFLAGS += -g -O0
 FPFLAGS += -g -O- -Si-
+NASMFLAGS += -g -O0
 QEMUFLAGS += -gdb tcp::1234 -S -d int -no-shutdown -no-reboot
 else
-ASFLAGS += -O2 -g
+ASFLAGS += -O2
 FPFLAGS += -O2 -dNDEBUG
 LDFLAGS += -s
+NASMFLAGS += -Ox
 endif
 
 ifeq ($(ARCH), x86_64)
-ASFLAGS += -mintel64 -mnaked-reg
+AS := $(NASM)
+ASFLAGS := $(NASMFLAGS)
 FPFLAGS += -Rintel
 endif

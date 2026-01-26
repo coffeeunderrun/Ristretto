@@ -41,7 +41,7 @@ $(OUTDIR)/%.o: %.pas $(RTLOBJS) $(wildcard *.inc)
 	$(FP) $(FPFLAGS) -Furtl -Fu$(ARCH) -o$@ $<
 
 # Kerner arch-specific units
-$(OUTDIR)/%.o: $(ARCH)/%.pas $(RTLOBJS) $(wildcard $(ARCH)/*.inc)
+$(OUTDIR)/%.o: $(ARCH)/%.pas $(RTLOBJS) $(wildcard $(ARCH)/*.inc) arch.inc
 	$(FP) $(FPFLAGS) -Furtl -o$@ $<
 
 # Kerner arch-specific asm

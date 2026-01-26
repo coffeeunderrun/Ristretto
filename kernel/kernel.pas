@@ -1,6 +1,6 @@
 program Kernel;
 
-uses Arch, Limine, Framebuffer, SysUtils, Terminal;
+uses Arch, Limine, Framebuffer, Terminal;
 
 {$define LIMINE_REQUEST_FRAMEBUFFER}
 {$I limine.inc}
@@ -12,10 +12,13 @@ const
     '|      |  |__ --|   _|   _|  -__|   _|   _|  _  |'#10 +
     '|___|__|__|_____|____|__| |_____|____|____|_____|'#10#10;
 
+var
+  DivByZeroTest: Integer = 0;
+
 begin
   if not Limine.BaseRevisionSupported then exit;
 
   Terminal.Write(Logo);
-  Terminal.Write('IntToStr Test: ' + IntToStr(3735928559) + #10);
-  Terminal.Write('IntToHex Test: ' + IntToHex(3735928559) + #10);
+
+  DivByZeroTest := 1 div DivByZeroTest;
 end.

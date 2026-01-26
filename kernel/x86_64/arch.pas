@@ -4,7 +4,7 @@ interface
 
 implementation
 
-uses Gdt, Log;
+uses Gdt, Idt, Log;
 
 begin
   Log.Debug('Unit initialized: Arch');

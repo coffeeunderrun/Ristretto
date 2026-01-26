@@ -21,17 +21,19 @@ type
 
   TGdtPointer = packed record
     Limit: UInt16;
-    Base: UInt64;
+    Base: PtrUInt;
   end;
 
 var
   GdtPointer: TGdtPointer;
-  GdtEntries: array [0..4] of TGdtEntry = (
-    (Descriptor: 0), // Null
-    (Limit: 0; BaseLow: 0; BaseMid: 0; Access: $9A; Flags: $20; BaseHigh: 0), // $08 Kernel Code
-    (Limit: 0; BaseLow: 0; BaseMid: 0; Access: $92; Flags: $00; BaseHigh: 0), // $10 Kernel Data
-    (Limit: 0; BaseLow: 0; BaseMid: 0; Access: $FA; Flags: $20; BaseHigh: 0), // $18 User Code
-    (Limit: 0; BaseLow: 0; BaseMid: 0; Access: $F2; Flags: $00; BaseHigh: 0)  // $20 User Data
+  GdtEntries: array [0..6] of TGdtEntry = (
+    (Descriptor: $0000000000000000), // $00 Null
+    (Descriptor: $00209A0000000000), // $08 Kernel Code
+    (Descriptor: $0000920000000000), // $10 Kernel Data
+    (Descriptor: $0020FA0000000000), // $18 User Code
+    (Descriptor: $0000F20000000000), // $20 User Data
+    (Descriptor: $0000000000000000), // $28 TSS
+    (Descriptor: $0000000000000000)
   );
 
 begin
