@@ -4,13 +4,48 @@ interface
 
 implementation
 
-uses Log;
+uses Cpu, Log, SysUtils, Terminal;
 
 const
   PIC1_CONTROL = $20;
   PIC1_DATA    = $21;
   PIC2_CONTROL = $A0;
   PIC2_DATA    = $A1;
+
+  Exceptions: array [0..31] of String = (
+    'Divide by zero',
+    'Debug',
+    'Non-maskable',
+    'Breakpoint',
+    'Overflow',
+    'Bound range exceeded',
+    'Invalid opcode',
+    'Device not available',
+    'Double fault',
+    'Reserved',
+    'Invalid TSS',
+    'Segment not present',
+    'Stack segment fault',
+    'General protection fault',
+    'Page fault',
+    'Reserved',
+    'x87 floating point exception',
+    'Alignment check',
+    'Machine check',
+    'SIMD floating point exception',
+    'Reserved',
+    'Control protection exception',
+    'Reserved',
+    'Reserved',
+    'Reserved',
+    'Reserved',
+    'Reserved',
+    'Reserved',
+    'Hypervisor injection exception',
+    'VMM communication exception',
+    'Security exception',
+    'Reserved'
+  );
 
 type
   TIdtPointer = packed record
@@ -58,23 +93,22 @@ asm
   out PIC2_DATA, al
 end;
 
-procedure SetGate(Vector, Ist, Flags: UInt8; Segment: UInt16; Offset: PtrUInt);
+procedure Handler(RegsPtr: PRegisters); public name '_handler';
 begin
-  IdtEntries[Vector].OffsetHigh := Offset shr 32;
-  IdtEntries[Vector].OffsetMid := (Offset shr 16) and $FFFF;
-  IdtEntries[Vector].OffsetLow := Offset and $FFFF;
-  IdtEntries[Vector].Segment := Segment;
-  IdtEntries[Vector].Flags := Flags;
-  IdtEntries[Vector].Ist := Ist and $7;
-end;
-
-procedure Handler; public name '_handler';
-begin
-  Log.Debug('Interrupt handler called.');
+  with RegsPtr^ do begin
+    Terminal.Write('Exception: ' + Exceptions[Vector] + #10);
+    Terminal.Write('RAX=' + IntToHex(RAX) + ' RBX=' + IntToHex(RBX) + ' RCX=' + IntToHex(RCX) + ' RDX=' + IntToHex(RDX) + #10);
+    Terminal.Write('RSI=' + IntToHex(RSI) + ' RDI=' + IntToHex(RDI) + ' RBP=' + IntToHex(RBP) + ' RSP=' + IntToHex(RSP) + #10);
+    Terminal.Write('R8 =' + IntToHex(R8)  + ' R9 =' + IntToHex(R9)  + ' R10=' + IntToHex(R10) + ' R11=' + IntToHex(R11) + #10);
+    Terminal.Write('R12=' + IntToHex(R12) + ' R13=' + IntToHex(R13) + ' R14=' + IntToHex(R14) + ' R15=' + IntToHex(R15) + #10);
+    Terminal.Write('RIP=' + IntToHex(RIP) + ' CS =' + IntToHex(CS)  + ' RSP=' + IntToHex(RSP) + ' SS =' + IntToHex(SS) + #10);
+    Terminal.Write('VEC=' + IntToHex(Vector) + ' ERR=' + IntToHex(Code) + ' RFL=' + IntToHex(RFlags) + #10);
+  end;
   Halt;
 end;
 
 var
+  Offset: PtrUInt;
   I: UInt8;
 
 begin
@@ -83,7 +117,14 @@ begin
   FillByte(IdtEntries, SizeOf(IdtEntries), 0);
 
   for I := 0 to 255 do begin
-    SetGate(I, 0, $8E, $08, IsrStubs[I]);
+    Offset := IsrStubs[I];
+    if Offset <> 0 then with IdtEntries[I] do begin
+      OffsetHigh := Offset shr 32;
+      OffsetMid := (Offset shr 16) and $FFFF;
+      OffsetLow := Offset and $FFFF;
+      Segment := $08;
+      Flags := $8E;
+    end;
   end;
 
   IdtPointer.Limit := SizeOf(IdtEntries) - 1;

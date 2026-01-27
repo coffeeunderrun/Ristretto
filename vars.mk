@@ -17,7 +17,7 @@ FP ?= fpc
 FPFLAGS ?= -Aelf -Cn -n -P$(ARCH) -Sagic -Tlinux -uLINUX -uUNIX -vehinw
 
 LD ?= ld
-LDFLAGS ?= -nostdlib -zmax-page-size=0x1000 -znoexecstack --gc-sections
+LDFLAGS ?= -nostdlib -zmax-page-size=0x1000 -znoexecstack
 
 QEMU ?= qemu-system-$(ARCH)
 QEMUFLAGS ?= -cpu qemu64 -m 256M -net none -monitor stdio
@@ -25,12 +25,12 @@ QEMUFLAGS ?= -cpu qemu64 -m 256M -net none -monitor stdio
 ifeq ($(DEBUG), 1)
 ASFLAGS += -g -O0
 FPFLAGS += -g -O- -Si-
-NASMFLAGS += -g -O0
+NASMFLAGS += -gdwarf -O0
 QEMUFLAGS += -gdb tcp::1234 -S -d int -no-shutdown -no-reboot
 else
 ASFLAGS += -O2
 FPFLAGS += -O2 -dNDEBUG
-LDFLAGS += -s
+LDFLAGS += -s --gc-sections
 NASMFLAGS += -Ox
 endif
 

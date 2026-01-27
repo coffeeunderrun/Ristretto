@@ -9,9 +9,7 @@ _isr_stub%1:
   push %2 ; Code
 %endif
   push %1 ; Vector
-  call _handler
-  add rsp, 16
-  iretq
+  jmp handler
 %endmacro
 
 ; TRY_ISR_STUB vector
@@ -26,6 +24,45 @@ _isr_stub%1:
 
 ; == TEXT =====================================================================
 section .text
+
+handler:
+  push r15
+  push r14
+  push r13
+  push r12
+  push r11
+  push r10
+  push r9
+  push r8
+  push rdi
+  push rsi
+  push rbp
+  push rdx
+  push rcx
+  push rbx
+  push rax
+
+  mov rdi, rsp
+  call _handler
+
+  pop rax
+  pop rbx
+  pop rcx
+  pop rdx
+  pop rbp
+  pop rdi
+  pop rsi
+  pop r8
+  pop r9
+  pop r10
+  pop r11
+  pop r12
+  pop r13
+  pop r14
+  pop r15
+
+  add rsp, 16 ; Remove IRQ vector and (error) code from stack
+  iretq
 
   ISR_STUB 0, 0  ; Divide by zero
   ISR_STUB 1, 0  ; Debug

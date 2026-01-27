@@ -2,10 +2,10 @@ unit Arch;
 
 interface
 
+{$I arch.inc}
+
 implementation
 
-uses Gdt, Idt, Log;
+uses Gdt, Idt;
 
-begin
-  Log.Debug('Unit initialized: Arch');
 end.
