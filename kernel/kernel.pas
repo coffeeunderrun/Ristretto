@@ -12,13 +12,8 @@ const
     '|      |  |__ --|   _|   _|  -__|   _|   _|  _  |'#10 +
     '|___|__|__|_____|____|__| |_____|____|____|_____|'#10#10;
 
-var
-  DivByZeroTest: Integer = 0;
-
 begin
   if not Limine.BaseRevisionSupported then exit;
 
   Terminal.Write(Logo);
-
-  DivByZeroTest := 1 div DivByZeroTest;
 end.

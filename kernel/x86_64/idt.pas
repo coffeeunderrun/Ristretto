@@ -12,7 +12,7 @@ const
   PIC2_CONTROL = $A0;
   PIC2_DATA    = $A1;
 
-  Exceptions: array [0..31] of String = (
+  Descriptions: array [0..47] of String = (
     'Divide by zero',
     'Debug',
     'Non-maskable',
@@ -33,7 +33,7 @@ const
     'Alignment check',
     'Machine check',
     'SIMD floating point exception',
-    'Reserved',
+    'Virtualization exception',
     'Control protection exception',
     'Reserved',
     'Reserved',
@@ -44,7 +44,23 @@ const
     'Hypervisor injection exception',
     'VMM communication exception',
     'Security exception',
-    'Reserved'
+    'Reserved',
+    'PIT',
+    'Keyboard',
+    'PIC cascade',
+    'COM2/COM4',
+    'COM1/COM3',
+    'LPT2',
+    'FDC',
+    'LPT1',
+    'RTC',
+    'Available',
+    'Available',
+    'Available',
+    'Mouse',
+    'FPU',
+    'HDC1',
+    'HDC2'
   );
 
 type
@@ -88,23 +104,48 @@ asm
   out PIC1_DATA, al
   out PIC2_DATA, al
 
-  mov al, $FF // Mask IRQs
+  mov al, 11111110b // Mask all PIC1 IRQs, except PIT
   out PIC1_DATA, al
+  mov al, 11111111b // Mask all PIC2 IRQs
   out PIC2_DATA, al
+
+  sti
+end;
+
+procedure AcknowledgeIrq(Irq: UInt8); assembler; nostackframe;
+asm
+  // Assumes caller verfied IRQ is between 0 and 15.
+  mov al, $20   // End of interrupt command
+  test Irq, $08 // Is IRQ >= 8?
+  jnz @pic2     // If true, send EOI to pic 2
+
+  @pic1:
+  out PIC1_CONTROL, al
+  jmp @done
+
+  @pic2:
+  out PIC2_CONTROL, al
+
+  @done:
 end;
 
 procedure Handler(RegsPtr: PRegisters); public name '_handler';
 begin
   with RegsPtr^ do begin
-    Terminal.Write('Exception: ' + Exceptions[Vector] + #10);
+    if (Vector > 31) and (Vector < 48) then begin
+      AcknowledgeIrq(Code);
+      exit;
+    end;
+
+    Terminal.Write('Interrupt: ' + Descriptions[Vector] + #10);
     Terminal.Write('RAX=' + IntToHex(RAX) + ' RBX=' + IntToHex(RBX) + ' RCX=' + IntToHex(RCX) + ' RDX=' + IntToHex(RDX) + #10);
     Terminal.Write('RSI=' + IntToHex(RSI) + ' RDI=' + IntToHex(RDI) + ' RBP=' + IntToHex(RBP) + ' RSP=' + IntToHex(RSP) + #10);
     Terminal.Write('R8 =' + IntToHex(R8)  + ' R9 =' + IntToHex(R9)  + ' R10=' + IntToHex(R10) + ' R11=' + IntToHex(R11) + #10);
     Terminal.Write('R12=' + IntToHex(R12) + ' R13=' + IntToHex(R13) + ' R14=' + IntToHex(R14) + ' R15=' + IntToHex(R15) + #10);
     Terminal.Write('RIP=' + IntToHex(RIP) + ' CS =' + IntToHex(CS)  + ' RSP=' + IntToHex(RSP) + ' SS =' + IntToHex(SS) + #10);
     Terminal.Write('VEC=' + IntToHex(Vector) + ' ERR=' + IntToHex(Code) + ' RFL=' + IntToHex(RFlags) + #10);
+    Halt;
   end;
-  Halt;
 end;
 
 var
