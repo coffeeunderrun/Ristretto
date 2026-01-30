@@ -355,12 +355,12 @@ const
 
 type
   PLimineInternalModule = ^TLimineInternalModule;
+  ALimineInternalModule = array of PLimineInternalModule;
   TLimineInternalModule = record
     Path: PChar;
     Str: PChar;
     Flags: UInt64;
   end;
-  ALimineInternalModule = array of TLimineInternalModule;
 
   PLimineModuleResponse = ^TLimineModuleResponse;
   TLimineModuleResponse = record
@@ -434,6 +434,65 @@ type
 
 var
   LimineMultiprocessorRequest: TLimineMultiprocessorRequest; external name '_limine_request_multiprocessor';
+
+{ ** Paging Mode ************************************************************ }
+const
+  LIMINE_PAGING_MODE_X86_64_4LVL    = 0;
+  LIMINE_PAGING_MODE_X86_64_5LVL    = 1;
+  LIMINE_PAGING_MODE_X86_64_DEFAULT = LIMINE_PAGING_MODE_X86_64_4LVL;
+  LIMINE_PAGING_MODE_X86_64_MIN     = LIMINE_PAGING_MODE_X86_64_4LVL;
+
+  LIMINE_PAGING_MODE_AARCH64_4LVL    = 0;
+  LIMINE_PAGING_MODE_AARCH64_5LVL    = 1;
+  LIMINE_PAGING_MODE_AARCH64_DEFAULT = LIMINE_PAGING_MODE_AARCH64_4LVL;
+  LIMINE_PAGING_MODE_AARCH64_MIN     = LIMINE_PAGING_MODE_AARCH64_4LVL;
+
+  LIMINE_PAGING_MODE_RISCV_SV39    = 0;
+  LIMINE_PAGING_MODE_RISCV_SV48    = 1;
+  LIMINE_PAGING_MODE_RISCV_SV57    = 2;
+  LIMINE_PAGING_MODE_RISCV_DEFAULT = LIMINE_PAGING_MODE_RISCV_SV48;
+  LIMINE_PAGING_MODE_RISCV_MIN     = LIMINE_PAGING_MODE_RISCV_SV39;
+
+  LIMINE_PAGING_MODE_LOONGARCH_4LVL    = 0;
+  LIMINE_PAGING_MODE_LOONGARCH_DEFAULT = LIMINE_PAGING_MODE_LOONGARCH_4LVL;
+  LIMINE_PAGING_MODE_LOONGARCH_MIN     = LIMINE_PAGING_MODE_LOONGARCH_4LVL;
+
+type
+  PLiminePagingModeResponse = ^TLiminePagingModeResponse;
+  TLiminePagingModeResponse = record
+    Revision: UInt64;
+    Mode: UInt64;
+  end;
+
+  TLiminePagingModeRequest = record
+    Id: array [0..3] of UInt64;
+    Revision: UInt64;
+    Response: PLiminePagingModeResponse;
+    Mode: UInt64;
+    { Request revision 1 and above }
+    MaxMode: UInt64;
+    MinMode: UInt64;
+  end;
+
+var
+  LiminePagingModeRequest: TLiminePagingModeRequest; external name '_limine_request_paging_mode';
+
+{ ** Stack Size ************************************************************* }
+type
+  PLimineStackSizeResponse = ^TLimineStackSizeResponse;
+  TLimineStackSizeResponse = record
+    Revision: UInt64;
+  end;
+
+  TLimineStackSizeRequest = record
+    Id: array [0..3] of UInt64;
+    Revision: UInt64;
+    Response: PLimineStackSizeResponse;
+    StackSize: UInt64;
+  end;
+
+var
+  LimineStackSizeRequest: TLimineStackSizeRequest; external name '_limine_request_stack_size';
 
 function BaseRevisionSupported: Boolean; inline;
 
