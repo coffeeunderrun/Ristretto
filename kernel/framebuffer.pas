@@ -17,6 +17,7 @@ implementation
 uses Limine;
 
 var
+  FramebufferRequest: TLimineFramebufferRequest; external name '_limine_request_framebuffer';
   FramebufferAddress: Pointer;
   FramebufferSize: SizeUInt;
   ResolutionHeight: UInt64;
@@ -101,9 +102,9 @@ function GetHeight: UInt64; begin GetHeight := ResolutionHeight; end;
 function GetWidth: UInt64; begin GetWidth := ResolutionWidth; end;
 
 begin
-  if not Assigned(LimineFramebufferRequest.Response) then exit;
+  if not Assigned(FramebufferRequest.Response) then exit;
 
-  with LimineFramebufferRequest.Response^ do begin
+  with FramebufferRequest.Response^ do begin
     if (FramebufferCount = 0) or not Assigned(Framebuffers) then exit;
 
     with Framebuffers^[0] do begin

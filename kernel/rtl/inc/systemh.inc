@@ -18,11 +18,11 @@
 type
   DWord    = LongWord;
   Cardinal = LongWord;
-  Integer  = SmallInt;
+  Integer  = LongInt;
 
   Int8   = ShortInt;
   Int16  = SmallInt;
-  Int32  = Longint;
+  Int32  = LongInt;
   IntPtr = Int64;
 
   UInt8   = Byte;
