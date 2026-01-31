@@ -31,5 +31,7 @@ procedure fpc_shortstr_to_shortstr(out res:shortstring; const sstr: shortstring)
 procedure fpc_shortstr_concat(var dests:shortstring;const s1,s2:shortstring);compilerproc;
 procedure fpc_shortstr_concat_multi(var dests:shortstring;const sarr:array of pshortstring);compilerproc;
 
+procedure fpc_pchar_to_shortstr(out res : shortstring;p:PAnsiChar); compilerproc;
+
 procedure fpc_ShortStr_sint(v : valsint;len : SizeInt;out s : shortstring); compilerproc;
 procedure fpc_shortstr_uint(v : valuint;len : SizeInt;out s : shortstring); compilerproc;

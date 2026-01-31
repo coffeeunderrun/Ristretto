@@ -8,7 +8,7 @@ OBJDIR = obj/$(ARCH)
 # FPC does not provide a method for generating dependency files and PPDEP struggles with directives.
 # For now, all INC files will be considered a dependency.
 
-override CFLAGS += -I../vendor/uacpi/uacpi/include -DUACPI_BAREBONES_MODE
+override CFLAGS += -I../vendor/uacpi/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
 
 # Do NOT add code to check for IO, overflow, range, stack errors
 override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR) \

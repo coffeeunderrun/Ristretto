@@ -5,6 +5,8 @@
 [submodule "vendor/limine-protocol"]
 	path = vendor/limine-protocol
 	url = https://codeberg.org/coffeeunderrun/limine-protocol-pascal.git
+	ignore = dirty
 [submodule "vendor/uacpi"]
 	path = vendor/uacpi
 	url = https://codeberg.org/coffeeunderrun/uacpi-pascal.git
+	ignore = dirty

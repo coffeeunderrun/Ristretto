@@ -69,6 +69,9 @@ type
   PSizeInt  = ^SizeInt;
   PSizeUInt = ^SizeUInt;
 
+  ALUSInt = Int64;
+  ALUUInt = QWord;
+
   HResult = type LongInt;
 
   AnsiChar     = Char;
@@ -96,6 +99,9 @@ Procedure FillChar(var x;count:SizeInt;Value:Byte);
 Procedure FillChar(var x;count:SizeInt;Value:Boolean);
 Procedure FillChar(var x;count:SizeInt;Value:AnsiChar);
 procedure FillByte(var x;count:SizeInt;value:byte);
+Procedure FillWord(var x;count:SizeInt;Value:Word);
+procedure FillDWord(var x;count:SizeInt;value:DWord);
+procedure FillQWord(var x;count:SizeInt;value:QWord);
 
 {****************************************************************************
                           Math Routines

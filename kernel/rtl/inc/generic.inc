@@ -131,7 +131,7 @@ end;
 Procedure FillChar(var x;count:SizeInt;value:byte);
 var
   pdest,pend : pbyte;
-  v : QWord;
+  v : ALUUInt;
 begin
   if count <= 0 then
     exit;
@@ -170,6 +170,124 @@ begin
       pdest^:=value;
       inc(pdest);
     end;
+end;
+
+procedure fillword(var x;count : SizeInt;value : word);
+var
+  aligncount : sizeint;
+  pdest,pend : pword;
+  v : ALUUInt;
+begin
+  if count <= 0 then
+    exit;
+  pdest:=@x;
+  if Count>4*sizeof(ptruint)-1 then
+    begin
+{$if sizeof(v)>=4}
+      v:=(value shl 16) or value;
+{$endif sizeof(v)>=4}
+{$if sizeof(v)=8}
+      v:=(v shl 32) or v;
+{$endif sizeof(v)=8}
+      { Align on native pointer size }
+      aligncount:=(PtrUInt(pdest) and (sizeof(PtrUInt)-1)) shr 1;
+      dec(count,aligncount);
+      pend:=pdest+aligncount;
+      while pdest<pend do
+        begin
+          pdest^:=value;
+          inc(pdest);
+        end;
+      { use sizeuint typecast to force shr optimization }
+      pptruint(pend):=pptruint(pdest)+((sizeuint(count)*2) div sizeof(ptruint));
+      while pdest<pend do
+        begin
+          pptruint(pdest)^:=v;
+          inc(pptruint(pdest));
+        end;
+      count:=((count*2) and (sizeof(ptruint)-1)) shr 1;
+    end;
+  pend:=pdest+count;
+  while pdest<pend do
+    begin
+      pdest^:=value;
+      inc(pdest);
+    end;
+end;
+
+procedure filldword(var x;count : SizeInt;value : dword);
+var
+  aligncount : sizeint;
+  pdest,pend : pdword;
+  v : ALUUInt;
+begin
+  if count <= 0 then
+    exit;
+  pdest:=@x;
+  if Count>4*sizeof(ptruint)-1 then
+    begin
+      v:=value;
+{$if sizeof(v)=8}
+      v:=(v shl 32) or v;
+{$endif sizeof(v)=8}
+      { Align on native pointer size }
+      aligncount:=(PtrUInt(pdest) and (sizeof(PtrUInt)-1)) shr 2;
+      dec(count,aligncount);
+      pend:=pdest+aligncount;
+      while pdest<pend do
+        begin
+          pdest^:=value;
+          inc(pdest);
+        end;
+      { use sizeuint typecast to force shr optimization }
+      pptruint(pend):=pptruint(pdest)+((sizeuint(count)*4) div sizeof(ptruint));
+      while pdest<pend do
+        begin
+          pptruint(pdest)^:=v;
+          inc(pptruint(pdest));
+        end;
+      count:=((count*4) and (sizeof(ptruint)-1)) shr 2;
+    end;
+  pend:=pdest+count;
+  while pdest<pend do
+    begin
+      pdest^:=value;
+      inc(pdest);
+    end;
+end;
+
+procedure fillqword(var x;count : SizeInt;value : qword);
+var
+  pdest,pend : pqword;
+begin
+  if count <= 0 then
+    exit;
+  pdest:=@x;
+  pend:=pdest+count;
+  while pdest<pend do
+    begin
+      pdest^:=value;
+      inc(pdest);
+    end;
+end;
+
+function IndexByte(Const buf;len:SizeInt;b:byte):SizeInt;
+var
+  psrc,pend : pbyte;
+begin
+  psrc:=@buf;
+  pend:=psrc+len;
+  { simulate assembler implementations behaviour, which is expected }
+  { fpc_pchar_to_ansistr in astrings.inc                            }
+  if (len < 0) or
+     (pend < psrc) then
+    pend:=pbyte(high(PtrUInt)-PtrUint(sizeof(byte)));
+  while (psrc<pend) and (psrc^<>b) do
+    inc(psrc);
+  if psrc<pend then
+    result:=psrc-pbyte(@buf)
+  else
+    result:=-1;
 end;
 
 {****************************************************************************
@@ -244,6 +362,29 @@ begin
   if Len>high(dests) then
     Len:=high(dests);
   dests[0]:=Chr(Len); { Careful, loop above relies on DestS[0] having the original value. }
+end;
+
+procedure fpc_pchar_to_shortstr(out res : shortstring;p:PAnsiChar);[public,alias:'FPC_PCHAR_TO_SHORTSTR']; compilerproc;
+var
+  l : ObjpasInt;
+begin
+  if p=nil then
+    begin
+      res[0]:=#0;
+      exit;
+    end;
+{ On platforms where IndexByte with len > 0 will not read the invalid memory past the null terminator, high(res) can be used as a limit. }
+{$if defined(cpui386) or defined(cpux86_64)}
+  l:=IndexByte(p^,high(res),0);
+  if l<0 then
+    l:=high(res);
+{$else IndexByte(p^,high(res),0) can crash}
+  l:=strlen(p);
+  if l>high(res) then
+    l:=high(res);
+{$endif IndexByte(p^,high(res),0) can crash}
+  move(p^,res[1],l);
+  res[0]:=chr(l);
 end;
 
 {****************************************************************************
