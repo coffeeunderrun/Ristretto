@@ -11,7 +11,8 @@ OBJDIR = obj/$(ARCH)
 override CFLAGS += -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE
 
 # Do NOT add code to check for IO, overflow, range, stack errors
-override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR)
+override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR) \
+	-Fi../vendor/limine-protocol -Fu../vendor/limine-protocol
 
 # Do NOT change the order of the RTL objects
 RTLOBJS := system objpas sysconst sysutils si_prc fpintres
@@ -23,7 +24,7 @@ ASMOBJS := $(patsubst %.asm, $(OBJDIR)/%.asm.o, $(ASMOBJS))
 COBJS := $(notdir $(wildcard *.c ../vendor/uacpi/source/*.c))
 COBJS := $(patsubst %.c, $(OBJDIR)/%.c.o, $(COBJS))
 
-PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas))
+PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas ../vendor/limine-protocol/*.pas))
 PASOBJS := $(patsubst %.pas, $(OBJDIR)/%.o, $(PASOBJS))
 
 PSFOBJS := $(notdir $(wildcard *.psf))
