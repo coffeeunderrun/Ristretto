@@ -25,7 +25,7 @@ distclean:
 
 # Kernel uses its own slim RTL
 .PHONY: kernel
-kernel:
+kernel: vendor/uacpi
 	$(MAKE) -Ckernel
 
 # RTL for userspace
@@ -55,3 +55,6 @@ vendor/edk2-ovmf:
 vendor/limine/limine:
 	git submodule update --init vendor/limine
 	$(MAKE) -Cvendor/limine CC="$(HOST_CC)" CFLAGS="$(HOST_CFLAGS)" LDFLAGS="$(HOST_LDFLAGS)" LIBS="$(HOST_LIBS)"
+
+vendor/uacpi:
+	git submodule update --init vendor/uacpi

@@ -8,6 +8,8 @@ OBJDIR = obj/$(ARCH)
 # FPC does not provide a method for generating dependency files and PPDEP struggles with directives.
 # For now, all INC files will be considered a dependency.
 
+override CFLAGS += -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE
+
 # Do NOT add code to check for IO, overflow, range, stack errors
 override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR)
 
@@ -17,6 +19,9 @@ RTLOBJS := $(patsubst %, $(OBJDIR)/%.o, $(RTLOBJS))
 
 ASMOBJS := $(notdir $(wildcard $(ARCH)/*.asm))
 ASMOBJS := $(patsubst %.asm, $(OBJDIR)/%.asm.o, $(ASMOBJS))
+
+COBJS := $(notdir $(wildcard *.c ../vendor/uacpi/source/*.c))
+COBJS := $(patsubst %.c, $(OBJDIR)/%.c.o, $(COBJS))
 
 PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas))
 PASOBJS := $(patsubst %.pas, $(OBJDIR)/%.o, $(PASOBJS))
@@ -35,7 +40,7 @@ clean:
 distclean:
 	rm -rf bin/ obj/
 
-$(BINDIR)/kernel.elf: $(RTLOBJS) $(ASMOBJS) $(PASOBJS) $(PSFOBJS)
+$(BINDIR)/kernel.elf: $(RTLOBJS) $(ASMOBJS) $(COBJS) $(PASOBJS) $(PSFOBJS)
 	mkdir -p $(BINDIR)
 	$(LD) $(LDFLAGS) -T$(ARCH)/link.ld -o$@ $(wildcard $^)
 
@@ -59,12 +64,12 @@ $(OBJDIR)/%.o: %.pas $(RTLOBJS) $(wildcard *.inc)
 	mkdir -p $(OBJDIR)
 	$(PC) $(PCFLAGS) -Furtl -Fu$(ARCH) -o$@ $<
 
-# Kerner arch-specific units
+# Kernel arch-specific units
 $(OBJDIR)/%.o: $(ARCH)/%.pas $(RTLOBJS) $(wildcard $(ARCH)/*.inc) arch.inc
 	mkdir -p $(OBJDIR)
 	$(PC) $(PCFLAGS) -Furtl -o$@ $<
 
-# Kerner arch-specific asm
+# Kernel arch-specific asm
 $(OBJDIR)/%.asm.o: $(ARCH)/%.asm
 	mkdir -p $(OBJDIR)
 ifeq ($(ARCH), x86_64)
@@ -72,6 +77,11 @@ ifeq ($(ARCH), x86_64)
 else
 	$(AS) $(ASFLAGS) -o$@ $<
 endif
+
+# uACPI
+$(OBJDIR)/%.c.o: ../vendor/uacpi/source/%.c
+	mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -o$@ -c $<
 
 # Fonts
 $(OBJDIR)/%.psf.o: %.psf

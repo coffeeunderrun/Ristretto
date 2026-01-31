@@ -2,3 +2,6 @@
 	path = vendor/limine
 	url = https://codeberg.org/Limine/Limine.git
 	branch = v10.x-binary
+[submodule "vendor/uacpi"]
+	path = vendor/uacpi
+	url = https://github.com/uACPI/uACPI.git
