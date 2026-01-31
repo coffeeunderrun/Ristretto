@@ -1,2 +1,4 @@
-.vscode/
-build/
+**/bin/
+**/obj/
+img/
+vendor/edk2-ovmf/

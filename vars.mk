@@ -1,41 +1,43 @@
-ARCH ?= x86_64
-DEBUG ?= 1
+ARCH = x86_64
+DEBUG = 1
+IMAGENAME = ristretto
 
-ROOTDIR ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-OUTDIR ?= $(ROOTDIR)/build
+AS = as
+ASFLAGS =
 
-OVMFCODE ?= /usr/share/edk2/x64/OVMF_CODE.4m.fd
-OVMFVARS ?= /usr/share/edk2/x64/OVMF_VARS.4m.fd
+NASM = nasm
+NASMFLAGS =
+override NASMFLAGS += -felf64
 
-NASM ?= nasm
-NASMFLAGS ?= -felf64
+LD = ld
+LDFLAGS =
+override LDFLAGS += -nostdlib -static -zmax-page-size=0x1000
 
-AS ?= as
-ASFLAGS ?=
+PC = fpc
+PCFLAGS = -ap -vehinw
+override PCFLAGS += -Aelf -Cn -n -P$(ARCH) -Sagic -Tlinux -uLINUX -uUNIX
 
-FP ?= fpc
-FPFLAGS ?= -Aelf -Cn -n -P$(ARCH) -Sagic -Tlinux -uLINUX -uUNIX -vehinw
+HOST_CC = cc
+HOST_CFLAGS = -pipe
 
-LD ?= ld
-LDFLAGS ?= -nostdlib -zmax-page-size=0x1000 -znoexecstack
-
-QEMU ?= qemu-system-$(ARCH)
-QEMUFLAGS ?= -cpu qemu64 -m 256M -net none -monitor stdio
+QEMU = qemu-system-$(ARCH)
+QEMUFLAGS = -m 256M -net none -monitor stdio
 
 ifeq ($(DEBUG), 1)
-ASFLAGS += -g -O0
-FPFLAGS += -g -O- -Si-
-NASMFLAGS += -gdwarf -O0
-QEMUFLAGS += -gdb tcp::1234 -S -d int -no-shutdown -no-reboot
+override ASFLAGS += -g -O0
+override NASMFLAGS += -gdwarf -O0
+override PCFLAGS += -g -O- -Si-
+override HOST_CFLAGS += -g -O0
+override QEMUFLAGS += -gdb tcp::1234 -S -d int -no-shutdown -no-reboot
 else
-ASFLAGS += -O2
-FPFLAGS += -O2 -dNDEBUG
-LDFLAGS += -s --gc-sections
-NASMFLAGS += -Ox
+override ASFLAGS += -O2
+override NASMFLAGS += -Ox
+override LDFLAGS += -s --gc-sections
+override PCFLAGS += -O2 -dNDEBUG
+override HOST_CFLAGS += -O2
 endif
 
 ifeq ($(ARCH), x86_64)
-AS := $(NASM)
-ASFLAGS := $(NASMFLAGS)
-FPFLAGS += -Rintel
+override PCFLAGS += -Rintel
+override QEMUFLAGS += -M q35
 endif

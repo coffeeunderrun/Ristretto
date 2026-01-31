@@ -1,53 +1,79 @@
+.SUFFIXES:
+
 include ../vars.mk
+
+BINDIR = bin/$(ARCH)
+OBJDIR = obj/$(ARCH)
 
 # FPC does not provide a method for generating dependency files and PPDEP struggles with directives.
 # For now, all INC files will be considered a dependency.
 
 # Do NOT add code to check for IO, overflow, range, stack errors
-FPFLAGS += -Ci-o-r-t- -Mobjfpc -FE$(OUTDIR) -FU$(OUTDIR)
+override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR)
 
 # Do NOT change the order of the RTL objects
 RTLOBJS := system objpas sysconst sysutils si_prc fpintres
-RTLOBJS := $(patsubst %, $(OUTDIR)/%.o, $(RTLOBJS))
+RTLOBJS := $(patsubst %, $(OBJDIR)/%.o, $(RTLOBJS))
 
 ASMOBJS := $(notdir $(wildcard $(ARCH)/*.asm))
-ASMOBJS := $(patsubst %.asm, $(OUTDIR)/%.asm.o, $(ASMOBJS))
+ASMOBJS := $(patsubst %.asm, $(OBJDIR)/%.asm.o, $(ASMOBJS))
 
 PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas))
-PASOBJS := $(patsubst %.pas, $(OUTDIR)/%.o, $(PASOBJS))
+PASOBJS := $(patsubst %.pas, $(OBJDIR)/%.o, $(PASOBJS))
 
 PSFOBJS := $(notdir $(wildcard *.psf))
-PSFOBJS := $(patsubst %.psf, $(OUTDIR)/%.psf.o, $(PSFOBJS))
+PSFOBJS := $(patsubst %.psf, $(OBJDIR)/%.psf.o, $(PSFOBJS))
 
-all: $(OUTDIR)/kernel.elf
+.PHONY: all
+all: $(BINDIR)/kernel.elf
 
-$(OUTDIR)/kernel.elf: $(RTLOBJS) $(ASMOBJS) $(PASOBJS) $(PSFOBJS)
+.PHONY: clean
+clean:
+	rm -rf $(BINDIR) $(OBJDIR)
+
+.PHONY: distclean
+distclean:
+	rm -rf bin/ obj/
+
+$(BINDIR)/kernel.elf: $(RTLOBJS) $(ASMOBJS) $(PASOBJS) $(PSFOBJS)
+	mkdir -p $(BINDIR)
 	$(LD) $(LDFLAGS) -T$(ARCH)/link.ld -o$@ $(wildcard $^)
 
 # RTL unit: system
-$(OUTDIR)/system.o: rtl/system.pas $(wildcard rtl/*.inc rtl/inc/*.inc rtl/$(ARCH)/*.inc)
-	$(FP) $(FPFLAGS) -Firtl/inc -Firtl/$(ARCH) -Us -Sf- -o$@ $<
+$(OBJDIR)/system.o: rtl/system.pas $(wildcard rtl/*.inc rtl/inc/*.inc rtl/$(ARCH)/*.inc)
+	mkdir -p $(OBJDIR)
+	$(PC) $(PCFLAGS) -Firtl/inc -Firtl/$(ARCH) -Us -Sf- -o$@ $<
 
 # RTL unit: sysutils
-$(OUTDIR)/sysutils.o: rtl/sysutils.pas $(wildcard rtl/*.inc rtl/sysutils/*.inc)
-	$(FP) $(FPFLAGS) -Firtl/sysutils -o$@ $<
+$(OBJDIR)/sysutils.o: rtl/sysutils.pas $(wildcard rtl/*.inc rtl/sysutils/*.inc)
+	mkdir -p $(OBJDIR)
+	$(PC) $(PCFLAGS) -Firtl/sysutils -o$@ $<
 
 # RTL units: objpas si_prc fpintres
-$(OUTDIR)/%.o: rtl/%.pas $(wildcard rtl/*.inc)
-	$(FP) $(FPFLAGS) -o$@ $<
+$(OBJDIR)/%.o: rtl/%.pas $(wildcard rtl/*.inc)
+	mkdir -p $(OBJDIR)
+	$(PC) $(PCFLAGS) -o$@ $<
 
 # Kernel units
-$(OUTDIR)/%.o: %.pas $(RTLOBJS) $(wildcard *.inc)
-	$(FP) $(FPFLAGS) -Furtl -Fu$(ARCH) -o$@ $<
+$(OBJDIR)/%.o: %.pas $(RTLOBJS) $(wildcard *.inc)
+	mkdir -p $(OBJDIR)
+	$(PC) $(PCFLAGS) -Furtl -Fu$(ARCH) -o$@ $<
 
 # Kerner arch-specific units
-$(OUTDIR)/%.o: $(ARCH)/%.pas $(RTLOBJS) $(wildcard $(ARCH)/*.inc) arch.inc
-	$(FP) $(FPFLAGS) -Furtl -o$@ $<
+$(OBJDIR)/%.o: $(ARCH)/%.pas $(RTLOBJS) $(wildcard $(ARCH)/*.inc) arch.inc
+	mkdir -p $(OBJDIR)
+	$(PC) $(PCFLAGS) -Furtl -o$@ $<
 
 # Kerner arch-specific asm
-$(OUTDIR)/%.asm.o: $(ARCH)/%.asm
+$(OBJDIR)/%.asm.o: $(ARCH)/%.asm
+	mkdir -p $(OBJDIR)
+ifeq ($(ARCH), x86_64)
+	$(NASM) $(NASMFLAGS) -o$@ $<
+else
 	$(AS) $(ASFLAGS) -o$@ $<
+endif
 
 # Fonts
-$(OUTDIR)/%.psf.o: %.psf
+$(OBJDIR)/%.psf.o: %.psf
+	mkdir -p $(OBJDIR)
 	$(LD) -r -bbinary -o$@ $<
