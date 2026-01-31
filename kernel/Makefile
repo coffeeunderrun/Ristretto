@@ -9,7 +9,8 @@ OBJDIR = obj/$(ARCH)
 # For now, all INC files will be considered a dependency.
 
 # Do NOT add code to check for IO, overflow, range, stack errors
-override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR)
+override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR) \
+	-Fi../vendor/limine-protocol -Fu../vendor/limine-protocol
 
 # Do NOT change the order of the RTL objects
 RTLOBJS := system objpas sysconst sysutils si_prc fpintres
@@ -18,7 +19,7 @@ RTLOBJS := $(patsubst %, $(OBJDIR)/%.o, $(RTLOBJS))
 ASMOBJS := $(notdir $(wildcard $(ARCH)/*.asm))
 ASMOBJS := $(patsubst %.asm, $(OBJDIR)/%.asm.o, $(ASMOBJS))
 
-PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas))
+PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas ../vendor/limine-protocol/*.pas))
 PASOBJS := $(patsubst %.pas, $(OBJDIR)/%.o, $(PASOBJS))
 
 PSFOBJS := $(notdir $(wildcard *.psf))
@@ -59,12 +60,12 @@ $(OBJDIR)/%.o: %.pas $(RTLOBJS) $(wildcard *.inc)
 	mkdir -p $(OBJDIR)
 	$(PC) $(PCFLAGS) -Furtl -Fu$(ARCH) -o$@ $<
 
-# Kerner arch-specific units
+# Kernel arch-specific units
 $(OBJDIR)/%.o: $(ARCH)/%.pas $(RTLOBJS) $(wildcard $(ARCH)/*.inc) arch.inc
 	mkdir -p $(OBJDIR)
 	$(PC) $(PCFLAGS) -Furtl -o$@ $<
 
-# Kerner arch-specific asm
+# Kernel arch-specific asm
 $(OBJDIR)/%.asm.o: $(ARCH)/%.asm
 	mkdir -p $(OBJDIR)
 ifeq ($(ARCH), x86_64)
