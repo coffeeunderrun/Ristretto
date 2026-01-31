@@ -8,11 +8,12 @@ OBJDIR = obj/$(ARCH)
 # FPC does not provide a method for generating dependency files and PPDEP struggles with directives.
 # For now, all INC files will be considered a dependency.
 
-override CFLAGS += -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE
+override CFLAGS += -I../vendor/uacpi/uacpi/include -DUACPI_BAREBONES_MODE
 
 # Do NOT add code to check for IO, overflow, range, stack errors
 override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR) \
-	-Fi../vendor/limine-protocol -Fu../vendor/limine-protocol
+	-Fi../vendor/limine-protocol -Fu../vendor/limine-protocol \
+	-Fi../vendor/uacpi -Fu../vendor/uacpi
 
 # Do NOT change the order of the RTL objects
 RTLOBJS := system objpas sysconst sysutils si_prc fpintres
@@ -21,10 +22,11 @@ RTLOBJS := $(patsubst %, $(OBJDIR)/%.o, $(RTLOBJS))
 ASMOBJS := $(notdir $(wildcard $(ARCH)/*.asm))
 ASMOBJS := $(patsubst %.asm, $(OBJDIR)/%.asm.o, $(ASMOBJS))
 
-COBJS := $(notdir $(wildcard *.c ../vendor/uacpi/source/*.c))
+COBJS := $(notdir $(wildcard *.c ../vendor/uacpi/uacpi/source/*.c))
 COBJS := $(patsubst %.c, $(OBJDIR)/%.c.o, $(COBJS))
 
-PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas ../vendor/limine-protocol/*.pas))
+PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas))
+PASOBJS += $(notdir $(wildcard ../vendor/limine-protocol/*.pas ../vendor/uacpi/*.pas))
 PASOBJS := $(patsubst %.pas, $(OBJDIR)/%.o, $(PASOBJS))
 
 PSFOBJS := $(notdir $(wildcard *.psf))
@@ -80,7 +82,7 @@ else
 endif
 
 # uACPI
-$(OBJDIR)/%.c.o: ../vendor/uacpi/source/%.c
+$(OBJDIR)/%.c.o: ../vendor/uacpi/uacpi/source/%.c
 	mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -o$@ -c $<
 

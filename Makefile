@@ -60,4 +60,4 @@ vendor/limine-protocol:
 	git submodule update --init vendor/limine-protocol
 
 vendor/uacpi:
-	git submodule update --init vendor/uacpi
+	git submodule update --init --recursive vendor/uacpi
