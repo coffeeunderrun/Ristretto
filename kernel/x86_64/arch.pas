@@ -6,6 +6,7 @@ interface
 
 implementation
 
-uses Gdt, Idt;
+{ Order of unit initialization is important }
+uses Gdt, Idt, Acpi;
 
 end.

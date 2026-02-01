@@ -25,7 +25,6 @@ type
   end;
 
 var
-  GdtPointer: TGdtPointer;
   GdtEntries: array [0..6] of TGdtEntry = (
     (Descriptor: $0000000000000000), // $00 Null
     (Descriptor: $00209A0000000000), // $08 Kernel Code
@@ -36,19 +35,15 @@ var
     (Descriptor: $0000000000000000)
   );
 
+procedure LoadGdt;
+var
+  GdtPointer: TGdtPointer;
 begin
   GdtPointer.Limit := SizeOf(GdtEntries) - 1;
   GdtPointer.Base := PtrUInt(@GdtEntries);
 
   asm
     lgdt [GdtPointer]
-
-    mov ax, $10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
 
     mov rax, $08
     push rax
@@ -57,7 +52,16 @@ begin
     retfq
 
   @code_seg:
-  end ['rax'];
+    mov ax, $10
+    mov ss, ax
 
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+  end ['rax'];
+end;
+
+begin
+  LoadGdt;
   Log.Debug('Unit initialized: GDT');
 end.

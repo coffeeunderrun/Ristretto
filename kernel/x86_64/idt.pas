@@ -80,37 +80,8 @@ type
   end;
 
 var
-  IdtPointer: TIdtPointer;
   IdtEntries: array [0..255] of TIdtEntry; external name '_idt';
   IsrStubs: array [0..255] of PtrUInt; external name '_isr_stubs';
-
-procedure InitializePics; assembler; nostackframe;
-asm
-  mov al, $11 // Begin initialization, ICW4 needed
-  out PIC1_CONTROL, al
-  out PIC2_CONTROL, al
-
-  mov al, 32 // Remap PIC1 vectors
-  out PIC1_DATA, al
-  mov al, 40 // Remap PIC2 vectors
-  out PIC2_DATA, al
-
-  mov al, $04 // Inform PIC1 that PIC2 is connected to IRQ2
-  out PIC1_DATA, al
-  mov al, $02 // Inform PIC2 to cascade through IRQ2 on PIC1
-  out PIC2_DATA, al
-
-  mov al, $01 // Environment 8086 mode
-  out PIC1_DATA, al
-  out PIC2_DATA, al
-
-  mov al, 11111110b // Mask all PIC1 IRQs, except PIT
-  out PIC1_DATA, al
-  mov al, 11111111b // Mask all PIC2 IRQs
-  out PIC2_DATA, al
-
-  sti
-end;
 
 procedure AcknowledgeIrq(Irq: UInt8); assembler; nostackframe;
 asm
@@ -148,13 +119,39 @@ begin
   end;
 end;
 
+procedure InitializePics; assembler; nostackframe;
+asm
+  mov al, $11 // Begin initialization, ICW4 needed
+  out PIC1_CONTROL, al
+  out PIC2_CONTROL, al
+
+  mov al, 32 // Remap PIC1 vectors
+  out PIC1_DATA, al
+  mov al, 40 // Remap PIC2 vectors
+  out PIC2_DATA, al
+
+  mov al, $04 // Inform PIC1 that PIC2 is connected to IRQ2
+  out PIC1_DATA, al
+  mov al, $02 // Inform PIC2 to cascade through IRQ2 on PIC1
+  out PIC2_DATA, al
+
+  mov al, $01 // Environment 8086 mode
+  out PIC1_DATA, al
+  out PIC2_DATA, al
+
+  mov al, 11111110b // Mask all PIC1 IRQs, except PIT
+  out PIC1_DATA, al
+  mov al, 11111111b // Mask all PIC2 IRQs
+  out PIC2_DATA, al
+
+  sti
+end;
+
+procedure PopulateIdt;
 var
   Offset: PtrUInt;
   I: UInt8;
-
 begin
-  InitializePics;
-
   FillByte(IdtEntries, SizeOf(IdtEntries), 0);
 
   for I := 0 to 255 do begin
@@ -167,13 +164,23 @@ begin
       Flags := $8E;
     end;
   end;
+end;
 
+procedure LoadIdt;
+var
+  IdtPointer: TIdtPointer;
+begin
   IdtPointer.Limit := SizeOf(IdtEntries) - 1;
   IdtPointer.Base := PtrUInt(@IdtEntries);
 
   asm
     lidt [IdtPointer]
   end;
+end;
 
+begin
+  InitializePics;
+  PopulateIdt;
+  LoadIdt;
   Log.Debug('Unit initialized: IDT');
 end.
