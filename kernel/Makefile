@@ -5,15 +5,14 @@ include ../vars.mk
 BINDIR = bin/$(ARCH)
 OBJDIR = obj/$(ARCH)
 
-override CFLAGS += -I../vendor/uacpi/uacpi/include \
-	-DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
-
 # Tell compiler not to add code to check for IO, overflow, range, stack errors
-override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc \
-	-Firtl/inc -Firtl/sysutils -Firtl/$(ARCH) \
-	-Fu$(OBJDIR)/rtl -Fu$(OBJDIR)/kernel \
-	-Fi../vendor/limine-protocol -Fi../vendor/uacpi \
-	-Fu$(OBJDIR)/limine-protocol -Fu$(OBJDIR)/uacpi
+override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -Fu$(OBJDIR)/rtl
+
+RTL_PCFLAGS    := -Firtl/inc -Firtl/sysutils -Firtl/$(ARCH)
+KERNEL_PCFLAGS := -Fi../vendor/limine-protocol -Fu$(OBJDIR)/kernel -Fu$(OBJDIR)/uacpi -Fu$(OBJDIR)/limine-protocol
+
+UACPI_CFLAGS  := -I../vendor/uacpi/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
+UACPI_PCFLAGS := -Fi../vendor/uacpi/inc
 
 # RTL source files
 SRCS := $(addprefix rtl/, system.pas objpas.pas sysconst.pas sysutils.pas si_prc.pas fpintres.pas)
@@ -51,17 +50,17 @@ $(BINDIR)/kernel: $(OBJS) $(ARCH)/link.ld
 # RTL *.pas files
 $(OBJDIR)/rtl/%.o: rtl/%.pas
 	mkdir -p $(dir $@)
-	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PC) $(PCFLAGS) $(RTL_PCFLAGS) -FU$(dir $@) -o$@ $<
 
 # Kernel *.pas files
 $(OBJDIR)/kernel/%.o: %.pas
 	mkdir -p $(dir $@)
-	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PC) $(PCFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$@ $<
 
 # Kernel architecture *.pas files
 $(OBJDIR)/kernel/%.o: $(ARCH)/%.pas
 	mkdir -p $(dir $@)
-	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PC) $(PCFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$@ $<
 
 # Kernel architecture *.asm files
 $(OBJDIR)/kernel/%.asm.o: $(ARCH)/%.asm
@@ -85,12 +84,12 @@ $(OBJDIR)/limine-protocol/%.o: ../vendor/limine-protocol/%.pas
 # uACPI *.c files
 $(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/uacpi/source/%.c
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -MMD -MP -o$@ -c $<
+	$(CC) $(CFLAGS) $(UACPI_CFLAGS) -MMD -MP -o$@ -c $<
 
 # uACPI *.pas files
 $(OBJDIR)/uacpi/%.o: ../vendor/uacpi/%.pas
 	mkdir -p $(dir $@)
-	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PC) $(PCFLAGS) $(UACPI_PCFLAGS) -FU$(dir $@) -o$@ $<
 
 # Dependencies
 -include $(DEPS)

@@ -16,19 +16,19 @@ const
 var
   Rsdp: TLimineRsdpRequest; external name '_limine_request_rsdp';
   Buffer: array [0..4095] of Byte;
-  Status: UacpiStatus;
+  Status: uacpi_status;
 
-function KernelGetRsdp(AddressPtr: PUacpiPhysAddr): UacpiStatus; cdecl; public name 'uacpi_kernel_get_rsdp';
+function uacpi_kernel_get_rsdp(AddressPtr: puacpi_phys_addr): uacpi_status; cdecl; public;
 begin
-  if Rsdp.Response <> nil then begin
-    AddressPtr^ := UacpiPhysAddr(Rsdp.Response^.Address);
+  if Assigned(Rsdp.Response) then begin
+    AddressPtr^ := uacpi_phys_addr(Rsdp.Response^.Address);
     exit(UACPI_STATUS_OK);
   end;
 
   result := UACPI_STATUS_NOT_FOUND;
 end;
 
-procedure KernelLog(LogLevel: UacpiLogLevel; const Message: PUacpiChar); cdecl; public name 'uacpi_kernel_log';
+procedure uacpi_kernel_log(LogLevel: uacpi_log_level; const Message: puacpi_char); cdecl; public;
 begin
   case LogLevel of
     UACPI_LOG_ERROR: Log.Error(Message);
@@ -39,12 +39,12 @@ begin
   end;
 end;
 
-function KernelMap(Address: UacpiPhysAddr; Size: UacpiSize): Pointer; cdecl; public name 'uacpi_kernel_map';
+function uacpi_kernel_map(Address: uacpi_phys_addr; Size: uacpi_size): Pointer; cdecl; public;
 begin
   result := nil;
 end;
 
-procedure KernelUnmap(Ptr: Pointer; Size: UacpiSize); cdecl; public name 'uacpi_kernel_unmap';
+procedure uacpi_kernel_unmap(Ptr: Pointer; Size: uacpi_size); cdecl; public;
 begin
 end;
 
@@ -53,5 +53,5 @@ begin
 
   Terminal.Write(Logo);
 
-  Status := Uacpi.SetupEarlyTableAccess(@Buffer, SizeOf(Buffer));
+  Status := uacpi_setup_early_table_access(@Buffer, SizeOf(Buffer));
 end.
