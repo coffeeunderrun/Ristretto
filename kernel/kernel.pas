@@ -32,8 +32,8 @@ procedure KernelLog(LogLevel: UacpiLogLevel; const Message: PUacpiChar); cdecl; 
 begin
   case LogLevel of
     UACPI_LOG_ERROR: Log.Error(Message);
-    UACPI_LOG_WARN:  Log.Warn (Message);
-    UACPI_LOG_INFO:  Log.Info (Message);
+    UACPI_LOG_WARN: Log.Warn(Message);
+    UACPI_LOG_INFO: Log.Info(Message);
     UACPI_LOG_TRACE: Log.Trace(Message);
     UACPI_LOG_DEBUG: Log.Debug(Message);
   end;

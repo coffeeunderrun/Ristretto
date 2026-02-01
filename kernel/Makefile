@@ -5,88 +5,92 @@ include ../vars.mk
 BINDIR = bin/$(ARCH)
 OBJDIR = obj/$(ARCH)
 
-# FPC does not provide a method for generating dependency files and PPDEP struggles with directives.
-# For now, all INC files will be considered a dependency.
+override CFLAGS += -I../vendor/uacpi/uacpi/include \
+	-DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
 
-override CFLAGS += -I../vendor/uacpi/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
+# Tell compiler not to add code to check for IO, overflow, range, stack errors
+override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc \
+	-Firtl/inc -Firtl/sysutils -Firtl/$(ARCH) \
+	-Fu$(OBJDIR)/rtl -Fu$(OBJDIR)/kernel \
+	-Fi../vendor/limine-protocol -Fi../vendor/uacpi \
+	-Fu$(OBJDIR)/limine-protocol -Fu$(OBJDIR)/uacpi
 
-# Do NOT add code to check for IO, overflow, range, stack errors
-override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -FE$(BINDIR) -FU$(OBJDIR) \
-	-Fi../vendor/limine-protocol -Fu../vendor/limine-protocol \
-	-Fi../vendor/uacpi -Fu../vendor/uacpi
+# RTL source files
+SRCS := $(addprefix rtl/, system.pas objpas.pas sysconst.pas sysutils.pas si_prc.pas fpintres.pas)
+# Limine Protocol source files
+SRCS += $(addprefix limine-protocol/, $(notdir $(wildcard ../vendor/limine-protocol/*.pas)))
+# uACPI source files
+SRCS += $(addprefix uacpi/, $(notdir $(wildcard ../vendor/uacpi/*.pas ../vendor/uacpi/uacpi/source/*.c)))
+# Kernel source files
+SRCS += $(addprefix kernel/, $(notdir $(wildcard $(ARCH)/*.asm $(ARCH)/*.pas *.pas *.psf)))
 
-# Do NOT change the order of the RTL objects
-RTLOBJS := system objpas sysconst sysutils si_prc fpintres
-RTLOBJS := $(patsubst %, $(OBJDIR)/%.o, $(RTLOBJS))
+ASFILES  := $(filter %.asm, $(SRCS))
+PCFILES  := $(filter %.pas, $(SRCS))
+CFILES   := $(filter %.c,   $(SRCS))
+PSFFILES := $(filter %.psf, $(SRCS))
 
-ASMOBJS := $(notdir $(wildcard $(ARCH)/*.asm))
-ASMOBJS := $(patsubst %.asm, $(OBJDIR)/%.asm.o, $(ASMOBJS))
-
-COBJS := $(notdir $(wildcard *.c ../vendor/uacpi/uacpi/source/*.c))
-COBJS := $(patsubst %.c, $(OBJDIR)/%.c.o, $(COBJS))
-
-PASOBJS := $(notdir $(wildcard *.pas $(ARCH)/*.pas))
-PASOBJS += $(notdir $(wildcard ../vendor/limine-protocol/*.pas ../vendor/uacpi/*.pas))
-PASOBJS := $(patsubst %.pas, $(OBJDIR)/%.o, $(PASOBJS))
-
-PSFOBJS := $(notdir $(wildcard *.psf))
-PSFOBJS := $(patsubst %.psf, $(OBJDIR)/%.psf.o, $(PSFOBJS))
+DEPS := $(addprefix $(OBJDIR)/, $(ASFILES:.asm=.asm.d) $(PCFILES:.pas=.d) $(CFILES:.c=.c.d))
+OBJS := $(addprefix $(OBJDIR)/, $(ASFILES:.asm=.asm.o) $(PCFILES:.pas=.o) $(CFILES:.c=.c.o) $(PSFFILES:.psf=.psf.o))
 
 .PHONY: all
-all: $(BINDIR)/kernel.elf
+all: $(BINDIR)/kernel
 
 .PHONY: clean
 clean:
-	rm -rf $(BINDIR) $(OBJDIR)
+	rm -rf bin/$(ARCH)/ obj/$(ARCH)/
 
 .PHONY: distclean
 distclean:
 	rm -rf bin/ obj/
 
-$(BINDIR)/kernel.elf: $(RTLOBJS) $(ASMOBJS) $(COBJS) $(PASOBJS) $(PSFOBJS)
-	mkdir -p $(BINDIR)
-	$(LD) $(LDFLAGS) -T$(ARCH)/link.ld -o$@ $(wildcard $^)
+# Kernel binary
+$(BINDIR)/kernel: $(OBJS) $(ARCH)/link.ld
+	mkdir -p $(dir $@)
+	$(LD) $(LDFLAGS) -T$(ARCH)/link.ld -o$@ $(OBJS)
 
-# RTL unit: system
-$(OBJDIR)/system.o: rtl/system.pas $(wildcard rtl/*.inc rtl/inc/*.inc rtl/$(ARCH)/*.inc)
-	mkdir -p $(OBJDIR)
-	$(PC) $(PCFLAGS) -Firtl/inc -Firtl/$(ARCH) -Us -Sf- -o$@ $<
+# RTL *.pas files
+$(OBJDIR)/rtl/%.o: rtl/%.pas
+	mkdir -p $(dir $@)
+	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
 
-# RTL unit: sysutils
-$(OBJDIR)/sysutils.o: rtl/sysutils.pas $(wildcard rtl/*.inc rtl/sysutils/*.inc)
-	mkdir -p $(OBJDIR)
-	$(PC) $(PCFLAGS) -Firtl/sysutils -o$@ $<
+# Kernel *.pas files
+$(OBJDIR)/kernel/%.o: %.pas
+	mkdir -p $(dir $@)
+	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
 
-# RTL units: objpas si_prc fpintres
-$(OBJDIR)/%.o: rtl/%.pas $(wildcard rtl/*.inc)
-	mkdir -p $(OBJDIR)
-	$(PC) $(PCFLAGS) -o$@ $<
+# Kernel architecture *.pas files
+$(OBJDIR)/kernel/%.o: $(ARCH)/%.pas
+	mkdir -p $(dir $@)
+	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
 
-# Kernel units
-$(OBJDIR)/%.o: %.pas $(RTLOBJS) $(wildcard *.inc)
-	mkdir -p $(OBJDIR)
-	$(PC) $(PCFLAGS) -Furtl -Fu$(ARCH) -o$@ $<
-
-# Kernel arch-specific units
-$(OBJDIR)/%.o: $(ARCH)/%.pas $(RTLOBJS) $(wildcard $(ARCH)/*.inc) arch.inc
-	mkdir -p $(OBJDIR)
-	$(PC) $(PCFLAGS) -Furtl -o$@ $<
-
-# Kernel arch-specific asm
-$(OBJDIR)/%.asm.o: $(ARCH)/%.asm
-	mkdir -p $(OBJDIR)
+# Kernel architecture *.asm files
+$(OBJDIR)/kernel/%.asm.o: $(ARCH)/%.asm
+	mkdir -p $(dir $@)
 ifeq ($(ARCH), x86_64)
-	$(NASM) $(NASMFLAGS) -o$@ $<
+	$(NASM) $(NASMFLAGS) -MD$(@:.o=.d) -MP -o$@ $<
 else
-	$(AS) $(ASFLAGS) -o$@ $<
+	$(AS) $(ASFLAGS) -MMD -MP -o$@ $<
 endif
 
-# uACPI
-$(OBJDIR)/%.c.o: ../vendor/uacpi/uacpi/source/%.c
-	mkdir -p $(OBJDIR)
-	$(CC) $(CFLAGS) -o$@ -c $<
-
-# Fonts
-$(OBJDIR)/%.psf.o: %.psf
-	mkdir -p $(OBJDIR)
+# Kernel *.psf files
+$(OBJDIR)/kernel/%.psf.o: %.psf
+	mkdir -p $(dir $@)
 	$(LD) -r -bbinary -o$@ $<
+
+# Limine Protocol *.pas files
+$(OBJDIR)/limine-protocol/%.o: ../vendor/limine-protocol/%.pas
+	mkdir -p $(dir $@)
+	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
+
+# uACPI *.c files
+$(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/uacpi/source/%.c
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -MMD -MP -o$@ -c $<
+
+# uACPI *.pas files
+$(OBJDIR)/uacpi/%.o: ../vendor/uacpi/%.pas
+	mkdir -p $(dir $@)
+	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
+
+# Dependencies
+-include $(DEPS)
