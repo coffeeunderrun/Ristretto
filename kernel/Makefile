@@ -9,17 +9,19 @@ OBJDIR = obj/$(ARCH)
 override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -Fu$(OBJDIR)/rtl
 
 RTL_PCFLAGS    := -Firtl/inc -Firtl/sysutils -Firtl/$(ARCH)
-KERNEL_PCFLAGS := -Fi../vendor/limine-protocol -Fu$(OBJDIR)/kernel -Fu$(OBJDIR)/uacpi -Fu$(OBJDIR)/limine-protocol
+KERNEL_PCFLAGS := -Fi../vendor/limine-protocol -Fu$(OBJDIR)/kernel -Fu$(OBJDIR)/limine-protocol -Fu$(OBJDIR)/uacpi-bindings
 
-UACPI_CFLAGS  := -I../vendor/uacpi/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
-UACPI_PCFLAGS := -Fi../vendor/uacpi/inc
+UACPI_CFLAGS  := -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
+UACPI_PCFLAGS := -Fi../vendor/uacpi-bindings/inc
 
 # RTL source files
 SRCS := $(addprefix rtl/, system.pas objpas.pas sysconst.pas sysutils.pas si_prc.pas fpintres.pas)
 # Limine Protocol source files
 SRCS += $(addprefix limine-protocol/, $(notdir $(wildcard ../vendor/limine-protocol/*.pas)))
 # uACPI source files
-SRCS += $(addprefix uacpi/, $(notdir $(wildcard ../vendor/uacpi/*.pas ../vendor/uacpi/uacpi/source/*.c)))
+SRCS += $(addprefix uacpi/, $(notdir $(wildcard ../vendor/uacpi/source/*.c)))
+# uACPI bindings source files
+SRCS += $(addprefix uacpi-bindings/, $(notdir $(wildcard ../vendor/uacpi-bindings/*.pas)))
 # Kernel source files
 SRCS += $(addprefix kernel/, $(notdir $(wildcard $(ARCH)/*.asm $(ARCH)/*.pas *.pas *.psf)))
 
@@ -82,12 +84,12 @@ $(OBJDIR)/limine-protocol/%.o: ../vendor/limine-protocol/%.pas
 	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
 
 # uACPI *.c files
-$(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/uacpi/source/%.c
+$(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/source/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(UACPI_CFLAGS) -MMD -MP -o$@ -c $<
 
-# uACPI *.pas files
-$(OBJDIR)/uacpi/%.o: ../vendor/uacpi/%.pas
+# uACPI bindings *.pas files
+$(OBJDIR)/uacpi-bindings/%.o: ../vendor/uacpi-bindings/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(UACPI_PCFLAGS) -FU$(dir $@) -o$@ $<
 

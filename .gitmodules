@@ -8,5 +8,8 @@
 	ignore = dirty
 [submodule "vendor/uacpi"]
 	path = vendor/uacpi
-	url = https://codeberg.org/coffeeunderrun/uacpi-pascal.git
+	url = https://github.com/uACPI/uACPI.git
+[submodule "vendor/uacpi-bindings"]
+	path = vendor/uacpi-bindings
+	url = https://codeberg.org/coffeeunderrun/uacpi-bindings-pascal.git
 	ignore = dirty
