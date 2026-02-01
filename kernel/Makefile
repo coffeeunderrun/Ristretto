@@ -2,13 +2,13 @@
 
 include ../vars.mk
 
-BINDIR = bin/$(ARCH)
-OBJDIR = obj/$(ARCH)
+BINDIR = bin/$(TARGET_ARCH)
+OBJDIR = obj/$(TARGET_ARCH)
 
 # Tell compiler not to add code to check for IO, overflow, range, stack errors
 override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -Fu$(OBJDIR)/rtl
 
-RTL_PCFLAGS    := -Firtl/inc -Firtl/sysutils -Firtl/$(ARCH)
+RTL_PCFLAGS    := -Firtl/inc -Firtl/sysutils -Firtl/$(TARGET_ARCH)
 KERNEL_PCFLAGS := -Fi../vendor/limine-protocol -Fu$(OBJDIR)/kernel -Fu$(OBJDIR)/limine-protocol -Fu$(OBJDIR)/uacpi-bindings
 
 UACPI_CFLAGS  := -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
@@ -23,31 +23,30 @@ SRCS += $(addprefix uacpi/, $(notdir $(wildcard ../vendor/uacpi/source/*.c)))
 # uACPI bindings source files
 SRCS += $(addprefix uacpi-bindings/, $(notdir $(wildcard ../vendor/uacpi-bindings/*.pas)))
 # Kernel source files
-SRCS += $(addprefix kernel/, $(notdir $(wildcard $(ARCH)/*.asm $(ARCH)/*.pas *.pas *.psf)))
+SRCS += $(addprefix kernel/, $(notdir $(wildcard $(TARGET_ARCH)/*.asm $(TARGET_ARCH)/*.pas *.pas *.psf)))
 
-ASFILES  := $(filter %.asm, $(SRCS))
-PCFILES  := $(filter %.pas, $(SRCS))
-CFILES   := $(filter %.c,   $(SRCS))
-PSFFILES := $(filter %.psf, $(SRCS))
+ASM_SRCS := $(filter %.asm, $(SRCS))
+PAS_SRCS := $(filter %.pas, $(SRCS))
+C_SRCS   := $(filter %.c,   $(SRCS))
+PSF_SRCS := $(filter %.psf, $(SRCS))
 
-DEPS := $(addprefix $(OBJDIR)/, $(ASFILES:.asm=.asm.d) $(PCFILES:.pas=.d) $(CFILES:.c=.c.d))
-OBJS := $(addprefix $(OBJDIR)/, $(ASFILES:.asm=.asm.o) $(PCFILES:.pas=.o) $(CFILES:.c=.c.o) $(PSFFILES:.psf=.psf.o))
-
+DEPS := $(addprefix $(OBJDIR)/, $(ASM_SRCS:.asm=.asm.d) $(PAS_SRCS:.pas=.d) $(C_SRCS:.c=.c.d))
+OBJS := $(addprefix $(OBJDIR)/, $(ASM_SRCS:.asm=.asm.o) $(PAS_SRCS:.pas=.o) $(C_SRCS:.c=.c.o) $(PSF_SRCS:.psf=.psf.o))
 .PHONY: all
 all: $(BINDIR)/kernel
 
 .PHONY: clean
 clean:
-	rm -rf bin/$(ARCH)/ obj/$(ARCH)/
+	rm -rf bin/$(TARGET_ARCH)/ obj/$(TARGET_ARCH)/
 
 .PHONY: distclean
 distclean:
 	rm -rf bin/ obj/
 
 # Kernel binary
-$(BINDIR)/kernel: $(OBJS) $(ARCH)/link.ld
+$(BINDIR)/kernel: $(OBJS) $(TARGET_ARCH)/link.ld
 	mkdir -p $(dir $@)
-	$(LD) $(LDFLAGS) -T$(ARCH)/link.ld -o$@ $(OBJS)
+	$(LD) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ $(OBJS)
 
 # RTL *.pas files
 $(OBJDIR)/rtl/%.o: rtl/%.pas
@@ -60,17 +59,17 @@ $(OBJDIR)/kernel/%.o: %.pas
 	$(PC) $(PCFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$@ $<
 
 # Kernel architecture *.pas files
-$(OBJDIR)/kernel/%.o: $(ARCH)/%.pas
+$(OBJDIR)/kernel/%.o: $(TARGET_ARCH)/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$@ $<
 
 # Kernel architecture *.asm files
-$(OBJDIR)/kernel/%.asm.o: $(ARCH)/%.asm
+$(OBJDIR)/kernel/%.asm.o: $(TARGET_ARCH)/%.asm
 	mkdir -p $(dir $@)
-ifeq ($(ARCH), x86_64)
+ifeq ($(TARGET_ARCH), x86_64)
 	$(NASM) $(NASMFLAGS) -MD$(@:.o=.d) -MP -o$@ $<
 else
-	$(AS) $(ASFLAGS) -MMD -MP -o$@ $<
+	$(CC) $(CFLAGS) -MMD -MP -o$@ $<
 endif
 
 # Kernel *.psf files

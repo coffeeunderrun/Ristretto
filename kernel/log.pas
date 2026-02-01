@@ -36,12 +36,12 @@ const
   );
 
   LogLevelPrefix: array [TLogLevel] of String = (
-    'FATAL: ',
-    'ERROR: ',
-    'WARN: ',
-    'INFO: ',
-    'DEBUG: ',
-    'TRACE: '
+    '[FATAL] ',
+    '[ERROR] ',
+    '[WARN ] ',
+    '[INFO ] ',
+    '[DEBUG] ',
+    '[TRACE] '
   );
 
 procedure Log(const Level: TLogLevel; const Text: String);

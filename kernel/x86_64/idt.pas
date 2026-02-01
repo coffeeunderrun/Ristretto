@@ -143,8 +143,6 @@ asm
   out PIC1_DATA, al
   mov al, 11111111b // Mask all PIC2 IRQs
   out PIC2_DATA, al
-
-  sti
 end;
 
 procedure PopulateIdt;
@@ -175,6 +173,7 @@ begin
 
   asm
     lidt [IdtPointer]
+    sti
   end;
 end;
 

@@ -3,6 +3,7 @@ program Kernel;
 uses Arch, Framebuffer, Limine, Terminal;
 
 {$define LIMINE_REQUEST_FRAMEBUFFER}
+{$define LIMINE_REQUEST_MEMORY_MAP}
 {$define LIMINE_REQUEST_RSDP}
 {$I limine.inc}
 

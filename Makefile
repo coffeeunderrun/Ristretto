@@ -2,9 +2,9 @@
 
 include vars.mk
 
-IMGDIR = img/$(ARCH)
+IMGDIR = img/$(TARGET_ARCH)
 
-ifeq ($(ARCH), x86_64)
+ifeq ($(TARGET_ARCH), x86_64)
 LIMINE_BOOT := BOOTX64.EFI
 endif
 
@@ -37,8 +37,8 @@ rtl:
 run: $(IMGDIR)/$(IMAGENAME).img vendor/edk2-ovmf
 	$(QEMU) $(QEMUFLAGS) \
 		-drive format=raw,file=$< \
-		-drive if=pflash,format=raw,unit=0,file=vendor/edk2-ovmf/ovmf-code-$(ARCH).fd,readonly=on \
-		-drive if=pflash,format=raw,unit=1,file=vendor/edk2-ovmf/ovmf-vars-$(ARCH).fd
+		-drive if=pflash,format=raw,unit=0,file=vendor/edk2-ovmf/ovmf-code-$(TARGET_ARCH).fd,readonly=on \
+		-drive if=pflash,format=raw,unit=1,file=vendor/edk2-ovmf/ovmf-vars-$(TARGET_ARCH).fd
 
 $(IMGDIR)/$(IMAGENAME).img: kernel vendor/limine/limine
 	mkdir -p $(IMGDIR)
@@ -47,7 +47,7 @@ $(IMGDIR)/$(IMAGENAME).img: kernel vendor/limine/limine
 		&& mmd -i $@ ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine \
 		&& mcopy -i $@ vendor/limine/$(LIMINE_BOOT) ::/EFI/BOOT \
 		&& mcopy -i $@ limine.conf ::/boot/limine \
-		&& mcopy -i $@ kernel/bin/$(ARCH)/kernel ::/boot
+		&& mcopy -i $@ kernel/bin/$(TARGET_ARCH)/kernel ::/boot
 
 vendor/edk2-ovmf:
 	curl -L https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/edk2-ovmf.tar.gz | gunzip | tar -xf - -C vendor
