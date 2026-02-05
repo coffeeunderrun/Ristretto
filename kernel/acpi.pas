@@ -50,8 +50,6 @@ uses Limine, Log, SysUtils;
 var
   HhdmRequest: TLimineHhdmRequest; external name '_limine_request_hhdm';
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
-  Buffer: array [0..4095] of Byte;
-  Status: uacpi_status;
 
 function uacpi_kernel_get_rsdp(AddressPtr: puacpi_phys_addr): uacpi_status; cdecl; public;
 begin
@@ -88,6 +86,10 @@ begin
   Log.Trace('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) + ' of size ' + IntToStr(Size) + '. No action taken.');
 end;
 
+procedure InitializeAcpi;
+var
+  Buffer: array [0..4095] of Byte;
+  Status: uacpi_status;
 begin
   Status := uacpi_setup_early_table_access(@Buffer, SizeOf(Buffer));
   case Status of
@@ -100,4 +102,8 @@ begin
     UACPI_STATUS_AML_UNDEFINED_REFERENCE..UACPI_STATUS_AML_CALL_STACK_DEPTH_LIMIT:
       Log.Fatal('uACPI status: ' + UACPI_STATUS_AML_MESSAGE[Status]);
   end;
+end;
+
+begin
+  InitializeAcpi;
 end.

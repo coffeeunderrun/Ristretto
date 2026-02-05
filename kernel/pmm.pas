@@ -2,6 +2,11 @@ unit Pmm;
 
 interface
 
+type
+  TAllocateFrameCallback = function(Size: SizeUInt): PtrUInt;
+
+function EarlyAllocateFrame(Size: SizeUInt): PtrUInt;
+
 implementation
 
 uses Limine, SysUtils, Log;
@@ -22,14 +27,34 @@ const
 var
   MemoryMapRequest: TLimineMemoryMapRequest; external name '_limine_request_memory_map';
 
+function EarlyAllocateFrame(Size: SizeUInt): PtrUInt;
+var
+  I: SizeUInt;
+begin
+  { TODO: Do NOT mutate the Limine memory map. }
+  with MemoryMapRequest.Response^ do begin
+    for I := 1 to EntryCount do with Entries^[I] do begin
+      if (EntryType <> LIMINE_MEMMAP_USABLE) or (Length < Size) then continue;
+
+      result := Base;
+      Base := Base + Size;
+      Length := Length - Size;
+      exit;
+    end;
+  end;
+
+  result := default(PtrUInt);
+end;
+
 procedure ParseMemoryMap;
 var
   I: SizeUInt;
 begin
   with MemoryMapRequest.Response^ do begin
-    for I := 1 to EntryCount do with Entries^[I] do
-      Log.Info('Entry: Base=' + IntToHex(Entries^[I].Base) +
-        ' Length=' + IntToHex(Entries^[I].Length) +
+    for I := 1 to EntryCount do
+      Log.Debug('Memory Map Entry:' +
+        ' Base=' + IntToHex(Entries^[I].Base) +
+        ' Size=' + IntToHex(Entries^[I].Length) +
         ' Type=' + MEMORY_MAP_TYPE_NAMES[Entries^[I].EntryType]);
   end;
 end;

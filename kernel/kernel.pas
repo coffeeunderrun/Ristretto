@@ -2,6 +2,7 @@ program Kernel;
 
 uses Arch, Framebuffer, Limine, Terminal;
 
+{$define LIMINE_REQUEST_EXECUTABLE_ADDRESS}
 {$define LIMINE_REQUEST_FRAMEBUFFER}
 {$define LIMINE_REQUEST_HHDM}
 {$define LIMINE_REQUEST_MEMORY_MAP}
