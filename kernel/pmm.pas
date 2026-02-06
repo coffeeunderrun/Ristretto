@@ -3,11 +3,11 @@ unit Pmm;
 interface
 
 type
-  TAllocateFrameCallback = function(Size: SizeUInt): PtrUInt;
+  TAllocateFrameCallback = function(var Frame: PtrUInt; Size: SizeUInt): Boolean;
 
 procedure Initialize;
 
-function EarlyAllocateFrame(Size: SizeUInt): PtrUInt;
+function EarlyAllocateFrame(var Frame: PtrUInt; Size: SizeUInt): Boolean;
 
 implementation
 
@@ -28,13 +28,15 @@ const
 
 var
   MemoryMapRequest: TLimineMemoryMapRequest; external name '_limine_request_memory_map';
+  MemoryMapEarlyIndex: SizeUInt;
+  MemoryMapEarlyOffset: SizeUInt;
 
 procedure ParseMemoryMap;
 var
   I: SizeUInt;
 begin
   with MemoryMapRequest.Response^ do begin
-    for I := 1 to EntryCount do
+    for I := 0 to EntryCount - 1 do
       Log.Debug('Memory Map Entry:' +
         ' Base=' + IntToHex(Entries^[I].Base) +
         ' Size=' + IntToHex(Entries^[I].Length) +
@@ -53,23 +55,33 @@ begin
   Log.Debug('PMM initialized.');
 end;
 
-function EarlyAllocateFrame(Size: SizeUInt): PtrUInt;
-var
-  I: SizeUInt;
+function EarlyAllocateFrame(var Frame: PtrUInt; Size: SizeUInt): Boolean;
 begin
-  { TODO: Do NOT mutate the Limine memory map. }
-  with MemoryMapRequest.Response^ do begin
-    for I := 1 to EntryCount do with Entries^[I] do begin
-      if (EntryType <> LIMINE_MEMMAP_USABLE) or (Length < Size) then continue;
+  with MemoryMapRequest.Response^ do
+    while MemoryMapEarlyIndex < EntryCount do begin
+      with Entries^[MemoryMapEarlyIndex] do begin
+        if (EntryType = LIMINE_MEMMAP_USABLE) and (MemoryMapEarlyOffset < Length) then begin
+          Frame := Base + MemoryMapEarlyOffset;
+          Inc(MemoryMapEarlyOffset, Size);
+          // Log.Trace('EarlyAllocateFrame: Allocated frame at ' + IntToHex(Frame) + ' of size ' + IntToHex(Size));
+          exit(true);
+        end;
 
-      result := Base;
-      Base := Base + Size;
-      Length := Length - Size;
-      exit;
+        Inc(MemoryMapEarlyIndex);
+        MemoryMapEarlyOffset := 0;
+      end;
     end;
-  end;
 
-  result := default(PtrUInt);
+  Log.Error('Out of memory in early frame allocator.');
+  result := false;
 end;
 
+begin
+  if not Assigned(MemoryMapRequest.Response) then begin
+    Log.Fatal('No memory map response from Limine.');
+    Halt;
+  end;
+
+  MemoryMapEarlyIndex := 0;
+  MemoryMapEarlyOffset := 0;
 end.

@@ -26,9 +26,14 @@ implementation
 
 uses Limine, Log, Pmm, SysUtils;
 
-function MapPage(
+function CreateRootFrame(
   var RootFrame: PtrUInt;
-  Frame, Page: PtrUInt;
+  const AllocateFrame: TAllocateFrameCallback;
+  const GetPageFromFrame: TGetPageFromFrameCallback
+): Boolean; external name '_arch_create_root_frame';
+
+function MapPage(
+  RootFrame, Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
   const AllocateFrame: TAllocateFrameCallback;
@@ -36,8 +41,7 @@ function MapPage(
 ): Boolean; external name '_arch_map_page';
 
 function MapPageRange(
-  var RootFrame: PtrUInt;
-  Frame, Page: PtrUInt;
+  RootFrame, Frame, Page: PtrUInt;
   Size: SizeUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
@@ -63,29 +67,37 @@ var
   RootFrame: PtrUInt;
   I: SizeUInt;
 begin
-  RootFrame := 0;
+  if not CreateRootFrame(RootFrame, @EarlyAllocateFrame, @GetFrameWithHhdmOffset) then begin
+    Log.Fatal('Failed to create kernel address space root frame.');
+    Halt;
+  end;
 
   { TODO: Use proper flags based on segments. }
   // Map the kernel executable region.
-  MapPageRange(
+  if not MapPageRange(
     RootFrame,
     ExecutableAddressRequest.Response^.PhysicalBase,
     ExecutableAddressRequest.Response^.VirtualBase,
     PtrUInt(@KernelEnd) - PtrUInt(@KernelStart),
     [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessSupervisor, MemoryAccessWrite], MemoryCacheNone,
     @EarlyAllocateFrame, @GetFrameWithHhdmOffset
-  );
+  ) then begin
+    Log.Fatal('Failed to map kernel executable region.');
+    Halt;
+  end;
 
   { TODO: Use proper flags based on memory types. }
   // Use higher-half direct mapping to map physical memory.
   with MemoryMapRequest.Response^ do
-    for I := 1 to EntryCount do with Entries^[I] do
-      MapPageRange(
+    for I := 0 to EntryCount - 1 do with Entries^[I] do
+      if not MapPageRange(
         RootFrame, Base, GetFrameWithHhdmOffset(Base), Length,
         [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessSupervisor, MemoryAccessWrite], MemoryCacheNone,
         @EarlyAllocateFrame, @GetFrameWithHhdmOffset
-      );
-
+      ) then begin
+        Log.Fatal('Failed to map physical memory range.');
+        Halt;
+      end;
   result := RootFrame;
 end;
 

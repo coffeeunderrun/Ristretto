@@ -43,9 +43,23 @@ begin
   end;
 end;
 
-function MapPage(
+function CreateRootFrame(
   var RootFrame: PtrUInt;
-  Frame, Page: PtrUInt;
+  const AllocateFrame: TAllocateFrameCallback;
+  const GetPageFromFrame: TGetPageFromFrameCallback
+): Boolean; public name '_arch_create_root_frame';
+begin
+  if not AllocateFrame(RootFrame, ARCH_PAGE_SIZE) then begin
+    Log.Error('Failed to allocate frame for root page table.');
+    exit(false);
+  end;
+
+  FillByte(Pointer(GetPageFromFrame(RootFrame))^, ARCH_PAGE_SIZE, 0);
+  result := true;
+end;
+
+function MapPage(
+  RootFrame, Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
   const AllocateFrame: TAllocateFrameCallback;
@@ -58,13 +72,8 @@ var
   TableEntry: PUInt64;
   TableIndex: UInt16;
 begin
-  // Initialize root page table if not already done.
-  if RootFrame = 0 then begin
-    RootFrame := AllocateFrame(ARCH_PAGE_SIZE);
-    Table := PPageTable(GetPageFromFrame(RootFrame));
-    FillByte(Table^, SizeOf(Table^), 0);
-  end else
-    Table := PPageTable(GetPageFromFrame(RootFrame));
+  // Start at root page table.
+  Table := PPageTable(GetPageFromFrame(RootFrame));
 
   // Initial shift to get the top-level index.
   Shift := ((DEFAULT_PAGE_LEVEL_MAX - 1) * 9) + 12;
@@ -88,11 +97,16 @@ begin
     if PageLevelIndex = 1 then
       TableFrame := Frame
     else begin
-      TableFrame := AllocateFrame(ARCH_PAGE_SIZE);
+      if not AllocateFrame(TableFrame, ARCH_PAGE_SIZE) then begin
+        Log.Error('Failed to allocate page table frame.');
+        exit(false);
+      end;
+
       Table := PPageTable(GetPageFromFrame(TableFrame));
       FillByte(Table^, SizeOf(Table^), 0);
     end;
 
+    // Populate page table entry.
     SetPageTableEntry(TableEntry^, TableFrame, MemoryAccess, MemoryCache);
   end;
 
@@ -101,8 +115,7 @@ end;
 
 { TODO: Optimize to map ranges instead of one by one. }
 function MapPageRange(
-  var RootFrame: PtrUInt;
-  Frame, Page: PtrUInt;
+  RootFrame, Frame, Page: PtrUInt;
   Size: SizeUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
@@ -115,7 +128,7 @@ begin
 
   // Map pages one by one.
   while Size > 0 do begin
-    MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame, GetPageFromFrame);
+    if not MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame, GetPageFromFrame) then exit(false);
     Frame += ARCH_PAGE_SIZE;
     Page += ARCH_PAGE_SIZE;
     Size -= ARCH_PAGE_SIZE;
