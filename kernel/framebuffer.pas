@@ -12,6 +12,9 @@ procedure MoveUp(Delta: UInt64; FillColor: TColor);
 function GetHeight: UInt64; inline;
 function GetWidth: UInt64; inline;
 
+function GetVirtualBase: PtrUInt; inline;
+function GetSize: SizeUInt; inline;
+
 implementation
 
 uses Limine;
@@ -106,8 +109,11 @@ begin
   end;
 end;
 
-function GetHeight: UInt64; begin GetHeight := ResolutionHeight; end;
-function GetWidth: UInt64; begin GetWidth := ResolutionWidth; end;
+function GetHeight: UInt64; begin result := ResolutionHeight; end;
+function GetWidth: UInt64; begin result := ResolutionWidth; end;
+
+function GetVirtualBase: PtrUInt; begin result := PtrUInt(FramebufferAddress); end;
+function GetSize: SizeUInt; inline; begin result := FramebufferSize; end;
 
 begin
   FramebufferAddress := nil;

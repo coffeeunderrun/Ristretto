@@ -99,8 +99,8 @@ procedure SetY(Y: UInt64); begin TerminalY := Y; end;
 procedure SetBackground(Color: TColor); begin TerminalBgColor := Color; end;
 procedure SetForeground(Color: TColor); begin TerminalFgColor := Color; end;
 
-function GetBackground: TColor; begin GetBackground := TerminalBgColor; end;
-function GetForeground: TColor; begin GetForeground := TerminalFgColor; end;
+function GetBackground: TColor; begin result := TerminalBgColor; end;
+function GetForeground: TColor; begin result := TerminalFgColor; end;
 
 procedure NewLine;
 begin

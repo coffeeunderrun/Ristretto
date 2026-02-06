@@ -9,7 +9,8 @@ OBJDIR = obj/$(TARGET_ARCH)
 override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -Fu$(OBJDIR)/rtl
 
 RTL_PCFLAGS    := -Firtl/inc -Firtl/sysutils -Firtl/$(TARGET_ARCH)
-KERNEL_PCFLAGS := -Fi../vendor/limine-protocol -Fu$(OBJDIR)/kernel -Fu$(OBJDIR)/limine-protocol -Fu$(OBJDIR)/uacpi-bindings
+KERNEL_PCFLAGS := -Fi../vendor/limine-protocol -Fi$(TARGET_ARCH) \
+	-Fu$(OBJDIR)/kernel -Fu$(OBJDIR)/limine-protocol -Fu$(OBJDIR)/uacpi-bindings
 
 UACPI_CFLAGS  := -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
 UACPI_PCFLAGS := -Fi../vendor/uacpi-bindings/inc

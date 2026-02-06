@@ -6,11 +6,20 @@ procedure Initialize;
 
 implementation
 
-uses Limine, Log, Pmm, SysUtils, Vmm;
+uses Limine, Log, Pmm, Vmm;
 
 const
   ARCH_PAGE_SIZE = $1000;
   DEFAULT_PAGE_LEVEL_MAX = 4;
+
+  PAGE_ENTRY_PRESENT = $1;
+  PAGE_ENTRY_WRITABLE = $2;
+  PAGE_ENTRY_USER = $4;
+  PAGE_ENTRY_WRITE_THROUGH = $8;
+  PAGE_ENTRY_CACHE_DISABLE = $10;
+  PAGE_ENTRY_PAT = $80;
+  PAGE_ENTRY_GLOBAL = $100;
+  PAGE_ENTRY_NO_EXECUTE = UInt64($8000000000000000);
 
 type
   PPageTable = ^APageTable;
@@ -20,26 +29,25 @@ var
   PagingModeRequest: TLiminePagingModeRequest; external name '_limine_request_paging_mode';
   PageLevelMax: UInt8;
 
-procedure SetPageTableEntry(
+procedure SetLeafEntry(
   var Entry: UInt64;
   Frame: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache
 ); inline;
 begin
-  Entry := (UInt64(Frame) and $FFFFFFFFFF000) or $1;
+  Entry := (UInt64(Frame) and $FFFFFFFFFF000) or PAGE_ENTRY_PRESENT;
 
-  if not (MemoryAccessExecute in MemoryAccess) then Entry := Entry or (UInt64($1) shl 63);
-  if MemoryAccessGlobal in MemoryAccess then Entry := Entry or $100;
-  if MemoryAccessSupervisor in MemoryAccess then Entry := Entry or $4;
-  if MemoryAccessWrite in MemoryAccess then Entry := Entry or $2;
+  if not (MemoryAccessExecute in MemoryAccess) then Entry := Entry or PAGE_ENTRY_NO_EXECUTE;
+  if MemoryAccessGlobal in MemoryAccess then Entry := Entry or PAGE_ENTRY_GLOBAL;
+  if MemoryAccessUser in MemoryAccess then Entry := Entry or PAGE_ENTRY_USER;
+  if MemoryAccessWrite in MemoryAccess then Entry := Entry or PAGE_ENTRY_WRITABLE;
 
-  { TODO: Utilize PAT and MTRRs. }
   case MemoryCache of
-    MemoryCacheNone: Entry := Entry or $10;
-    // MemoryCacheWriteBack: Entry := Entry or ();
-    MemoryCacheWriteThrough: Entry := Entry or $8;
-    // MemoryCacheWriteCombining: Entry := Entry or ();
+    MemoryCacheNone: Entry := Entry or PAGE_ENTRY_CACHE_DISABLE;
+    // MemoryCacheWriteBack: do nothing
+    MemoryCacheWriteCombining: Entry := Entry or PAGE_ENTRY_PAT or PAGE_ENTRY_WRITE_THROUGH;
+    MemoryCacheWriteThrough: Entry := Entry or PAGE_ENTRY_WRITE_THROUGH;
   end;
 end;
 
@@ -76,10 +84,10 @@ begin
   Table := PPageTable(GetPageFromFrame(RootFrame));
 
   // Initial shift to get the top-level index.
-  Shift := ((DEFAULT_PAGE_LEVEL_MAX - 1) * 9) + 12;
+  Shift := ((PageLevelMax - 1) * 9) + 12;
 
   // Traverse page table levels.
-  for PageLevelIndex := DEFAULT_PAGE_LEVEL_MAX downto 1 do begin
+  for PageLevelIndex := PageLevelMax downto 1 do begin
     TableIndex := (Page shr Shift) and $1FF;
     TableEntry := @Table^[TableIndex];
 
@@ -95,19 +103,17 @@ begin
 
     // Allocate new page table or use frame for final level.
     if PageLevelIndex = 1 then
-      TableFrame := Frame
+      SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache)
     else begin
       if not AllocateFrame(TableFrame, ARCH_PAGE_SIZE) then begin
         Log.Error('Failed to allocate page table frame.');
         exit(false);
       end;
 
+      TableEntry^ := (UInt64(TableFrame) and $FFFFFFFFFF000) or PAGE_ENTRY_PRESENT or PAGE_ENTRY_WRITABLE;
       Table := PPageTable(GetPageFromFrame(TableFrame));
       FillByte(Table^, SizeOf(Table^), 0);
     end;
-
-    // Populate page table entry.
-    SetPageTableEntry(TableEntry^, TableFrame, MemoryAccess, MemoryCache);
   end;
 
   result := true;

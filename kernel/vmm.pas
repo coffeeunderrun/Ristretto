@@ -8,7 +8,7 @@ type
   TMemoryAccess = (
     MemoryAccessExecute,
     MemoryAccessGlobal,
-    MemoryAccessSupervisor,
+    MemoryAccessUser,
     MemoryAccessWrite
   );
   TMemoryAccessSet = set of TMemoryAccess;
@@ -24,30 +24,7 @@ procedure Initialize;
 
 implementation
 
-uses Limine, Log, Pmm, SysUtils;
-
-function CreateRootFrame(
-  var RootFrame: PtrUInt;
-  const AllocateFrame: TAllocateFrameCallback;
-  const GetPageFromFrame: TGetPageFromFrameCallback
-): Boolean; external name '_arch_create_root_frame';
-
-function MapPage(
-  RootFrame, Frame, Page: PtrUInt;
-  MemoryAccess: TMemoryAccessSet;
-  MemoryCache: TMemoryCache;
-  const AllocateFrame: TAllocateFrameCallback;
-  const GetPageFromFrame: TGetPageFromFrameCallback
-): Boolean; external name '_arch_map_page';
-
-function MapPageRange(
-  RootFrame, Frame, Page: PtrUInt;
-  Size: SizeUInt;
-  MemoryAccess: TMemoryAccessSet;
-  MemoryCache: TMemoryCache;
-  const AllocateFrame: TAllocateFrameCallback;
-  const GetPageFromFrame: TGetPageFromFrameCallback
-): Boolean; external name '_arch_map_page_range';
+uses Arch, Framebuffer, Limine, Log, Pmm, SysUtils;
 
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';
@@ -59,7 +36,7 @@ var
 
 function GetFrameWithHhdmOffset(Frame: PtrUInt): PtrUInt; inline;
 begin
-  result := Frame + HhdmRequest.Response^.Offset;
+  result := Frame + HhdmOffset;
 end;
 
 function CreateKernelAddressSpace: PtrUInt;
@@ -67,6 +44,7 @@ var
   RootFrame: PtrUInt;
   I: SizeUInt;
 begin
+  RootFrame := 0;
   if not CreateRootFrame(RootFrame, @EarlyAllocateFrame, @GetFrameWithHhdmOffset) then begin
     Log.Fatal('Failed to create kernel address space root frame.');
     Halt;
@@ -79,7 +57,7 @@ begin
     ExecutableAddressRequest.Response^.PhysicalBase,
     ExecutableAddressRequest.Response^.VirtualBase,
     PtrUInt(@KernelEnd) - PtrUInt(@KernelStart),
-    [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessSupervisor, MemoryAccessWrite], MemoryCacheNone,
+    [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessWrite], MemoryCacheWriteBack,
     @EarlyAllocateFrame, @GetFrameWithHhdmOffset
   ) then begin
     Log.Fatal('Failed to map kernel executable region.');
@@ -92,19 +70,24 @@ begin
     for I := 0 to EntryCount - 1 do with Entries^[I] do
       if not MapPageRange(
         RootFrame, Base, GetFrameWithHhdmOffset(Base), Length,
-        [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessSupervisor, MemoryAccessWrite], MemoryCacheNone,
+        [MemoryAccessGlobal, MemoryAccessWrite], MemoryCacheWriteBack,
         @EarlyAllocateFrame, @GetFrameWithHhdmOffset
       ) then begin
         Log.Fatal('Failed to map physical memory range.');
         Halt;
       end;
-  result := RootFrame;
-end;
 
-procedure SwitchToAddressSpace(const RootFrame: PtrUInt); assembler; nostackframe;
-asm
-  mov rax, RootFrame
-  mov cr3, rax
+  { TODO: This can be handled in the above loop. }
+  // Map the framebuffer region.
+  MapPageRange(RootFrame,
+    Framebuffer.GetVirtualBase - HhdmOffset,
+    Framebuffer.GetVirtualBase,
+    Framebuffer.GetSize,
+    [MemoryAccessGlobal, MemoryAccessWrite], MemoryCacheWriteCombining,
+    @EarlyAllocateFrame, @GetFrameWithHhdmOffset
+  );
+
+  result := RootFrame;
 end;
 
 procedure Initialize;
@@ -113,7 +96,7 @@ begin
     ' KernelStart=' + IntToHex(PtrUInt(@KernelStart)) +
     ' KernelEnd=' + IntToHex(PtrUInt(@KernelEnd)));
 
-  SwitchToAddressSpace(CreateKernelAddressSpace);
+  LoadRootFrame(CreateKernelAddressSpace);
   Log.Debug('VMM initialized.');
 end;
 

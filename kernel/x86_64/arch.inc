@@ -1,18 +1,9 @@
-unit Arch;
-
-interface
-
-procedure Initialize;
-
-implementation
-
-uses Gdt, Idt, Paging;
+uses Cpu, Gdt, Idt, Paging;
 
 procedure Initialize;
 begin
   Gdt.Initialize;
   Idt.Initialize;
+  Cpu.Initialize;
   Paging.Initialize;
 end;
-
-end.
