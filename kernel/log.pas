@@ -60,10 +60,16 @@ begin
 {$endif}
 end;
 
+procedure Trace(const Text: String);
+begin
+{$ifndef NDEBUG}
+  Log(LogLevelTrace, Text);
+{$endif}
+end;
+
 procedure Error(const Text: String); begin Log(LogLevelError, Text); end;
 procedure Fatal(const Text: String); begin Log(LogLevelFatal, Text); end;
 procedure Info(const Text: String); begin Log(LogLevelInfo, Text); end;
-procedure Trace(const Text: String); begin Log(LogLevelTrace, Text); end;
 procedure Warn(const Text: String); begin Log(LogLevelWarn, Text); end;
 
 end.

@@ -47,7 +47,7 @@ distclean:
 # Kernel binary
 $(BINDIR)/kernel: $(OBJS) $(TARGET_ARCH)/link.ld
 	mkdir -p $(dir $@)
-	$(LD) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ $(OBJS)
+	$(LD) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ $(wildcard $(OBJS))
 
 # RTL *.pas files
 $(OBJDIR)/rtl/%.o: rtl/%.pas

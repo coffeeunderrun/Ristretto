@@ -9,17 +9,24 @@ It currently targets x86_64 (support for additional architectures is planned) an
 - **Target:** x86_64 (current; future multi-architecture support planned)
 - **Boot:** Limine Bootloader
 
-**Requirements**
-- `fpc` (Free Pascal Compiler)
+**Required**
+
+Build:
+- `fpc` (Free Pascal compiler)
 - `cc` / `gcc` (C compiler)
-- `ld` (GNU binutils)
-- `nasm` (Netwide Assembler)
-- `dd` (coreutils; used to create disk images)
-- `mtools` (`mformat`, `mmd`, `mcopy` used to create FAT images)
+- `ld` (Linker)
+- `nasm` (Netwide assembler)
 - `curl`, `gunzip` and `tar` (used to fetch and extract vendor OVMF)
 - `make`
-- `qemu`
 - `git`
+
+Run (w/ QEMU):
+- `coreutils` (used to create disk images)
+- `mtools` (used to create FAT images)
+- `qemu`
+
+Generate ISO:
+- `xorriso`
 
 **Build**
 
@@ -27,16 +34,28 @@ It currently targets x86_64 (support for additional architectures is planned) an
 make
 ```
 
-**Run (QEMU)**
+```bash
+make all-iso
+```
+
+**Run (w/ QEMU)**
 
 ```bash
 make run
+```
+
+```bash
+make run-iso
 ```
 
 **Clean**
 
 ```bash
 make clean
+```
+
+```bash
+make distclean
 ```
 
 **License**
