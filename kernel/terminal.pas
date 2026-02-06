@@ -6,31 +6,35 @@ uses Color;
 
 procedure Clear;
 
-procedure SetX(const X: UInt64); inline;
-procedure SetY(const Y: UInt64); inline;
+procedure SetX(X: UInt64); inline;
+procedure SetY(Y: UInt64); inline;
 
-procedure SetBackground(const Color: TColor); inline;
-procedure SetForeground(const Color: TColor); inline;
+procedure SetBackground(Color: TColor); inline;
+procedure SetForeground(Color: TColor); inline;
 
 function GetBackground: TColor; inline;
 function GetForeground: TColor; inline;
 
 procedure Write(const Text: String); inline;
-procedure Write(const Text: String; const FgColor: TColor); inline;
-procedure Write(const Text: String; const FgColor, BgColor: TColor);
+procedure Write(const Text: String; FgColor: TColor); inline;
+procedure Write(const Text: String; FgColor, BgColor: TColor);
 
 implementation
+
+{$macro on}
+{$define DEFAULT_BG_COLOR := ColorBlack}
+{$define DEFAULT_FG_COLOR := ColorAmber}
 
 uses Framebuffer;
 
 const
-  PCScreenFontMagic: UInt16 = $0436;
-  PCScreenFontMode512: UInt8 = $01;
-  PCScreenFontModeHasTab: UInt8 = $02;
-  PCScreenFontModeHasSequence: UInt8 = $04;
-  PCScreenFontModeMax: UInt8 = $05;
-  PCScreenFontSeparator: UInt16 = $FFFF;
-  PCScreenFontStartSequence: UInt16 = $FFFE;
+  PSF_MAGIC: UInt16 = $0436;
+  PSF_MODE_512: UInt8 = $01;
+  PSF_MODE_HAS_TAB: UInt8 = $02;
+  PSF_MODE_HAS_SEQUENCE: UInt8 = $04;
+  PSF_MODE_MAX: UInt8 = $05;
+  PSF_SEPARATOR: UInt16 = $FFFF;
+  PSF_START_SEQUENCE: UInt16 = $FFFE;
 
 type
   PPCScreenFont = ^TPCScreenFont;
@@ -52,12 +56,12 @@ procedure Clear;
 begin
   TerminalX := 0;
   TerminalY := 0;
-  TerminalBgColor := ColorBlack;
-  TerminalFgColor := ColorAmber;
+  TerminalBgColor := DEFAULT_BG_COLOR;
+  TerminalFgColor := DEFAULT_FG_COLOR;
   Framebuffer.Clear(TerminalBgColor);
 end;
 
-procedure PutChar(const X, Y: UInt64; const FgColor, BgColor: TColor; const Ch: Char);
+procedure PutChar(X, Y: UInt64; FgColor, BgColor: TColor; Ch: Char);
 var
   GlyphX, GlyphY: UInt8;
   GlyphBit: UInt8;
@@ -89,11 +93,11 @@ begin
   end;
 end;
 
-procedure SetX(const X: UInt64); begin TerminalX := X; end;
-procedure SetY(const Y: UInt64); begin TerminalY := Y; end;
+procedure SetX(X: UInt64); begin TerminalX := X; end;
+procedure SetY(Y: UInt64); begin TerminalY := Y; end;
 
-procedure SetBackground(const Color: TColor); begin TerminalBgColor := Color; end;
-procedure SetForeground(const Color: TColor); begin TerminalFgColor := Color; end;
+procedure SetBackground(Color: TColor); begin TerminalBgColor := Color; end;
+procedure SetForeground(Color: TColor); begin TerminalFgColor := Color; end;
 
 function GetBackground: TColor; begin GetBackground := TerminalBgColor; end;
 function GetForeground: TColor; begin GetForeground := TerminalFgColor; end;
@@ -112,12 +116,12 @@ begin
   Write(Text, TerminalFgColor, TerminalBgColor);
 end;
 
-procedure Write(const Text: String; const FgColor: TColor);
+procedure Write(const Text: String; FgColor: TColor);
 begin
   Write(Text, FgColor, TerminalBgColor);
 end;
 
-procedure Write(const Text: String; const FgColor, BgColor: TColor);
+procedure Write(const Text: String; FgColor, BgColor: TColor);
 var
   Ch: Char;
 begin
@@ -139,6 +143,9 @@ begin
 end;
 
 begin
+  TerminalX := 0;
+  TerminalY := 0;
+  TerminalBgColor := DEFAULT_BG_COLOR;
+  TerminalFgColor := DEFAULT_FG_COLOR;
   KernelFontPtr := PPCScreenFont(@RawKernelFontStart);
-  Clear;
 end.

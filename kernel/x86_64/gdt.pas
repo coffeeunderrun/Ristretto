@@ -2,6 +2,8 @@ unit Gdt;
 
 interface
 
+procedure Initialize;
+
 implementation
 
 uses Log;
@@ -35,7 +37,7 @@ var
     (Descriptor: $0000000000000000)
   );
 
-procedure LoadGdt;
+procedure Initialize;
 var
   GdtPointer: TGdtPointer;
 begin
@@ -59,9 +61,8 @@ begin
     mov ds, ax
     mov es, ax
   end ['rax'];
+
+  Log.Debug('GDT initialized.');
 end;
 
-begin
-  LoadGdt;
-  Log.Debug('Unit initialized: GDT');
 end.

@@ -5,6 +5,8 @@ interface
 type
   TAllocateFrameCallback = function(Size: SizeUInt): PtrUInt;
 
+procedure Initialize;
+
 function EarlyAllocateFrame(Size: SizeUInt): PtrUInt;
 
 implementation
@@ -27,6 +29,30 @@ const
 var
   MemoryMapRequest: TLimineMemoryMapRequest; external name '_limine_request_memory_map';
 
+procedure ParseMemoryMap;
+var
+  I: SizeUInt;
+begin
+  with MemoryMapRequest.Response^ do begin
+    for I := 1 to EntryCount do
+      Log.Debug('Memory Map Entry:' +
+        ' Base=' + IntToHex(Entries^[I].Base) +
+        ' Size=' + IntToHex(Entries^[I].Length) +
+        ' Type=' + MEMORY_MAP_TYPE_NAMES[Entries^[I].EntryType]);
+  end;
+end;
+
+procedure Initialize;
+begin
+  if not Assigned(MemoryMapRequest.Response) then begin
+    Log.Fatal('No memory map response from Limine.');
+    Halt;
+  end;
+
+  ParseMemoryMap;
+  Log.Debug('PMM initialized.');
+end;
+
 function EarlyAllocateFrame(Size: SizeUInt): PtrUInt;
 var
   I: SizeUInt;
@@ -46,25 +72,4 @@ begin
   result := default(PtrUInt);
 end;
 
-procedure ParseMemoryMap;
-var
-  I: SizeUInt;
-begin
-  with MemoryMapRequest.Response^ do begin
-    for I := 1 to EntryCount do
-      Log.Debug('Memory Map Entry:' +
-        ' Base=' + IntToHex(Entries^[I].Base) +
-        ' Size=' + IntToHex(Entries^[I].Length) +
-        ' Type=' + MEMORY_MAP_TYPE_NAMES[Entries^[I].EntryType]);
-  end;
-end;
-
-begin
-  if not Assigned(MemoryMapRequest.Response) then begin
-    Log.Fatal('No memory map response from Limine.');
-    exit;
-  end;
-
-  ParseMemoryMap;
-  Log.Debug('Unit initialized: PMM');
 end.

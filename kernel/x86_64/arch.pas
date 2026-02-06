@@ -2,9 +2,17 @@ unit Arch;
 
 interface
 
+procedure Initialize;
+
 implementation
 
-{ Order of unit initialization is important }
-uses Gdt, Idt, Paging, Acpi;
+uses Gdt, Idt, Paging;
+
+procedure Initialize;
+begin
+  Gdt.Initialize;
+  Idt.Initialize;
+  Paging.Initialize;
+end;
 
 end.

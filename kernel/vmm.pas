@@ -20,6 +20,8 @@ type
     MemoryCacheWriteThrough
   );
 
+procedure Initialize;
+
 implementation
 
 uses Limine, Log, Pmm, SysUtils;
@@ -29,8 +31,9 @@ function MapPage(
   Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
-  AllocateFrame: TAllocateFrameCallback;
-  GetPageFromFrame: TGetPageFromFrameCallback): Boolean; external name '_arch_map_page';
+  const AllocateFrame: TAllocateFrameCallback;
+  const GetPageFromFrame: TGetPageFromFrameCallback
+): Boolean; external name '_arch_map_page';
 
 function MapPageRange(
   var RootFrame: PtrUInt;
@@ -38,8 +41,9 @@ function MapPageRange(
   Size: SizeUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
-  AllocateFrame: TAllocateFrameCallback;
-  GetPageFromFrame: TGetPageFromFrameCallback): Boolean; external name '_arch_map_page_range';
+  const AllocateFrame: TAllocateFrameCallback;
+  const GetPageFromFrame: TGetPageFromFrameCallback
+): Boolean; external name '_arch_map_page_range';
 
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';
@@ -47,6 +51,7 @@ var
   HhdmRequest: TLimineHhdmRequest; external name '_limine_request_hhdm';
   KernelStart: Pointer; external name '_kernel_start';
   KernelEnd: Pointer; external name '_kernel_end';
+  HhdmOffset: PtrUInt;
 
 function GetFrameWithHhdmOffset(Frame: PtrUInt): PtrUInt; inline;
 begin
@@ -67,10 +72,8 @@ begin
     ExecutableAddressRequest.Response^.PhysicalBase,
     ExecutableAddressRequest.Response^.VirtualBase,
     PtrUInt(@KernelEnd) - PtrUInt(@KernelStart),
-    [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessSupervisor, MemoryAccessWrite],
-    MemoryCacheNone,
-    @EarlyAllocateFrame,
-    @GetFrameWithHhdmOffset
+    [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessSupervisor, MemoryAccessWrite], MemoryCacheNone,
+    @EarlyAllocateFrame, @GetFrameWithHhdmOffset
   );
 
   { TODO: Use proper flags based on memory types. }
@@ -79,10 +82,8 @@ begin
     for I := 1 to EntryCount do with Entries^[I] do
       MapPageRange(
         RootFrame, Base, GetFrameWithHhdmOffset(Base), Length,
-        [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessSupervisor, MemoryAccessWrite],
-        MemoryCacheNone,
-        @EarlyAllocateFrame,
-        @GetFrameWithHhdmOffset
+        [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessSupervisor, MemoryAccessWrite], MemoryCacheNone,
+        @EarlyAllocateFrame, @GetFrameWithHhdmOffset
       );
 
   result := RootFrame;
@@ -94,12 +95,31 @@ asm
   mov cr3, rax
 end;
 
+procedure Initialize;
 begin
   Log.Debug('HHDM Offset=' + IntToHex(HhdmRequest.Response^.Offset) +
     ' KernelStart=' + IntToHex(PtrUInt(@KernelStart)) +
     ' KernelEnd=' + IntToHex(PtrUInt(@KernelEnd)));
 
   SwitchToAddressSpace(CreateKernelAddressSpace);
+  Log.Debug('VMM initialized.');
+end;
 
-  Log.Debug('Unit initialized: VMM');
+begin
+  if not Assigned(ExecutableAddressRequest.Response) then begin
+    Log.Fatal('No executable address response from Limine.');
+    Halt;
+  end;
+
+  if not Assigned(MemoryMapRequest.Response) then begin
+    Log.Fatal('No memory map response from Limine.');
+    Halt;
+  end;
+
+  if not Assigned(HhdmRequest.Response) then begin
+    Log.Fatal('No HHDM response from Limine.');
+    Halt;
+  end;
+
+  HhdmOffset := HhdmRequest.Response^.Offset;
 end.

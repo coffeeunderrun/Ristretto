@@ -33,6 +33,8 @@ var
   FramebufferPtr: PUInt8;
   FramebufferEndPtr: PUInt8;
 begin
+  if not Assigned(FramebufferAddress) then exit;
+
   FramebufferPtr := PUInt8(FramebufferAddress);
   FramebufferEndPtr := PUInt8(FramebufferAddress) + FramebufferSize;
 
@@ -48,6 +50,8 @@ procedure PutPixel(X, Y: UInt64; Color: TColor);
 var
   FramebufferPtr: PUInt8;
 begin
+  if not Assigned(FramebufferAddress) then exit;
+
   FramebufferPtr := PUInt8(FramebufferAddress) + (X * BytesPerPixel) + (Y * BytesPerRow);
   FramebufferPtr[RedIndex] := Color.Red;
   FramebufferPtr[GreenIndex] := Color.Green;
@@ -60,6 +64,8 @@ var
   FramebufferPtr: PUInt8;
   FramebufferEndPtr: PUInt8;
 begin
+  if not Assigned(FramebufferAddress) then exit;
+
   Count := FramebufferSize - (Delta * BytesPerRow);
   FramebufferPtr := PUInt8(FramebufferAddress);
   FramebufferEndPtr := FramebufferPtr + ((Delta - 1) * BytesPerRow);
@@ -81,6 +87,8 @@ var
   FramebufferPtr: PUInt8;
   FramebufferEndPtr: PUInt8;
 begin
+  if not Assigned(FramebufferAddress) then exit;
+
   Count := FramebufferSize - (Delta * BytesPerRow);
   FramebufferPtr := PUInt8(FramebufferAddress);
   FramebufferEndPtr := FramebufferPtr + (Delta * BytesPerRow);
@@ -102,6 +110,8 @@ function GetHeight: UInt64; begin GetHeight := ResolutionHeight; end;
 function GetWidth: UInt64; begin GetWidth := ResolutionWidth; end;
 
 begin
+  FramebufferAddress := nil;
+
   if not Assigned(FramebufferRequest.Response) then exit;
 
   with FramebufferRequest.Response^ do begin

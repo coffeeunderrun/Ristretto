@@ -43,6 +43,8 @@ const
     'AML_CALL_STACK_DEPTH_LIMIT'
   );
 
+procedure Initialize;
+
 implementation
 
 uses Limine, Log, SysUtils;
@@ -86,7 +88,7 @@ begin
   Log.Trace('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) + ' of size ' + IntToStr(Size) + '. No action taken.');
 end;
 
-procedure InitializeAcpi;
+procedure Initialize;
 var
   Buffer: array [0..4095] of Byte;
   Status: uacpi_status;
@@ -94,7 +96,7 @@ begin
   Status := uacpi_setup_early_table_access(@Buffer, SizeOf(Buffer));
   case Status of
     UACPI_STATUS_OK:
-      Log.Debug('Unit initialized: ACPI');
+      Log.Debug('ACPI initialized.');
 
     UACPI_STATUS_MAPPING_FAILED..UACPI_STATUS_DENIED:
       Log.Fatal('uACPI status: ' + UACPI_STATUS_MESSAGE[Status]);
@@ -104,6 +106,4 @@ begin
   end;
 end;
 
-begin
-  InitializeAcpi;
 end.

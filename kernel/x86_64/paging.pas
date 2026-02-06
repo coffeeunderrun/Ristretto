@@ -2,6 +2,8 @@ unit Paging;
 
 interface
 
+procedure Initialize;
+
 implementation
 
 uses Limine, Log, Pmm, SysUtils, Vmm;
@@ -14,7 +16,16 @@ type
   PPageTable = ^APageTable;
   APageTable = array [0..511] of UInt64;
 
-procedure SetPageTableEntry(var Entry: UInt64; Frame: PtrUInt; MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache); inline;
+var
+  PagingModeRequest: TLiminePagingModeRequest; external name '_limine_request_paging_mode';
+  PageLevelMax: UInt8;
+
+procedure SetPageTableEntry(
+  var Entry: UInt64;
+  Frame: PtrUInt;
+  MemoryAccess: TMemoryAccessSet;
+  MemoryCache: TMemoryCache
+); inline;
 begin
   Entry := (UInt64(Frame) and $FFFFFFFFFF000) or $1;
 
@@ -37,8 +48,9 @@ function MapPage(
   Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
-  AllocateFrame: TAllocateFrameCallback;
-  GetPageFromFrame: TGetPageFromFrameCallback): Boolean; public name '_arch_map_page';
+  const AllocateFrame: TAllocateFrameCallback;
+  const GetPageFromFrame: TGetPageFromFrameCallback
+): Boolean; public name '_arch_map_page';
 var
   Shift, PageLevelIndex: UInt8;
   Table: PPageTable;
@@ -94,8 +106,9 @@ function MapPageRange(
   Size: SizeUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
-  AllocateFrame: TAllocateFrameCallback;
-  GetPageFromFrame: TGetPageFromFrameCallback): Boolean; public name '_arch_map_page_range';
+  const AllocateFrame: TAllocateFrameCallback;
+  const GetPageFromFrame: TGetPageFromFrameCallback
+): Boolean; public name '_arch_map_page_range';
 begin
   // Align size to page boundary.
   Size := Align(Size, ARCH_PAGE_SIZE);
@@ -107,8 +120,23 @@ begin
     Page += ARCH_PAGE_SIZE;
     Size -= ARCH_PAGE_SIZE;
   end;
+
+  result := true;
+end;
+
+procedure Initialize;
+begin
+  Log.Debug('Paging initialized.');
 end;
 
 begin
-  Log.Debug('Unit initialized: Paging');
+  if Assigned(PagingModeRequest.Response) then
+    case PagingModeRequest.Response^.Mode of
+      LIMINE_PAGING_MODE_X86_64_4LVL: PageLevelMax := 4;
+      LIMINE_PAGING_MODE_X86_64_5LVL: PageLevelMax := 5;
+    else
+      PageLevelMax := LIMINE_PAGING_MODE_X86_64_DEFAULT;
+    end
+  else
+    PageLevelMax := DEFAULT_PAGE_LEVEL_MAX;
 end.

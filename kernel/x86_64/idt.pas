@@ -2,6 +2,8 @@ unit Idt;
 
 interface
 
+procedure Initialize;
+
 implementation
 
 uses Cpu, Log, SysUtils, Terminal;
@@ -177,9 +179,12 @@ begin
   end;
 end;
 
+procedure Initialize;
 begin
   InitializePics;
   PopulateIdt;
   LoadIdt;
-  Log.Debug('Unit initialized: IDT');
+  Log.Debug('IDT initialized.');
+end;
+
 end.
