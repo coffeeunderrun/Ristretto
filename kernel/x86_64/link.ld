@@ -28,6 +28,7 @@ SECTIONS {
   .rodata BLOCK(CONSTANT(MAXPAGESIZE)) : {
     _kernel_rodata_start = .;
     *(.rodata .rodata.*)
+    *(.note.gnu.build-id)
     _kernel_rodata_end = .;
   } :rodata
 

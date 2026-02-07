@@ -4,31 +4,31 @@ Ristretto is a 64-bit hobby operating system kernel written in Pascal.
 
 It currently targets x86_64 (support for additional architectures is planned) and uses the Limine bootloader.
 
-**Features**
-- **Language:** Pascal
-- **Target:** x86_64 (current; future multi-architecture support planned)
-- **Boot:** Limine Bootloader
+## Required
 
-**Required**
+### Build
+`fpc` Free Pascal compiler
 
-Build:
-- `fpc` (Free Pascal compiler)
-- `cc` / `gcc` (C compiler)
-- `ld` (Linker)
-- `nasm` (Netwide assembler)
-- `curl`, `gunzip` and `tar` (used to fetch and extract vendor OVMF)
-- `make`
-- `git`
+`fpcdep` [Free Pascal dependency generator](https://codeberg.org/coffeeunderrun/fpcdep)
 
-Run (w/ QEMU):
-- `coreutils` (used to create disk images)
-- `mtools` (used to create FAT images)
-- `qemu`
+`gcc` or `clang` C cross-compiler
 
-Generate ISO:
-- `xorriso`
+`nasm`
+`curl`
+`gunzip`
+`tar`
+`make`
+`git`
 
-**Build**
+### Run (w/ QEMU)
+`coreutils`
+`mtools`
+`qemu`
+
+### Generate ISO:
+`xorriso`
+
+## Build
 
 ```bash
 make
@@ -38,7 +38,7 @@ make
 make all-iso
 ```
 
-**Run (w/ QEMU)**
+## Run (w/ QEMU)
 
 ```bash
 make run
@@ -48,7 +48,7 @@ make run
 make run-iso
 ```
 
-**Clean**
+## Clean
 
 ```bash
 make clean
@@ -58,7 +58,7 @@ make clean
 make distclean
 ```
 
-**License**
+## License
 
 MIT License.
 See [LICENSE](LICENSE) file.

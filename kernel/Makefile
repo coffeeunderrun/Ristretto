@@ -47,22 +47,25 @@ distclean:
 # Kernel binary
 $(BINDIR)/kernel: $(OBJS) $(TARGET_ARCH)/link.ld
 	mkdir -p $(dir $@)
-	$(LD) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ $(wildcard $(OBJS))
+	$(CC) $(CFLAGS) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ $(wildcard $(OBJS))
 
 # RTL *.pas files
 $(OBJDIR)/rtl/%.o: rtl/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(RTL_PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PD) $(PDFLAGS) $(RTL_PCFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # Kernel *.pas files
 $(OBJDIR)/kernel/%.o: %.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PD) $(PDFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # Kernel architecture *.pas files
 $(OBJDIR)/kernel/%.o: $(TARGET_ARCH)/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PD) $(PDFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # Kernel architecture *.asm files
 $(OBJDIR)/kernel/%.asm.o: $(TARGET_ARCH)/%.asm
@@ -76,12 +79,13 @@ endif
 # Kernel *.psf files
 $(OBJDIR)/kernel/%.psf.o: %.psf
 	mkdir -p $(dir $@)
-	$(LD) -r -bbinary -o$@ $<
+	$(CC) $(LDFLAGS) -Wl,-r -Wl,-b,binary -Wl,$< -o$@
 
 # Limine Protocol *.pas files
 $(OBJDIR)/limine-protocol/%.o: ../vendor/limine-protocol/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PD) $(PDFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # uACPI *.c files
 $(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/source/%.c
@@ -92,6 +96,7 @@ $(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/source/%.c
 $(OBJDIR)/uacpi-bindings/%.o: ../vendor/uacpi-bindings/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(UACPI_PCFLAGS) -FU$(dir $@) -o$@ $<
+	$(PD) $(PDFLAGS) $(UACPI_PCFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # Dependencies
 -include $(DEPS)

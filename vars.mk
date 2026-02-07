@@ -12,13 +12,15 @@ CFLAGS = -pipe
 override CFLAGS += -ffreestanding -fno-builtin -fno-pic -ffunction-sections -fdata-sections \
 	-fomit-frame-pointer -fno-unwind-tables -fno-stack-protector -Wall -Wextra
 
-LD = ld
 LDFLAGS =
 override LDFLAGS += -nostdlib -static -zmax-page-size=0x1000
 
 PC = fpc
 PCFLAGS = -ap -vehinw -vm4055,4056 -vm6058
 override PCFLAGS += -Aelf -Cn -n -P$(TARGET_ARCH) -Sagic -Tlinux -uLINUX -uUNIX
+
+PD = fpcdep
+PDFLAGS =
 
 HOST_CC = cc
 HOST_CFLAGS = -pipe
