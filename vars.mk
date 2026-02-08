@@ -19,9 +19,6 @@ PC = fpc
 PCFLAGS = -ap -vehinw -vm4055,4056 -vm6058
 override PCFLAGS += -Aelf -Cn -n -P$(TARGET_ARCH) -Sagic -Tlinux -uLINUX -uUNIX
 
-PD = fpcdep
-PDFLAGS =
-
 HOST_CC = cc
 HOST_CFLAGS = -pipe
 

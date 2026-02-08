@@ -4,6 +4,7 @@ include vars.mk
 
 IMGDIR = img/$(TARGET_ARCH)
 ISODIR = iso/$(TARGET_ARCH)
+TOOLSDIR = $(CURDIR)/tools
 
 ISOFLAGS := -as mkisofs -R -r -J -hfsplus -apm-block-size 2048 \
 	--efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image --protective-msdos-label
@@ -48,8 +49,8 @@ distclean:
 
 # Kernel uses its own slim RTL
 .PHONY: kernel
-kernel: vendor/limine-protocol vendor/uacpi
-	$(MAKE) -Ckernel
+kernel: vendor/fpcdep vendor/limine-protocol vendor/uacpi
+	$(MAKE) -Ckernel PD=$(TOOLSDIR)/bin/fpcdep
 
 # RTL for userspace
 .PHONY: rtl
@@ -106,3 +107,10 @@ vendor/limine-protocol:
 vendor/uacpi:
 	git submodule update --init vendor/uacpi
 	git submodule update --init vendor/uacpi-bindings
+
+vendor/fpcdep: tools/bin/fpcdep
+	git submodule update --init vendor/fpcdep
+
+tools/bin/fpcdep:
+	fpcmake vendor/fpcdep/Makefile.fpc \
+		&& $(MAKE) -Cvendor/fpcdep INSTALL_PREFIX=$(TOOLSDIR) install

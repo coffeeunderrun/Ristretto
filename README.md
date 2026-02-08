@@ -2,14 +2,16 @@
 
 Ristretto is a 64-bit hobby operating system kernel written in Pascal.
 
-It currently targets x86_64 (support for additional architectures is planned) and uses the Limine bootloader.
+Currently targets x86_64, but additional architecture support is planned.
 
-## Required
+Uses `Limine Bootloader` with `Limine Boot Protocol` support.
+
+Barebones `uACPI` bindings with full support is in progress.
+
+## Dependencies
 
 ### Build
 `fpc` Free Pascal compiler
-
-`fpcdep` [Free Pascal dependency generator](https://codeberg.org/coffeeunderrun/fpcdep)
 
 `gcc` or `clang` C cross-compiler
 

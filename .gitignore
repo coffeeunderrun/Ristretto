@@ -2,4 +2,5 @@
 **/obj/
 img/
 iso/
+tools/
 vendor/edk2-ovmf/
