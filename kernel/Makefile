@@ -9,8 +9,8 @@ OBJDIR = obj/$(TARGET_ARCH)
 override PCFLAGS += -Ci- -Co- -Cr- -Ct- -Mobjfpc -Fu$(OBJDIR)/rtl
 
 RTL_PCFLAGS    := -Firtl/inc -Firtl/sysutils -Firtl/$(TARGET_ARCH)
-KERNEL_PCFLAGS := -Fi../vendor/limine-protocol -Fi$(TARGET_ARCH) \
-	-Fu$(OBJDIR)/kernel -Fu$(OBJDIR)/limine-protocol -Fu$(OBJDIR)/uacpi-bindings
+KERNEL_PCFLAGS := -Fi../vendor/limine-protocol -Fi$(TARGET_ARCH)
+KERNEL_PCFLAGS +=	-Fu$(OBJDIR)/kernel -Fu$(OBJDIR)/limine-protocol -Fu$(OBJDIR)/uacpi-bindings
 
 UACPI_CFLAGS  := -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
 UACPI_PCFLAGS := -Fi../vendor/uacpi-bindings/inc
@@ -24,7 +24,9 @@ SRCS += $(addprefix uacpi/, $(notdir $(wildcard ../vendor/uacpi/source/*.c)))
 # uACPI bindings source files
 SRCS += $(addprefix uacpi-bindings/, $(notdir $(wildcard ../vendor/uacpi-bindings/*.pas)))
 # Kernel source files
-SRCS += $(addprefix kernel/, $(notdir $(wildcard $(TARGET_ARCH)/*.asm $(TARGET_ARCH)/*.pas *.pas *.psf)))
+SRCS += $(addprefix kernel/, $(notdir $(wildcard $(TARGET_ARCH)/*.asm $(TARGET_ARCH)/*.pas src/*.pas )))
+# Kernel resource files
+SRCS += $(addprefix kernel/, $(notdir $(wildcard res/*.psf)))
 
 ASM_SRCS := $(filter %.asm, $(SRCS))
 PAS_SRCS := $(filter %.pas, $(SRCS))
@@ -33,6 +35,7 @@ PSF_SRCS := $(filter %.psf, $(SRCS))
 
 DEPS := $(addprefix $(OBJDIR)/, $(ASM_SRCS:.asm=.asm.d) $(PAS_SRCS:.pas=.d) $(C_SRCS:.c=.c.d))
 OBJS := $(addprefix $(OBJDIR)/, $(ASM_SRCS:.asm=.asm.o) $(PAS_SRCS:.pas=.o) $(C_SRCS:.c=.c.o) $(PSF_SRCS:.psf=.psf.o))
+
 .PHONY: all
 all: $(BINDIR)/kernel
 
@@ -50,22 +53,31 @@ $(BINDIR)/kernel: $(OBJS) $(TARGET_ARCH)/link.ld
 	$(CC) $(CFLAGS) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ $(wildcard $(OBJS))
 
 # RTL *.pas files
+$(OBJDIR)/rtl/%.d: rtl/%.pas
+	mkdir -p $(dir $@)
+	$(PD) $(PDFLAGS) $(RTL_PCFLAGS) -Fu$(dir $@) -o$@ -t$(@:.d=.o) -Pe.o $<
+
 $(OBJDIR)/rtl/%.o: rtl/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(RTL_PCFLAGS) -FU$(dir $@) -o$@ $<
-	$(PD) $(PDFLAGS) $(RTL_PCFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # Kernel *.pas files
-$(OBJDIR)/kernel/%.o: %.pas
+$(OBJDIR)/kernel/%.d: src/%.pas
+	mkdir -p $(dir $@)
+	$(PD) $(PDFLAGS) $(KERNEL_PCFLAGS) -Fu$(dir $<) -Fu$(TARGET_ARCH) -o$@ -t$(@:.d=.o) -Pe.o $<
+
+$(OBJDIR)/kernel/%.o: src/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$@ $<
-	$(PD) $(PDFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # Kernel architecture *.pas files
+$(OBJDIR)/kernel/%.d: $(TARGET_ARCH)/%.pas
+	mkdir -p $(dir $@)
+	$(PD) $(PDFLAGS) $(KERNEL_PCFLAGS) -Fu$(dir $<) -Fusrc -o$@ -t$(@:.d=.o) -Pe.o $<
+
 $(OBJDIR)/kernel/%.o: $(TARGET_ARCH)/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$@ $<
-	$(PD) $(PDFLAGS) $(KERNEL_PCFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # Kernel architecture *.asm files
 $(OBJDIR)/kernel/%.asm.o: $(TARGET_ARCH)/%.asm
@@ -77,15 +89,18 @@ else
 endif
 
 # Kernel *.psf files
-$(OBJDIR)/kernel/%.psf.o: %.psf
+$(OBJDIR)/kernel/%.psf.o: res/%.psf
 	mkdir -p $(dir $@)
 	$(CC) $(LDFLAGS) -Wl,-r -Wl,-b,binary -Wl,$< -o$@
 
 # Limine Protocol *.pas files
+$(OBJDIR)/limine-protocol/%.d: ../vendor/limine-protocol/%.pas
+	mkdir -p $(dir $@)
+	$(PD) $(PDFLAGS) -FU$(dir $@) -o$@ -t$(@:.d=.o) -Pe.o $<
+
 $(OBJDIR)/limine-protocol/%.o: ../vendor/limine-protocol/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) -FU$(dir $@) -o$@ $<
-	$(PD) $(PDFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # uACPI *.c files
 $(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/source/%.c
@@ -93,10 +108,13 @@ $(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/source/%.c
 	$(CC) $(CFLAGS) $(UACPI_CFLAGS) -MMD -MP -o$@ -c $<
 
 # uACPI bindings *.pas files
+$(OBJDIR)/uacpi-bindings/%.d: ../vendor/uacpi-bindings/%.pas
+	mkdir -p $(dir $@)
+	$(PD) $(PDFLAGS) $(UACPI_PCFLAGS) -FU$(dir $@) -o$@ -t$(@:.d=.o) -Pe.o $<
+
 $(OBJDIR)/uacpi-bindings/%.o: ../vendor/uacpi-bindings/%.pas
 	mkdir -p $(dir $@)
 	$(PC) $(PCFLAGS) $(UACPI_PCFLAGS) -FU$(dir $@) -o$@ $<
-	$(PD) $(PDFLAGS) $(UACPI_PCFLAGS) -FU$(dir $@) -o$(@:.o=.d) -t$@ $<
 
 # Dependencies
 -include $(DEPS)

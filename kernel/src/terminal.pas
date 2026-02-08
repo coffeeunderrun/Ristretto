@@ -45,7 +45,7 @@ type
   end;
 
 var
-  RawKernelFontStart: pointer; external name '_binary_kernel_psf_start';
+  RawKernelFontStart: pointer; external name '_binary_res_kernel_psf_start';
   KernelFontPtr: PPCScreenFont;
   TerminalX: UInt64;
   TerminalY: UInt64;
