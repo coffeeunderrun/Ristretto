@@ -58,7 +58,7 @@ function CreateRootFrame(
 ): Boolean; public name '_arch_create_root_frame';
 begin
   if not AllocateFrame(RootFrame, ARCH_PAGE_SIZE) then begin
-    Log.Error('Failed to allocate frame for root page table.');
+    Log.ErrorLn('Failed to allocate frame for root page table.');
     exit(false);
   end;
 
@@ -106,7 +106,7 @@ begin
       SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache)
     else begin
       if not AllocateFrame(TableFrame, ARCH_PAGE_SIZE) then begin
-        Log.Error('Failed to allocate page table frame.');
+        Log.ErrorLn('Failed to allocate page table frame.');
         exit(false);
       end;
 
@@ -145,7 +145,9 @@ end;
 
 procedure Initialize;
 begin
-  Log.Debug('Paging initialized.');
+{$ifndef NDEBUG}
+  Log.DebugLn('Paging initialized.');
+{$endif}
 end;
 
 begin

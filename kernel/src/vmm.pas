@@ -71,7 +71,7 @@ var
 begin
   RootFrame := 0;
   if not CreateRootFrame(RootFrame, @EarlyAllocateFrame, @GetFrameWithHhdmOffset) then begin
-    Log.Fatal('Failed to create kernel address space root frame.');
+    Log.FatalLn('Failed to create kernel address space root frame.');
     Halt;
   end;
 
@@ -85,7 +85,7 @@ begin
     [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessWrite], MemoryCacheWriteBack,
     @EarlyAllocateFrame, @GetFrameWithHhdmOffset
   ) then begin
-    Log.Fatal('Failed to map kernel executable region.');
+    Log.FatalLn('Failed to map kernel executable region.');
     Halt;
   end;
 
@@ -98,7 +98,7 @@ begin
         [MemoryAccessGlobal, MemoryAccessWrite], MemoryCacheWriteBack,
         @EarlyAllocateFrame, @GetFrameWithHhdmOffset
       ) then begin
-        Log.Fatal('Failed to map physical memory range.');
+        Log.FatalLn('Failed to map physical memory range.');
         Halt;
       end;
 
@@ -117,27 +117,32 @@ end;
 
 procedure Initialize;
 begin
-  Log.Debug('HHDM Offset=' + IntToHex(HhdmRequest.Response^.Offset) +
+{$ifndef NDEBUG}
+  Log.DebugLn('HHDM Offset=' + IntToHex(HhdmRequest.Response^.Offset) +
     ' KernelStart=' + IntToHex(PtrUInt(@KernelStart)) +
     ' KernelEnd=' + IntToHex(PtrUInt(@KernelEnd)));
+{$endif}
 
   LoadRootFrame(CreateKernelAddressSpace);
-  Log.Debug('VMM initialized.');
+
+{$ifndef NDEBUG}
+  Log.DebugLn('VMM initialized.');
+{$endif}
 end;
 
 begin
   if not Assigned(ExecutableAddressRequest.Response) then begin
-    Log.Fatal('No executable address response from Limine.');
+    Log.FatalLn('No executable address response from Limine.');
     Halt;
   end;
 
   if not Assigned(MemoryMapRequest.Response) then begin
-    Log.Fatal('No memory map response from Limine.');
+    Log.FatalLn('No memory map response from Limine.');
     Halt;
   end;
 
   if not Assigned(HhdmRequest.Response) then begin
-    Log.Fatal('No HHDM response from Limine.');
+    Log.FatalLn('No HHDM response from Limine.');
     Halt;
   end;
 

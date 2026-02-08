@@ -36,10 +36,12 @@ begin
     mov [Features2], edx
   end ['rax', 'rbx', 'rcx', 'rdx'];
 
-  Log.Debug('CPUID: EAX=' + IntToHex(Version) +
+{$ifndef NDEBUG}
+  Log.DebugLn('CPUID: EAX=' + IntToHex(Version) +
     ', EBX=' + IntToHex(Additional) +
     ', ECX=' + IntToHex(Features1) +
     ', EDX=' + IntToHex(Features2));
+{$endif}
 
   // Set up PAT, if supported, using defaults; except for PAT5 = Write Combining
   if Features2 and (1 shl 16) <> 0 then asm

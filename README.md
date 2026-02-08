@@ -25,7 +25,7 @@ It currently targets x86_64 (support for additional architectures is planned) an
 `mtools`
 `qemu`
 
-### Generate ISO:
+### Generate ISO
 `xorriso`
 
 ## Build

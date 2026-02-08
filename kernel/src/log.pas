@@ -21,6 +21,13 @@ procedure Info(const Text: String); inline;
 procedure Trace(const Text: String); inline;
 procedure Warn(const Text: String); inline;
 
+procedure DebugLn(const Text: String); inline;
+procedure ErrorLn(const Text: String); inline;
+procedure FatalLn(const Text: String); inline;
+procedure InfoLn(const Text: String); inline;
+procedure TraceLn(const Text: String); inline;
+procedure WarnLn(const Text: String); inline;
+
 implementation
 
 uses Terminal;
@@ -50,26 +57,21 @@ var
 begin
   if Level = LogLevelFatal then BgColor := ColorLightRed else BgColor := Terminal.GetBackground;
   FgColor := LogLevelColor[Level]^;
-  Terminal.Write(LogLevelPrefix[Level] + Text + #10, FgColor, BgColor);
+  Terminal.Write(LogLevelPrefix[Level] + Text, FgColor, BgColor);
 end;
 
-procedure Debug(const Text: String);
-begin
-{$ifndef NDEBUG}
-  Log(LogLevelDebug, Text);
-{$endif}
-end;
-
-procedure Trace(const Text: String);
-begin
-{$ifndef NDEBUG}
-  Log(LogLevelTrace, Text);
-{$endif}
-end;
-
+procedure Debug(const Text: String); begin Log(LogLevelDebug, Text); end;
 procedure Error(const Text: String); begin Log(LogLevelError, Text); end;
 procedure Fatal(const Text: String); begin Log(LogLevelFatal, Text); end;
 procedure Info(const Text: String); begin Log(LogLevelInfo, Text); end;
+procedure Trace(const Text: String); begin Log(LogLevelTrace, Text); end;
 procedure Warn(const Text: String); begin Log(LogLevelWarn, Text); end;
+
+procedure DebugLn(const Text: String); begin Log(LogLevelDebug, Text + #10); end;
+procedure ErrorLn(const Text: String); begin Log(LogLevelError, Text + #10); end;
+procedure FatalLn(const Text: String); begin Log(LogLevelFatal, Text + #10); end;
+procedure InfoLn(const Text: String); begin Log(LogLevelInfo, Text + #10); end;
+procedure TraceLn(const Text: String); begin Log(LogLevelTrace, Text + #10); end;
+procedure WarnLn(const Text: String); begin Log(LogLevelWarn, Text + #10); end;
 
 end.

@@ -58,7 +58,9 @@ begin
   if Assigned(RsdpRequest.Response) then begin
     // Limine protocol base revision 4 states that the RSDP address will be virtual (HHDM).
     AddressPtr^ := uacpi_phys_addr(RsdpRequest.Response^.Address - HhdmRequest.Response^.Offset);
-    Log.Trace('uACPI RSDP found at physical address ' + IntToHex(AddressPtr^));
+{$ifndef NDEBUG}
+    Log.TraceLn('uACPI RSDP found at physical address ' + IntToHex(AddressPtr^));
+{$endif}
     exit(UACPI_STATUS_OK);
   end;
 
@@ -80,12 +82,16 @@ function uacpi_kernel_map(Address: uacpi_phys_addr; Size: uacpi_size): Pointer; 
 begin
   // Until we have a proper memory manager in place, we will rely on Limine's HHDM mapping.
   result := Pointer(Address + HhdmRequest.Response^.Offset);
-  Log.Trace('uACPI map called on address ' + IntToHex(Address) + ' of size ' + IntToStr(Size) + '. Mapped to ' + IntToHex(PtrUInt(result)) + '.');
+{$ifndef NDEBUG}
+  Log.TraceLn('uACPI map called on address ' + IntToHex(Address) + ' of size ' + IntToStr(Size) + '. Mapped to ' + IntToHex(PtrUInt(result)) + '.');
+{$endif}
 end;
 
 procedure uacpi_kernel_unmap(Ptr: Pointer; Size: uacpi_size); cdecl; public;
 begin
-  Log.Trace('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) + ' of size ' + IntToStr(Size) + '. No action taken.');
+{$ifndef NDEBUG}
+  Log.TraceLn('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) + ' of size ' + IntToStr(Size) + '. No action taken.');
+{$endif}
 end;
 
 procedure Initialize;
@@ -95,14 +101,15 @@ var
 begin
   Status := uacpi_setup_early_table_access(@Buffer, SizeOf(Buffer));
   case Status of
-    UACPI_STATUS_OK:
-      Log.Debug('ACPI initialized.');
+{$ifndef NDEBUG}
+    UACPI_STATUS_OK: Log.DebugLn('ACPI initialized.');
+{$endif}
 
     UACPI_STATUS_MAPPING_FAILED..UACPI_STATUS_DENIED:
-      Log.Fatal('uACPI status: ' + UACPI_STATUS_MESSAGE[Status]);
+      Log.FatalLn('uACPI status: ' + UACPI_STATUS_MESSAGE[Status]);
 
     UACPI_STATUS_AML_UNDEFINED_REFERENCE..UACPI_STATUS_AML_CALL_STACK_DEPTH_LIMIT:
-      Log.Fatal('uACPI status: ' + UACPI_STATUS_AML_MESSAGE[Status]);
+      Log.FatalLn('uACPI status: ' + UACPI_STATUS_AML_MESSAGE[Status]);
   end;
 end;
 
