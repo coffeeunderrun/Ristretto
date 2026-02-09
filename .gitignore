@@ -1,6 +1,13 @@
 **/bin/
+**/lib/
 **/obj/
+**/units/
+
 img/
 iso/
-tools/
+
 vendor/edk2-ovmf/
+
+*.fpm
+fpmake
+fpmake.o

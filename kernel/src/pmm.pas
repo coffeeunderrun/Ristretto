@@ -28,8 +28,8 @@ const
 
 var
   MemoryMapRequest: TLimineMemoryMapRequest; external name '_limine_request_memory_map';
-  MemoryMapEarlyIndex: SizeUInt;
-  MemoryMapEarlyOffset: SizeUInt;
+  MemoryMapIndex: SizeUInt;
+  MemoryMapOffset: SizeUInt;
 
 procedure ParseMemoryMap;
 var
@@ -60,17 +60,17 @@ end;
 function EarlyAllocateFrame(var Frame: PtrUInt; Size: SizeUInt): Boolean;
 begin
   with MemoryMapRequest.Response^ do
-    while MemoryMapEarlyIndex < EntryCount do begin
-      with Entries^[MemoryMapEarlyIndex] do begin
-        if (EntryType = LIMINE_MEMMAP_USABLE) and (MemoryMapEarlyOffset < Length) then begin
-          Frame := Base + MemoryMapEarlyOffset;
-          Inc(MemoryMapEarlyOffset, Size);
+    while MemoryMapIndex < EntryCount do begin
+      with Entries^[MemoryMapIndex] do begin
+        if (EntryType = LIMINE_MEMMAP_USABLE) and (MemoryMapOffset < Length) then begin
+          Frame := Base + MemoryMapOffset;
+          Inc(MemoryMapOffset, Size);
           // Log.TraceLn('EarlyAllocateFrame: Allocated frame at ' + IntToHex(Frame) + ' of size ' + IntToHex(Size));
           exit(true);
         end;
 
-        Inc(MemoryMapEarlyIndex);
-        MemoryMapEarlyOffset := 0;
+        Inc(MemoryMapIndex);
+        MemoryMapOffset := 0;
       end;
     end;
 
@@ -84,6 +84,6 @@ begin
     Halt;
   end;
 
-  MemoryMapEarlyIndex := 0;
-  MemoryMapEarlyOffset := 0;
+  MemoryMapIndex := 0;
+  MemoryMapOffset := 0;
 end.

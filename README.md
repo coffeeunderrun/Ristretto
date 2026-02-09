@@ -6,7 +6,7 @@ Currently targets x86_64, but additional architecture support is planned.
 
 Uses `Limine Bootloader` with `Limine Boot Protocol` support.
 
-Barebones `uACPI` bindings with full support is in progress.
+Barebones `uACPI` bindings with full support in progress.
 
 ## Dependencies
 
@@ -37,17 +37,17 @@ make
 ```
 
 ```bash
-make all-iso
+make img
 ```
 
-## Run (w/ QEMU)
+## Run
 
 ```bash
 make run
 ```
 
 ```bash
-make run-iso
+make run-img
 ```
 
 ## Clean
