@@ -1,3 +1,27 @@
+unit ArchApi;
+
+interface
+
+type
+  TAllocateFrameCallback = function(var Frame: PtrUInt; Size: SizeUInt): Boolean;
+
+  TGetPageFromFrameCallback = function(Frame: PtrUInt): PtrUInt;
+
+  TMemoryAccess = (
+    MemoryAccessExecute,
+    MemoryAccessGlobal,
+    MemoryAccessUser,
+    MemoryAccessWrite
+  );
+  TMemoryAccessSet = set of TMemoryAccess;
+
+  TMemoryCache = (
+    MemoryCacheNone,
+    MemoryCacheWriteBack,
+    MemoryCacheWriteCombining,
+    MemoryCacheWriteThrough
+  );
+
 { Creates the root frame for a virtual address space.
   - RootFrame: Reference to the frame to allocate.
   - AllocateFrame: A callback function to allocate the frame.
@@ -50,3 +74,7 @@ function MapPageRange(
   const AllocateFrame: TAllocateFrameCallback;
   const GetPageFromFrame: TGetPageFromFrameCallback
 ): Boolean; external name '_arch_map_page_range';
+
+implementation
+
+end.

@@ -2,16 +2,13 @@ unit Pmm;
 
 interface
 
-type
-  TAllocateFrameCallback = function(var Frame: PtrUInt; Size: SizeUInt): Boolean;
-
 procedure Initialize;
 
 function EarlyAllocateFrame(var Frame: PtrUInt; Size: SizeUInt): Boolean;
 
 implementation
 
-uses Limine, SysUtils, Log;
+uses ArchApi, Limine, SysUtils, Log;
 
 const
   MEMORY_MAP_TYPE_NAMES: array [LIMINE_MEMMAP_USABLE..LIMINE_MEMMAP_ACPI_TABLES] of String = (

@@ -6,10 +6,10 @@ procedure Initialize;
 
 implementation
 
-uses Limine, Log, Pmm, Vmm;
+uses ArchApi, Limine, Log;
 
 const
-  ARCH_PAGE_SIZE = $1000;
+  PAGE_SIZE = $1000;
   DEFAULT_PAGE_LEVEL_MAX = 4;
 
   PAGE_ENTRY_PRESENT = $1;
@@ -27,6 +27,7 @@ type
 
 var
   PagingModeRequest: TLiminePagingModeRequest; external name '_limine_request_paging_mode';
+  PageSize: SizeUInt = PAGE_SIZE; public name '_arch_page_size';
   PageLevelMax: UInt8;
 
 procedure SetLeafEntry(
@@ -57,12 +58,12 @@ function CreateRootFrame(
   const GetPageFromFrame: TGetPageFromFrameCallback
 ): Boolean; public name '_arch_create_root_frame';
 begin
-  if not AllocateFrame(RootFrame, ARCH_PAGE_SIZE) then begin
+  if not AllocateFrame(RootFrame, PAGE_SIZE) then begin
     Log.ErrorLn('Failed to allocate frame for root page table.');
     exit(false);
   end;
 
-  FillByte(Pointer(GetPageFromFrame(RootFrame))^, ARCH_PAGE_SIZE, 0);
+  FillByte(Pointer(GetPageFromFrame(RootFrame))^, PAGE_SIZE, 0);
   result := true;
 end;
 
@@ -105,7 +106,7 @@ begin
     if PageLevelIndex = 1 then
       SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache)
     else begin
-      if not AllocateFrame(TableFrame, ARCH_PAGE_SIZE) then begin
+      if not AllocateFrame(TableFrame, PAGE_SIZE) then begin
         Log.ErrorLn('Failed to allocate page table frame.');
         exit(false);
       end;
@@ -130,14 +131,14 @@ function MapPageRange(
 ): Boolean; public name '_arch_map_page_range';
 begin
   // Align size to page boundary.
-  Size := Align(Size, ARCH_PAGE_SIZE);
+  Size := Align(Size, PAGE_SIZE);
 
   // Map pages one by one.
   while Size > 0 do begin
     if not MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame, GetPageFromFrame) then exit(false);
-    Frame += ARCH_PAGE_SIZE;
-    Page += ARCH_PAGE_SIZE;
-    Size -= ARCH_PAGE_SIZE;
+    Frame += PAGE_SIZE;
+    Page += PAGE_SIZE;
+    Size -= PAGE_SIZE;
   end;
 
   result := true;

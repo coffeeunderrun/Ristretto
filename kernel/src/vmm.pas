@@ -2,31 +2,11 @@ unit Vmm;
 
 interface
 
-type
-  TGetPageFromFrameCallback = function(Frame: PtrUInt): PtrUInt;
-
-  TMemoryAccess = (
-    MemoryAccessExecute,
-    MemoryAccessGlobal,
-    MemoryAccessUser,
-    MemoryAccessWrite
-  );
-  TMemoryAccessSet = set of TMemoryAccess;
-
-  TMemoryCache = (
-    MemoryCacheNone,
-    MemoryCacheWriteBack,
-    MemoryCacheWriteCombining,
-    MemoryCacheWriteThrough
-  );
-
 procedure Initialize;
 
 implementation
 
-uses Framebuffer, Limine, Log, Pmm, SysUtils;
-
-{$I archmem.inc}
+uses ArchApi, Framebuffer, Limine, Log, Pmm, SysUtils;
 
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';
