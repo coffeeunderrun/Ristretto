@@ -14,10 +14,11 @@ begin
     SourcePath.Add('src');
 
     with Options do begin
-      Add('-n');
+      Add('-ap');
       Add('-Aelf');
       Add('-Ci-o-r-t-');
       Add('-Mobjfpc');
+      Add('-n');
       Add('-Sagic');
     end;
 
@@ -26,15 +27,27 @@ begin
       IncludePath.Add('$(CPU)');
     end;
 
-    Targets.AddUnit('objpas.pas');
-    Targets.AddUnit('sysconst.pas');
+    with Targets.AddUnit('objpas.pas') do begin
+      Dependencies.AddUnit('system');
+      IncludePath.Add('objpas');
+    end;
+
+    with Targets.AddUnit('sysconst.pas') do begin
+      Dependencies.AddUnit('system');
+    end;
 
     with Targets.AddUnit('sysutils.pas') do begin
+      Dependencies.AddUnit('system');
       IncludePath.Add('sysutils');
     end;
 
-    Targets.AddUnit('si_prc.pas');
-    Targets.AddUnit('fpintres.pas');
+    with Targets.AddUnit('si_prc.pas') do begin
+      Dependencies.AddUnit('system');
+    end;
+
+    with Targets.AddUnit('fpintres.pas') do begin
+      Dependencies.AddUnit('system');
+    end;
   end;
 
   Installer.Run;

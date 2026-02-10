@@ -27,10 +27,11 @@ begin
 
     // Compiler options
     with Options do begin
-      Add('-n');
+      Add('-ap');
       Add('-Aelf');
       Add('-Cni-o-r-t-');
       Add('-Mobjfpc');
+      Add('-n');
       Add('-Sagic');
     end;
 
