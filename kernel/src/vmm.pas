@@ -27,10 +27,8 @@ var
   I: SizeUInt;
 begin
   RootFrame := 0;
-  if not CreateRootFrame(RootFrame, @EarlyAllocateFrame, @GetFrameWithHhdmOffset) then begin
-    Log.FatalLn('Failed to create kernel address space root frame.');
-    Halt;
-  end;
+  if not CreateRootFrame(RootFrame, @EarlyAllocateFrame, @GetFrameWithHhdmOffset) then
+    Panic('Failed to create kernel address space root frame.');
 
   { TODO: Use proper flags based on segments. }
   // Map the kernel executable region.
@@ -39,24 +37,25 @@ begin
     ExecutableAddressRequest.Response^.PhysicalBase,
     ExecutableAddressRequest.Response^.VirtualBase,
     PtrUInt(@KernelEnd) - PtrUInt(@KernelStart),
-    [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessWrite], MemoryCacheWriteBack,
+    [MemoryAccessGlobal, MemoryAccessExecute, MemoryAccessWrite],
+    MemoryCacheWriteBack,
     @EarlyAllocateFrame, @GetFrameWithHhdmOffset
-  ) then begin
-    Log.FatalLn('Failed to map kernel executable region.');
-    Halt;
-  end;
+  ) then Panic('Failed to map kernel executable region.');
 
   { TODO: Use proper flags based on memory types. }
   // Use higher-half direct mapping to map physical memory.
   with MemoryMapRequest.Response^ do
     for I := 0 to EntryCount - 1 do with Entries^[I] do
       if not MapPageRange(
-        RootFrame, Base, GetFrameWithHhdmOffset(Base), Length,
-        [MemoryAccessGlobal, MemoryAccessWrite], MemoryCacheWriteBack,
-        @EarlyAllocateFrame, @GetFrameWithHhdmOffset
-      ) then begin
-        Log.FatalLn('Failed to map physical memory range.');
-        Halt;
+        RootFrame,
+        Base,
+        GetFrameWithHhdmOffset(Base),
+        Length,
+        [MemoryAccessGlobal, MemoryAccessWrite],
+        MemoryCacheWriteBack,
+        @EarlyAllocateFrame,
+        @GetFrameWithHhdmOffset
+      ) then Panic('Failed to map physical memory range.');
       end;
 
   { TODO: This can be handled in the above loop. }
@@ -88,20 +87,12 @@ begin
 end;
 
 begin
-  if not Assigned(ExecutableAddressRequest.Response) then begin
-    Log.FatalLn('No executable address response from Limine.');
-    Halt;
-  end;
+  if not Assigned(ExecutableAddressRequest.Response) then
+    Panic('No executable address response from Limine.');
 
-  if not Assigned(MemoryMapRequest.Response) then begin
-    Log.FatalLn('No memory map response from Limine.');
-    Halt;
-  end;
+  if not Assigned(MemoryMapRequest.Response) then
+    Panic('No memory map response from Limine.');
 
-  if not Assigned(HhdmRequest.Response) then begin
-    Log.FatalLn('No HHDM response from Limine.');
-    Halt;
-  end;
-
-  HhdmOffset := HhdmRequest.Response^.Offset;
+  if not Assigned(HhdmRequest.Response) then
+    Panic('No HHDM response from Limine.');
 end.

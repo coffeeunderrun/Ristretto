@@ -28,27 +28,8 @@ var
   MemoryMapIndex: SizeUInt;
   MemoryMapOffset: SizeUInt;
 
-procedure ParseMemoryMap;
-var
-  I: SizeUInt;
-begin
-  with MemoryMapRequest.Response^ do begin
-    for I := 0 to EntryCount - 1 do
-      Log.DebugLn('Memory Map Entry:' +
-        ' Base=' + IntToHex(Entries^[I].Base) +
-        ' Size=' + IntToHex(Entries^[I].Length) +
-        ' Type=' + MEMORY_MAP_TYPE_NAMES[Entries^[I].EntryType]);
-  end;
-end;
-
 procedure Initialize;
 begin
-  if not Assigned(MemoryMapRequest.Response) then begin
-    Log.FatalLn('No memory map response from Limine.');
-    Halt;
-  end;
-
-  // ParseMemoryMap;
 {$ifndef NDEBUG}
   Log.DebugLn('PMM initialized.');
 {$endif}
@@ -76,10 +57,7 @@ begin
 end;
 
 begin
-  if not Assigned(MemoryMapRequest.Response) then begin
-    Log.FatalLn('No memory map response from Limine.');
-    Halt;
-  end;
+  if not Assigned(MemoryMapRequest.Response) then Panic('No memory map response from Limine.');
 
   MemoryMapIndex := 0;
   MemoryMapOffset := 0;

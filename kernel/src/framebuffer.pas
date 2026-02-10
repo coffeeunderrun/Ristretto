@@ -118,10 +118,10 @@ function GetSize: SizeUInt; inline; begin result := FramebufferSize; end;
 begin
   FramebufferAddress := nil;
 
-  if not Assigned(FramebufferRequest.Response) then exit;
+  if not Assigned(FramebufferRequest.Response) then Panic;
 
   with FramebufferRequest.Response^ do begin
-    if (FramebufferCount = 0) or not Assigned(Framebuffers) then exit;
+    if (FramebufferCount = 0) or not Assigned(Framebuffers) then Panic;
 
     with Framebuffers^[0] do begin
       FramebufferAddress := Address;

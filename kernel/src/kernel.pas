@@ -18,7 +18,7 @@ const
     '|___|__|__|_____|____|__| |_____|____|____|_____|'#10#10;
 
 begin
-  if not Limine.BaseRevisionSupported then exit;
+  if not Limine.BaseRevisionSupported then Panic('Limine Base Revision not supported.');
 
   Terminal.Clear;
   Terminal.Write(Logo);
