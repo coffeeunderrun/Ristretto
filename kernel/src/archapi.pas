@@ -3,7 +3,7 @@ unit ArchApi;
 interface
 
 type
-  TAllocateFrameCallback = function(var Frame: PtrUInt; Size: SizeUInt): Boolean;
+  TAllocateFrameCallback = function(var Frame: PtrUInt): Boolean;
 
   TGetPageFromFrameCallback = function(Frame: PtrUInt): PtrUInt;
 

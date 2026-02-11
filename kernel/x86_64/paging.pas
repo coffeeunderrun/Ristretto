@@ -58,7 +58,7 @@ function CreateRootFrame(
   const GetPageFromFrame: TGetPageFromFrameCallback
 ): Boolean; public name '_arch_create_root_frame';
 begin
-  if not AllocateFrame(RootFrame, PAGE_SIZE) then begin
+  if not AllocateFrame(RootFrame) then begin
     Log.ErrorLn('Failed to allocate frame for root page table.');
     exit(false);
   end;
@@ -106,7 +106,7 @@ begin
     if PageLevelIndex = 1 then
       SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache)
     else begin
-      if not AllocateFrame(TableFrame, PAGE_SIZE) then begin
+      if not AllocateFrame(TableFrame) then begin
         Log.ErrorLn('Failed to allocate page table frame.');
         exit(false);
       end;
@@ -135,7 +135,9 @@ begin
 
   // Map pages one by one.
   while Size > 0 do begin
-    if not MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame, GetPageFromFrame) then exit(false);
+    if not MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame, GetPageFromFrame) then
+      exit(false);
+
     Frame += PAGE_SIZE;
     Page += PAGE_SIZE;
     Size -= PAGE_SIZE;

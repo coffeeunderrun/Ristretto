@@ -7,7 +7,7 @@ procedure Initialize;
 function AllocateFrame: PtrUInt;
 procedure DeallocateFrame(Frame: PtrUInt);
 
-function EarlyAllocateFrame(var Frame: PtrUInt; Size: SizeUInt): Boolean;
+function EarlyAllocateFrame(var Frame: PtrUInt): Boolean;
 
 implementation
 
@@ -60,8 +60,8 @@ begin
   Index := MemoryMapIndex;
   Offset := MemoryMapOffset;
 
-  Log.TraceLn('Populating free list from memory map: index ' + IntToStr(Index) +
-    ', offset ' + IntToStr(Offset) + '.');
+  Log.TraceLn('Populating free list from memory map: entry index ' + IntToStr(Index) +
+    ', offset ' + IntToHex(Offset) + '.');
 
   with MemoryMapRequest.Response^ do
     while Index < EntryCount do begin
@@ -99,14 +99,14 @@ begin
 {$endif}
 end;
 
-function EarlyAllocateFrame(var Frame: PtrUInt; Size: SizeUInt): Boolean;
+function EarlyAllocateFrame(var Frame: PtrUInt): Boolean;
 begin
   with MemoryMapRequest.Response^ do
     while MemoryMapIndex < EntryCount do begin
       with Entries^[MemoryMapIndex] do begin
         if (EntryType = LIMINE_MEMMAP_USABLE) and (MemoryMapOffset < Length) then begin
           Frame := Base + MemoryMapOffset;
-          Inc(MemoryMapOffset, Size);
+          Inc(MemoryMapOffset, PageSize);
           exit(true);
         end;
 
