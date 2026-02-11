@@ -110,13 +110,13 @@ begin
       exit;
     end;
 
-    Terminal.Write('Interrupt: ' + Descriptions[Vector] + #10);
-    Terminal.Write('RAX=' + IntToHex(RAX) + ' RBX=' + IntToHex(RBX) + ' RCX=' + IntToHex(RCX) + ' RDX=' + IntToHex(RDX) + #10);
-    Terminal.Write('RSI=' + IntToHex(RSI) + ' RDI=' + IntToHex(RDI) + ' RBP=' + IntToHex(RBP) + ' RSP=' + IntToHex(RSP) + #10);
-    Terminal.Write('R8 =' + IntToHex(R8)  + ' R9 =' + IntToHex(R9)  + ' R10=' + IntToHex(R10) + ' R11=' + IntToHex(R11) + #10);
-    Terminal.Write('R12=' + IntToHex(R12) + ' R13=' + IntToHex(R13) + ' R14=' + IntToHex(R14) + ' R15=' + IntToHex(R15) + #10);
-    Terminal.Write('RIP=' + IntToHex(RIP) + ' CS =' + IntToHex(CS)  + ' RSP=' + IntToHex(RSP) + ' SS =' + IntToHex(SS) + #10);
-    Terminal.Write('VEC=' + IntToHex(Vector) + ' ERR=' + IntToHex(Code) + ' RFL=' + IntToHex(RFlags) + #10);
+    Terminal.WriteLn('Interrupt: ' + Descriptions[Vector]);
+    Terminal.WriteLn('RAX=' + IntToHex(RAX) + ' RBX=' + IntToHex(RBX) + ' RCX=' + IntToHex(RCX) + ' RDX=' + IntToHex(RDX));
+    Terminal.WriteLn('RSI=' + IntToHex(RSI) + ' RDI=' + IntToHex(RDI) + ' RBP=' + IntToHex(RBP) + ' RSP=' + IntToHex(RSP));
+    Terminal.WriteLn('R8 =' + IntToHex(R8)  + ' R9 =' + IntToHex(R9)  + ' R10=' + IntToHex(R10) + ' R11=' + IntToHex(R11));
+    Terminal.WriteLn('R12=' + IntToHex(R12) + ' R13=' + IntToHex(R13) + ' R14=' + IntToHex(R14) + ' R15=' + IntToHex(R15));
+    Terminal.WriteLn('RIP=' + IntToHex(RIP) + ' CS =' + IntToHex(CS)  + ' RSP=' + IntToHex(RSP) + ' SS =' + IntToHex(SS));
+    Terminal.WriteLn('VEC=' + IntToHex(Vector) + ' ERR=' + IntToHex(Code) + ' RFL=' + IntToHex(RFlags));
     Halt;
   end;
 end;

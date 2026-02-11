@@ -22,6 +22,9 @@ type
     MemoryCacheWriteThrough
   );
 
+var
+  PageSize: SizeUInt; external name '_arch_page_size';
+
 { Creates the root frame for a virtual address space.
   - RootFrame: Reference to the frame to allocate.
   - AllocateFrame: A callback function to allocate the frame.

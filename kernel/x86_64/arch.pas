@@ -23,7 +23,7 @@ end;
 
 procedure Panic(Msg: String); noreturn; public name '_arch_panic_msg';
 begin
-  Terminal.Write('Panic: ' + Msg, ColorWhite, ColorLightRed);
+  Terminal.WriteLn('Panic: ' + Msg, ColorWhite, ColorLightRed);
   Halt;
 end;
 

@@ -19,6 +19,10 @@ procedure Write(const Text: String); inline;
 procedure Write(const Text: String; FgColor: TColor); inline;
 procedure Write(const Text: String; FgColor, BgColor: TColor);
 
+procedure WriteLn(const Text: String); inline;
+procedure WriteLn(const Text: String; FgColor: TColor); inline;
+procedure WriteLn(const Text: String; FgColor, BgColor: TColor);
+
 implementation
 
 {$macro on}
@@ -140,6 +144,21 @@ begin
     // Carriage return.
     #13: TerminalX := 0;
   end;
+end;
+
+procedure WriteLn(const Text: String);
+begin
+  WriteLn(Text, TerminalFgColor, TerminalBgColor);
+end;
+
+procedure WriteLn(const Text: String; FgColor: TColor);
+begin
+  WriteLn(Text, FgColor, TerminalBgColor);
+end;
+
+procedure WriteLn(const Text: String; FgColor, BgColor: TColor);
+begin
+  Write(Text + #10, FgColor, BgColor);
 end;
 
 begin
