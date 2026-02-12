@@ -17,12 +17,6 @@ implementation
 
 uses Log, SysUtils;
 
-procedure LoadRootFrame(const RootFrame: PtrUInt); assembler; nostackframe; public name '_arch_load_root_frame';
-asm
-  mov rax, RootFrame
-  mov cr3, rax
-end;
-
 procedure Initialize;
 var
   Version, Additional, Features1, Features2: UInt32;
@@ -50,6 +44,18 @@ begin
     mov ecx, $277
     wrmsr
   end ['rax', 'rcx', 'rdx'];
+end;
+
+procedure LoadRootFrame(RootFrame: PtrUInt); assembler; nostackframe; public name '_arch_load_root_frame';
+asm
+  mov rax, RootFrame
+  mov cr3, rax
+end;
+
+procedure InvalidatePage(Page: PtrUInt); assembler; nostackframe; public name '_arch_invalidate_page';
+asm
+  mov rax, Page
+  invlpg [rax]
 end;
 
 end.

@@ -52,13 +52,12 @@ begin
   end;
 end;
 
-{ TODO: Implement page invalidation callback; only need invalidation for current address space }
-{ TODO: Implement WriteBarrier (in RTL); place between PTE updates and invalidation }
-function MapPage(
+  function MapPage(
   RootFrame, Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
-  const AllocateFrame: TAllocateFrameCallback
+  const AllocateFrame: TAllocateFrameCallback;
+  const InvalidatePage: TInvalidatePageCallback = nil
 ): Pointer; public name '_arch_map_page';
 var
   Shift, PageLevelIndex: UInt8;
@@ -90,9 +89,11 @@ begin
     end;
 
     // Allocate new page table or set leaf entry.
-    if PageLevelIndex = 1 then
-      SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache)
-    else begin
+    if PageLevelIndex = 1 then begin
+      SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache);
+      WriteBarrier;
+      if Assigned(InvalidatePage) then InvalidatePage(Page);
+    end else begin
       TableFrame := AllocateFrame();
       if TableFrame = 0 then begin
         Log.ErrorLn('Failed to allocate page table frame.');
@@ -100,6 +101,9 @@ begin
       end;
 
       TableEntry^ := (UInt64(TableFrame) and $FFFFFFFFFF000) or PAGE_ENTRY_PRESENT or PAGE_ENTRY_WRITABLE;
+      WriteBarrier;
+      if Assigned(InvalidatePage) then InvalidatePage(Page);
+
       Table := PPageTable(AddHhdmOffset(TableFrame));
       FillByte(Table^, SizeOf(Table^), 0);
     end;
@@ -112,15 +116,19 @@ function MapPageRange(
   Size: SizeUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
-  const AllocateFrame: TAllocateFrameCallback
+  const AllocateFrame: TAllocateFrameCallback;
+  const InvalidatePage: TInvalidatePageCallback = nil
 ): Pointer; public name '_arch_map_page_range';
+var
+  Ptr: Pointer;
 begin
   result := Pointer(Page);
 
   Size := Align(Size, PAGE_SIZE);
 
   while Size > 0 do begin
-    if not Assigned(MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame)) then exit(nil);
+    Ptr := MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame, InvalidatePage);
+    if not Assigned(Ptr) then exit(nil);
     Frame += PAGE_SIZE;
     Page += PAGE_SIZE;
     Size -= PAGE_SIZE;
@@ -129,7 +137,8 @@ end;
 
 procedure UnMapPage(
   RootFrame, Page: PtrUInt;
-  const DeallocateFrame: TDeallocateFrameCallback
+  const DeallocateFrame: TDeallocateFrameCallback;
+  const InvalidatePage: TInvalidatePageCallback = nil
 ); public name '_arch_unmap_page';
 begin
   Log.WarnLn('UnMapPage is not implemented yet.');
@@ -138,7 +147,8 @@ end;
 procedure UnMapPageRange(
   RootFrame, Page: PtrUInt;
   Size: SizeUInt;
-  const DeallocateFrame: TDeallocateFrameCallback
+  const DeallocateFrame: TDeallocateFrameCallback;
+  const InvalidatePage: TInvalidatePageCallback = nil
 ); public name '_arch_unmap_page_range';
 begin
   Log.WarnLn('UnMapPageRange is not implemented yet.');

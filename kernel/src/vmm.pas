@@ -2,11 +2,19 @@ unit Vmm;
 
 interface
 
+uses ArchApi;
+
 procedure Initialize;
+
+function AllocateKernelPage(MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache): Pointer;
+function AllocateKernelPageRange(Size: SizeUInt; MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache): Pointer;
+
+procedure DeallocateKernelPage(Page: Pointer);
+procedure DeallocateKernelPageRange(Page: Pointer; Size: SizeUInt);
 
 implementation
 
-uses ArchApi, Framebuffer, Limine, Log, Pmm, SysUtils, Utilities;
+uses Framebuffer, Limine, Log, Pmm, SysUtils, Utilities;
 
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';
@@ -17,20 +25,20 @@ var
   KernelRodataStart: Pointer; external name '_kernel_rodata_start';
   KernelRodataEnd: Pointer; external name '_kernel_rodata_end';
   KernelRootFrame: PtrUInt;
-  BumpAllocatorPtr: PtrUInt;
+  BumpAllocatorKernelPage: PtrUInt;
 
-function CreateKernelAddressSpace: PtrUInt;
+procedure CreateKernelAddressSpace;
 var
-  RootFrame, KernelFrame, KernelPage: PtrUInt;
+  KernelFrame, KernelPage: PtrUInt;
   EntryIndex: SizeUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
   Ptr: Pointer;
 begin
-  RootFrame := EarlyAllocateFrame;
-  if RootFrame = High(PtrUInt) then Panic('Failed to create kernel address space root frame.');
+  KernelRootFrame := EarlyAllocateFrame;
+  if KernelRootFrame = High(PtrUInt) then Panic('Failed to create kernel address space root frame.');
 
-  FillByte(Pointer(AddHhdmOffset(RootFrame))^, PageSize, 0);
+  FillByte(Pointer(AddHhdmOffset(KernelRootFrame))^, PageSize, 0);
 
   // Kernel
   MemoryCache := MemoryCacheWriteBack;
@@ -45,7 +53,7 @@ begin
     else
       MemoryAccess := [MemoryAccessGlobal, MemoryAccessWrite];
 
-    Ptr := MapPage(RootFrame, KernelFrame, KernelPage, MemoryAccess, MemoryCache, @EarlyAllocateFrame);
+    Ptr := MapPage(KernelRootFrame, KernelFrame, KernelPage, MemoryAccess, MemoryCache, @EarlyAllocateFrame);
     if not Assigned(Ptr) then Panic('Failed to map kernel.');
 
     Inc(KernelFrame, PageSize);
@@ -63,7 +71,7 @@ begin
         MemoryCache := MemoryCacheWriteBack;
 
       Ptr := MapPageRange(
-        RootFrame,
+        KernelRootFrame,
         Base,
         AddHhdmOffset(Base),
         Length, MemoryAccess,
@@ -72,13 +80,11 @@ begin
       );
       if not Assigned(Ptr) then Panic('Failed to map HHDM.');
     end;
-
-  result := RootFrame;
 end;
 
 procedure Initialize;
 begin
-  KernelRootFrame := CreateKernelAddressSpace;
+  CreateKernelAddressSpace;
   LoadRootFrame(KernelRootFrame);
 
   {$ifndef NDEBUG}
@@ -86,9 +92,60 @@ begin
   {$endif}
 end;
 
+function AllocateKernelPage(MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache): Pointer;
+begin
+  result := MapPage(
+    KernelRootFrame,
+    AllocateFrame,
+    BumpAllocatorKernelPage,
+    MemoryAccess,
+    MemoryCache,
+    @AllocateFrame,
+    @InvalidatePage
+  );
+
+  if not Assigned(result) then begin
+    Log.ErrorLn('Failed to allocate kernel page.');
+    exit(nil);
+  end;
+
+  BumpAllocatorKernelPage += PageSize;
+end;
+
+function AllocateKernelPageRange(Size: SizeUInt; MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache): Pointer;
+begin
+  result := MapPageRange(
+    KernelRootFrame,
+    AllocateFrame,
+    BumpAllocatorKernelPage,
+    Size,
+    MemoryAccess,
+    MemoryCache,
+    @AllocateFrame,
+    @InvalidatePage
+  );
+
+  if not Assigned(result) then begin
+    Log.ErrorLn('Failed to allocate kernel page range.');
+    exit(nil);
+  end;
+
+  BumpAllocatorKernelPage += Align(Size, PageSize);
+end;
+
+procedure DeallocateKernelPage(Page: Pointer);
+begin
+  UnMapPage(KernelRootFrame, PtrUInt(Page), @DeallocateFrame, @InvalidatePage);
+end;
+
+procedure DeallocateKernelPageRange(Page: Pointer; Size: SizeUInt);
+begin
+  UnMapPageRange(KernelRootFrame, PtrUInt(Page), Size, @DeallocateFrame, @InvalidatePage);
+end;
+
 begin
   if not Assigned(ExecutableAddressRequest.Response) then Panic('No executable address response.');
   if not Assigned(MemoryMapRequest.Response) then Panic('No memory map response.');
 
-  BumpAllocatorPtr := PtrUInt(@KernelEnd);
+  BumpAllocatorKernelPage := PtrUInt(Align(@KernelEnd, PageSize));
 end.

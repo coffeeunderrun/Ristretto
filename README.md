@@ -10,25 +10,28 @@ Barebones `uACPI` bindings with full support in progress.
 
 ## Dependencies
 
-### Build
-`fpc` Free Pascal compiler
-
-`gcc` or `clang` C cross-compiler
+`fpc`
+`make`
+`git`
+`qemu`
 
 `nasm`
+(build x86_64; might remove in favor of FPC asm)
+
+`gcc`
+(build uACPI, link kernel)
+
 `curl`
 `gunzip`
 `tar`
-`make`
-`git`
+(download external dependencies, e.g., OVFM)
 
-### Run (w/ QEMU)
+`xorriso`
+(build ISO)
+
 `coreutils`
 `mtools`
-`qemu`
-
-### Generate ISO
-`xorriso`
+(build HDD image)
 
 ## Build
 

@@ -80,18 +80,18 @@ end;
 function uacpi_kernel_map(Address: uacpi_phys_addr; Size: uacpi_size): Pointer; cdecl; public;
 begin
   result := Pointer(AddHhdmOffset(Address));
-  {$ifndef NDEBUG}
-  Log.TraceLn('uACPI map called on address ' + IntToHex(Address) +
-    ' of size ' + IntToStr(Size) + '. Mapped to ' + IntToHex(PtrUInt(result)) + '.');
-  {$endif}
+  // {$ifndef NDEBUG}
+  // Log.TraceLn('uACPI map called on address ' + IntToHex(Address) +
+  //   ' of size ' + IntToStr(Size) + '. Mapped to ' + IntToHex(PtrUInt(result)) + '.');
+  // {$endif}
 end;
 
 procedure uacpi_kernel_unmap(Ptr: Pointer; Size: uacpi_size); cdecl; public;
 begin
-  {$ifndef NDEBUG}
-  Log.TraceLn('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) +
-    ' of size ' + IntToStr(Size) + '. No action taken.');
-  {$endif}
+  // {$ifndef NDEBUG}
+  // Log.TraceLn('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) +
+  //   ' of size ' + IntToStr(Size) + '. No action taken.');
+  // {$endif}
 end;
 
 procedure Initialize;

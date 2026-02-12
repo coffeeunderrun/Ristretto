@@ -103,6 +103,11 @@ Procedure FillWord(var x;count:SizeInt;Value:Word);
 procedure FillDWord(var x;count:SizeInt;value:DWord);
 procedure FillQWord(var x;count:SizeInt;value:QWord);
 
+procedure ReadBarrier; inline;
+procedure ReadDependencyBarrier; inline;
+procedure ReadWriteBarrier; inline;
+procedure WriteBarrier; inline;
+
 {****************************************************************************
                           Math Routines
 ****************************************************************************}
