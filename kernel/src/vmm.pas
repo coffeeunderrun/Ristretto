@@ -8,11 +8,6 @@ implementation
 
 uses ArchApi, Framebuffer, Limine, Log, Pmm, SysUtils, Utilities;
 
-const
-  KernelAccessExecutable = [MemoryAccessGlobal, MemoryAccessExecute];
-  KernelAccessWritable = [MemoryAccessGlobal, MemoryAccessWrite];
-  KernelAccessReadOnly = [MemoryAccessGlobal];
-
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';
   MemoryMapRequest: TLimineMemoryMapRequest; external name '_limine_request_memory_map';
@@ -21,52 +16,56 @@ var
   KernelTextEnd: Pointer; external name '_kernel_text_end';
   KernelRodataStart: Pointer; external name '_kernel_rodata_start';
   KernelRodataEnd: Pointer; external name '_kernel_rodata_end';
+  KernelRootFrame: PtrUInt;
+  BumpAllocatorPtr: PtrUInt;
 
 function CreateKernelAddressSpace: PtrUInt;
 var
   RootFrame, KernelFrame, KernelPage: PtrUInt;
   EntryIndex: SizeUInt;
-  MapSuccess: Boolean;
+  MemoryAccess: TMemoryAccessSet;
+  MemoryCache: TMemoryCache;
 begin
-  RootFrame := 0;
+  RootFrame := EarlyAllocateFrame;
+  if RootFrame = High(PtrUInt) then Panic('Failed to create kernel address space root frame.');
 
-  if not CreateRootFrame(RootFrame, @EarlyAllocateFrame, @AddHhdmOffset) then
-    Panic('Failed to create kernel address space root frame.');
+  FillByte(Pointer(AddHhdmOffset(RootFrame))^, PageSize, 0);
 
   // Map the kernel region.
+  MemoryCache := MemoryCacheWriteBack;
   KernelFrame := ExecutableAddressRequest.Response^.PhysicalBase;
   KernelPage := ExecutableAddressRequest.Response^.VirtualBase;
-  while KernelPage < PtrUInt(@KernelEnd) do begin
-    // Map kernel text as executable.
-    if (KernelPage >= PtrUInt(@KernelTextStart)) and (KernelPage < PtrUInt(@KernelTextEnd)) then
-      MapSuccess := MapPage(RootFrame, KernelFrame, KernelPage,
-        KernelAccessExecutable, MemoryCacheWriteBack, @EarlyAllocateFrame, @AddHhdmOffset)
-    // Map kernel rodata as read-only.
-    else if (KernelPage >= PtrUInt(@KernelRodataStart)) and (KernelPage < PtrUInt(@KernelRodataEnd)) then
-      MapSuccess := MapPage(RootFrame, KernelFrame, KernelPage,
-        KernelAccessReadOnly, MemoryCacheWriteBack, @EarlyAllocateFrame, @AddHhdmOffset)
-    // Map the rest of the kernel as writable.
-    else
-      MapSuccess := MapPage(RootFrame, KernelFrame, KernelPage,
-      KernelAccessWritable, MemoryCacheWriteBack, @EarlyAllocateFrame, @AddHhdmOffset);
 
-    if not MapSuccess then Panic('Failed to map kernel.');
+  while KernelPage < PtrUInt(@KernelEnd) do begin
+    // Kernel text segment.
+    if (KernelPage >= PtrUInt(@KernelTextStart)) and (KernelPage < PtrUInt(@KernelTextEnd)) then
+      MemoryAccess := [MemoryAccessGlobal, MemoryAccessExecute]
+    // Kernel rodata segment.
+    else if (KernelPage >= PtrUInt(@KernelRodataStart)) and (KernelPage < PtrUInt(@KernelRodataEnd)) then
+      MemoryAccess := [MemoryAccessGlobal]
+    // Kernel data, bss, and Limine Request segments.
+    else
+      MemoryAccess := [MemoryAccessGlobal, MemoryAccessWrite];
+
+    if not Assigned(MapPage(RootFrame, KernelFrame, KernelPage, MemoryAccess, MemoryCache, @EarlyAllocateFrame)) then
+      Panic('Failed to map kernel.');
 
     Inc(KernelFrame, PageSize);
     Inc(KernelPage, PageSize);
   end;
 
   // Use higher-half direct mapping.
+  MemoryAccess := [MemoryAccessGlobal, MemoryAccessWrite];
+
   with MemoryMapRequest.Response^ do
     for EntryIndex := 0 to EntryCount - 1 do with Entries^[EntryIndex] do begin
       if EntryType = LIMINE_MEMMAP_FRAMEBUFFER then
-        MapSuccess := MapPageRange(RootFrame, Base, AddHhdmOffset(Base), Length,
-        KernelAccessWritable, MemoryCacheWriteCombining, @EarlyAllocateFrame, @AddHhdmOffset)
+        MemoryCache := MemoryCacheWriteCombining
       else
-        MapSuccess := MapPageRange(RootFrame, Base, AddHhdmOffset(Base), Length,
-        KernelAccessWritable, MemoryCacheWriteBack, @EarlyAllocateFrame, @AddHhdmOffset);
+        MemoryCache := MemoryCacheWriteBack;
 
-      if not MapSuccess then Panic('Failed to map HHDM.');
+      if not Assigned(MapPageRange(RootFrame, Base, AddHhdmOffset(Base), Length,
+        MemoryAccess, MemoryCache, @EarlyAllocateFrame)) then Panic('Failed to map HHDM.');
     end;
 
   result := RootFrame;
@@ -74,7 +73,8 @@ end;
 
 procedure Initialize;
 begin
-  LoadRootFrame(CreateKernelAddressSpace);
+  KernelRootFrame := CreateKernelAddressSpace;
+  LoadRootFrame(KernelRootFrame);
 
 {$ifndef NDEBUG}
   Log.DebugLn('VMM initialized.');
@@ -82,9 +82,8 @@ begin
 end;
 
 begin
-  if not Assigned(ExecutableAddressRequest.Response) then
-    Panic('No executable address response from Limine.');
+  if not Assigned(ExecutableAddressRequest.Response) then Panic('No executable address response.');
+  if not Assigned(MemoryMapRequest.Response) then Panic('No memory map response.');
 
-  if not Assigned(MemoryMapRequest.Response) then
-    Panic('No memory map response from Limine.');
+  BumpAllocatorPtr := PtrUInt(@KernelEnd);
 end.

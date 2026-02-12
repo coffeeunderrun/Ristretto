@@ -4,10 +4,10 @@ interface
 
 procedure Initialize;
 
+function EarlyAllocateFrame: PtrUInt;
+
 function AllocateFrame: PtrUInt;
 procedure DeallocateFrame(Frame: PtrUInt);
-
-function EarlyAllocateFrame(var Frame: PtrUInt): Boolean;
 
 implementation
 
@@ -31,24 +31,6 @@ var
   FreeListHead: PtrUInt;
   MemoryMapIndex: SizeUInt;
   MemoryMapOffset: SizeUInt;
-
-function AllocateFrame: PtrUInt;
-var
-  FramePtr: PPtrUInt;
-begin
-  FramePtr := PPtrUInt(FreeListHead);
-  result := RemoveHhdmOffset(FreeListHead);
-  FreeListHead := FramePtr^;
-end;
-
-procedure DeallocateFrame(Frame: PtrUInt);
-var
-  FramePtr: PPtrUInt;
-begin
-  FramePtr := PPtrUInt(AddHhdmOffset(Frame));
-  FramePtr^ := FreeListHead;
-  FreeListHead := PtrUInt(FramePtr);
-end;
 
 procedure PopulateFreeList;
 const
@@ -76,9 +58,8 @@ begin
           end;
 
           // Reclaimable frames will be deallocated after initialization.
-          LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE,
-          LIMINE_MEMMAP_ACPI_RECLAIMABLE:
-            AvailablePages += Entries^[Index].Length div PageSize;
+          LIMINE_MEMMAP_ACPI_RECLAIMABLE,
+          LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE: AvailablePages += Entries^[Index].Length div PageSize;
         end;
       end;
 
@@ -86,8 +67,7 @@ begin
       Inc(Index);
     end;
 
-  Terminal.WriteLn('Available physical memory: ' +
-    IntToStr((AvailablePages * PageSize) div MIB) + ' MiB');
+  Terminal.WriteLn('Available physical memory: ' + IntToStr((AvailablePages * PageSize) div MIB) + ' MiB');
 end;
 
 procedure Initialize;
@@ -99,7 +79,9 @@ begin
 {$endif}
 end;
 
-function EarlyAllocateFrame(var Frame: PtrUInt): Boolean;
+function EarlyAllocateFrame: PtrUInt;
+var
+  Frame: PtrUInt;
 begin
   with MemoryMapRequest.Response^ do
     while MemoryMapIndex < EntryCount do begin
@@ -107,7 +89,7 @@ begin
         if (EntryType = LIMINE_MEMMAP_USABLE) and (MemoryMapOffset < Length) then begin
           Frame := Base + MemoryMapOffset;
           Inc(MemoryMapOffset, PageSize);
-          exit(true);
+          exit(Frame);
         end;
 
         Inc(MemoryMapIndex);
@@ -116,7 +98,32 @@ begin
     end;
 
   Log.ErrorLn('Out of memory in early frame allocator.');
-  result := false;
+  result := High(PtrUInt);
+end;
+
+function AllocateFrame: PtrUInt;
+var
+  Frame: PtrUInt;
+  FramePtr: PPtrUInt;
+begin
+  FramePtr := PPtrUInt(FreeListHead);
+  if FramePtr^ = 0 then begin
+    Log.ErrorLn('Out of memory in frame allocator.');
+    exit(High(PtrUInt));
+  end;
+
+  Frame := RemoveHhdmOffset(FreeListHead);
+  FreeListHead := FramePtr^;
+  result := Frame;
+end;
+
+procedure DeallocateFrame(Frame: PtrUInt);
+var
+  FramePtr: PPtrUInt;
+begin
+  FramePtr := PPtrUInt(AddHhdmOffset(Frame));
+  FramePtr^ := FreeListHead;
+  FreeListHead := PtrUInt(FramePtr);
 end;
 
 begin

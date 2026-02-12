@@ -47,17 +47,16 @@ procedure Initialize;
 
 implementation
 
-uses Limine, Log, SysUtils;
+uses Limine, Log, SysUtils, Utilities;
 
 var
-  HhdmRequest: TLimineHhdmRequest; external name '_limine_request_hhdm';
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
 
 function uacpi_kernel_get_rsdp(AddressPtr: puacpi_phys_addr): uacpi_status; cdecl; public;
 begin
   if Assigned(RsdpRequest.Response) then begin
     // Limine protocol base revision 4 states that the RSDP address will be virtual (HHDM).
-    AddressPtr^ := uacpi_phys_addr(RsdpRequest.Response^.Address - HhdmRequest.Response^.Offset);
+    AddressPtr^ := uacpi_phys_addr(RemoveHhdmOffset(PtrUInt(RsdpRequest.Response^.Address)));
 {$ifndef NDEBUG}
     Log.TraceLn('uACPI RSDP found at physical address ' + IntToHex(AddressPtr^));
 {$endif}
@@ -80,17 +79,18 @@ end;
 
 function uacpi_kernel_map(Address: uacpi_phys_addr; Size: uacpi_size): Pointer; cdecl; public;
 begin
-  // Until we have a proper memory manager in place, we will rely on Limine's HHDM mapping.
-  result := Pointer(Address + HhdmRequest.Response^.Offset);
+  result := Pointer(AddHhdmOffset(Address));
 {$ifndef NDEBUG}
-  Log.TraceLn('uACPI map called on address ' + IntToHex(Address) + ' of size ' + IntToStr(Size) + '. Mapped to ' + IntToHex(PtrUInt(result)) + '.');
+  Log.TraceLn('uACPI map called on address ' + IntToHex(Address) +
+    ' of size ' + IntToStr(Size) + '. Mapped to ' + IntToHex(PtrUInt(result)) + '.');
 {$endif}
 end;
 
 procedure uacpi_kernel_unmap(Ptr: Pointer; Size: uacpi_size); cdecl; public;
 begin
 {$ifndef NDEBUG}
-  Log.TraceLn('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) + ' of size ' + IntToStr(Size) + '. No action taken.');
+  Log.TraceLn('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) +
+    ' of size ' + IntToStr(Size) + '. No action taken.');
 {$endif}
 end;
 

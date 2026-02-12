@@ -7,7 +7,7 @@ function RemoveHhdmOffset(Page: PtrUInt): PtrUInt; inline;
 
 implementation
 
-uses Limine, Log, SysUtils;
+uses Limine;
 
 var
   HhdmRequest: TLimineHhdmRequest; external name '_limine_request_hhdm';

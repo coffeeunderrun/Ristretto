@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses ArchApi, Limine, Log;
+uses ArchApi, Limine, Log, Utilities;
 
 const
   PAGE_SIZE = $1000;
@@ -52,28 +52,14 @@ begin
   end;
 end;
 
-function CreateRootFrame(
-  var RootFrame: PtrUInt;
-  const AllocateFrame: TAllocateFrameCallback;
-  const GetPageFromFrame: TGetPageFromFrameCallback
-): Boolean; public name '_arch_create_root_frame';
-begin
-  if not AllocateFrame(RootFrame) then begin
-    Log.ErrorLn('Failed to allocate frame for root page table.');
-    exit(false);
-  end;
-
-  FillByte(Pointer(GetPageFromFrame(RootFrame))^, PAGE_SIZE, 0);
-  result := true;
-end;
-
+{ TODO: Implement page invalidation callback; only need invalidation for current address space }
+{ TODO: Implement WriteBarrier (in RTL); place between PTE updates and invalidation to ensure ordering }
 function MapPage(
   RootFrame, Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
-  const AllocateFrame: TAllocateFrameCallback;
-  const GetPageFromFrame: TGetPageFromFrameCallback
-): Boolean; public name '_arch_map_page';
+  const AllocateFrame: TAllocateFrameCallback
+): Pointer; public name '_arch_map_page';
 var
   Shift, PageLevelIndex: UInt8;
   Table: PPageTable;
@@ -81,8 +67,10 @@ var
   TableEntry: PUInt64;
   TableIndex: UInt16;
 begin
+  result := Pointer(Page);
+
   // Start at root page table.
-  Table := PPageTable(GetPageFromFrame(RootFrame));
+  Table := PPageTable(AddHhdmOffset(RootFrame));
 
   // Initial shift to get the top-level index.
   Shift := ((PageLevelMax - 1) * 9) + 12;
@@ -98,7 +86,7 @@ begin
     // If entry is present, follow it.
     if TableEntry^ and $1 <> 0 then begin
       TableFrame := TableEntry^ and $FFFFFFFFFF000;
-      Table := PPageTable(GetPageFromFrame(TableFrame));
+      Table := PPageTable(AddHhdmOffset(TableFrame));
       continue;
     end;
 
@@ -106,18 +94,17 @@ begin
     if PageLevelIndex = 1 then
       SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache)
     else begin
-      if not AllocateFrame(TableFrame) then begin
+      TableFrame := AllocateFrame();
+      if TableFrame = 0 then begin
         Log.ErrorLn('Failed to allocate page table frame.');
-        exit(false);
+        exit(nil);
       end;
 
       TableEntry^ := (UInt64(TableFrame) and $FFFFFFFFFF000) or PAGE_ENTRY_PRESENT or PAGE_ENTRY_WRITABLE;
-      Table := PPageTable(GetPageFromFrame(TableFrame));
+      Table := PPageTable(AddHhdmOffset(TableFrame));
       FillByte(Table^, SizeOf(Table^), 0);
     end;
   end;
-
-  result := true;
 end;
 
 { TODO: Optimize to map ranges instead of one by one. }
@@ -126,24 +113,38 @@ function MapPageRange(
   Size: SizeUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
-  const AllocateFrame: TAllocateFrameCallback;
-  const GetPageFromFrame: TGetPageFromFrameCallback
-): Boolean; public name '_arch_map_page_range';
+  const AllocateFrame: TAllocateFrameCallback
+): Pointer; public name '_arch_map_page_range';
 begin
+  result := Pointer(Page);
+
   // Align size to page boundary.
   Size := Align(Size, PAGE_SIZE);
 
   // Map pages one by one.
   while Size > 0 do begin
-    if not MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame, GetPageFromFrame) then
-      exit(false);
-
+    if not Assigned(MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame)) then exit(nil);
     Frame += PAGE_SIZE;
     Page += PAGE_SIZE;
     Size -= PAGE_SIZE;
   end;
+end;
 
-  result := true;
+procedure UnMapPage(
+  RootFrame, Page: PtrUInt;
+  const DeallocateFrame: TDeallocateFrameCallback
+); public name '_arch_unmap_page';
+begin
+  Log.WarnLn('UnMapPage is not implemented yet.');
+end;
+
+procedure UnMapPageRange(
+  RootFrame, Page: PtrUInt;
+  Size: SizeUInt;
+  const DeallocateFrame: TDeallocateFrameCallback
+); public name '_arch_unmap_page_range';
+begin
+  Log.WarnLn('UnMapPageRange is not implemented yet.');
 end;
 
 procedure Initialize;
