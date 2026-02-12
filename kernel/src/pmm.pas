@@ -59,7 +59,8 @@ begin
 
           // Reclaimable frames will be deallocated after initialization.
           LIMINE_MEMMAP_ACPI_RECLAIMABLE,
-          LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE: AvailablePages += Entries^[Index].Length div PageSize;
+          LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
+            AvailablePages += Entries^[Index].Length div PageSize;
         end;
       end;
 
@@ -74,9 +75,9 @@ procedure Initialize;
 begin
   PopulateFreeList;
 
-{$ifndef NDEBUG}
+  {$ifndef NDEBUG}
   Log.DebugLn('PMM initialized.');
-{$endif}
+  {$endif}
 end;
 
 function EarlyAllocateFrame: PtrUInt;
@@ -107,7 +108,7 @@ var
   FramePtr: PPtrUInt;
 begin
   FramePtr := PPtrUInt(FreeListHead);
-  if FramePtr^ = 0 then begin
+  if FramePtr^ = High(PtrUInt) then begin
     Log.ErrorLn('Out of memory in frame allocator.');
     exit(High(PtrUInt));
   end;
@@ -129,7 +130,7 @@ end;
 begin
   if not Assigned(MemoryMapRequest.Response) then Panic('No memory map response from Limine.');
 
-  FreeListHead := 0;
+  FreeListHead := High(PtrUInt);
   MemoryMapIndex := 0;
   MemoryMapOffset := 0;
 end.

@@ -62,9 +62,9 @@ begin
     mov es, ax
   end ['rax'];
 
-{$ifndef NDEBUG}
+  {$ifndef NDEBUG}
   Log.DebugLn('GDT initialized.');
-{$endif}
+  {$endif}
 end;
 
 end.

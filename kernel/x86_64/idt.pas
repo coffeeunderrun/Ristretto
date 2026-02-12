@@ -184,9 +184,9 @@ begin
   InitializePics;
   PopulateIdt;
   LoadIdt;
-{$ifndef NDEBUG}
+  {$ifndef NDEBUG}
   Log.DebugLn('IDT initialized.');
-{$endif}
+  {$endif}
 end;
 
 end.

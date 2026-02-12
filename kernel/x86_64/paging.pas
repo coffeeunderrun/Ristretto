@@ -35,7 +35,7 @@ procedure SetLeafEntry(
   Frame: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache
-); inline;
+);
 begin
   Entry := (UInt64(Frame) and $FFFFFFFFFF000) or PAGE_ENTRY_PRESENT;
 
@@ -53,7 +53,7 @@ begin
 end;
 
 { TODO: Implement page invalidation callback; only need invalidation for current address space }
-{ TODO: Implement WriteBarrier (in RTL); place between PTE updates and invalidation to ensure ordering }
+{ TODO: Implement WriteBarrier (in RTL); place between PTE updates and invalidation }
 function MapPage(
   RootFrame, Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
@@ -72,7 +72,7 @@ begin
   // Start at root page table.
   Table := PPageTable(AddHhdmOffset(RootFrame));
 
-  // Initial shift to get the top-level index.
+  // Root page table entry index.
   Shift := ((PageLevelMax - 1) * 9) + 12;
 
   // Traverse page table levels.
@@ -80,17 +80,16 @@ begin
     TableIndex := (Page shr Shift) and $1FF;
     TableEntry := @Table^[TableIndex];
 
-    // Next page table level.
     Shift := Shift - 9;
 
-    // If entry is present, follow it.
+    // Is table entry present?
     if TableEntry^ and $1 <> 0 then begin
       TableFrame := TableEntry^ and $FFFFFFFFFF000;
       Table := PPageTable(AddHhdmOffset(TableFrame));
       continue;
     end;
 
-    // Allocate new page table or use frame for final level.
+    // Allocate new page table or set leaf entry.
     if PageLevelIndex = 1 then
       SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache)
     else begin
@@ -118,10 +117,8 @@ function MapPageRange(
 begin
   result := Pointer(Page);
 
-  // Align size to page boundary.
   Size := Align(Size, PAGE_SIZE);
 
-  // Map pages one by one.
   while Size > 0 do begin
     if not Assigned(MapPage(RootFrame, Frame, Page, MemoryAccess, MemoryCache, AllocateFrame)) then exit(nil);
     Frame += PAGE_SIZE;
@@ -149,9 +146,9 @@ end;
 
 procedure Initialize;
 begin
-{$ifndef NDEBUG}
+  {$ifndef NDEBUG}
   Log.DebugLn('Paging initialized.');
-{$endif}
+  {$endif}
 end;
 
 begin

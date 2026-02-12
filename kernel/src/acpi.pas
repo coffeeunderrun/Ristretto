@@ -57,9 +57,9 @@ begin
   if Assigned(RsdpRequest.Response) then begin
     // Limine protocol base revision 4 states that the RSDP address will be virtual (HHDM).
     AddressPtr^ := uacpi_phys_addr(RemoveHhdmOffset(PtrUInt(RsdpRequest.Response^.Address)));
-{$ifndef NDEBUG}
+    {$ifndef NDEBUG}
     Log.TraceLn('uACPI RSDP found at physical address ' + IntToHex(AddressPtr^));
-{$endif}
+    {$endif}
     exit(UACPI_STATUS_OK);
   end;
 
@@ -80,18 +80,18 @@ end;
 function uacpi_kernel_map(Address: uacpi_phys_addr; Size: uacpi_size): Pointer; cdecl; public;
 begin
   result := Pointer(AddHhdmOffset(Address));
-{$ifndef NDEBUG}
+  {$ifndef NDEBUG}
   Log.TraceLn('uACPI map called on address ' + IntToHex(Address) +
     ' of size ' + IntToStr(Size) + '. Mapped to ' + IntToHex(PtrUInt(result)) + '.');
-{$endif}
+  {$endif}
 end;
 
 procedure uacpi_kernel_unmap(Ptr: Pointer; Size: uacpi_size); cdecl; public;
 begin
-{$ifndef NDEBUG}
+  {$ifndef NDEBUG}
   Log.TraceLn('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) +
     ' of size ' + IntToStr(Size) + '. No action taken.');
-{$endif}
+  {$endif}
 end;
 
 procedure Initialize;
@@ -101,9 +101,9 @@ var
 begin
   Status := uacpi_setup_early_table_access(@Buffer, SizeOf(Buffer));
   case Status of
-{$ifndef NDEBUG}
+    {$ifndef NDEBUG}
     UACPI_STATUS_OK: Log.DebugLn('ACPI initialized.');
-{$endif}
+    {$endif}
 
     UACPI_STATUS_MAPPING_FAILED..UACPI_STATUS_DENIED:
       Log.FatalLn('uACPI status: ' + UACPI_STATUS_MESSAGE[Status]);

@@ -25,36 +25,34 @@ var
   EntryIndex: SizeUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
+  Ptr: Pointer;
 begin
   RootFrame := EarlyAllocateFrame;
   if RootFrame = High(PtrUInt) then Panic('Failed to create kernel address space root frame.');
 
   FillByte(Pointer(AddHhdmOffset(RootFrame))^, PageSize, 0);
 
-  // Map the kernel region.
+  // Kernel
   MemoryCache := MemoryCacheWriteBack;
   KernelFrame := ExecutableAddressRequest.Response^.PhysicalBase;
   KernelPage := ExecutableAddressRequest.Response^.VirtualBase;
 
   while KernelPage < PtrUInt(@KernelEnd) do begin
-    // Kernel text segment.
     if (KernelPage >= PtrUInt(@KernelTextStart)) and (KernelPage < PtrUInt(@KernelTextEnd)) then
       MemoryAccess := [MemoryAccessGlobal, MemoryAccessExecute]
-    // Kernel rodata segment.
     else if (KernelPage >= PtrUInt(@KernelRodataStart)) and (KernelPage < PtrUInt(@KernelRodataEnd)) then
       MemoryAccess := [MemoryAccessGlobal]
-    // Kernel data, bss, and Limine Request segments.
     else
       MemoryAccess := [MemoryAccessGlobal, MemoryAccessWrite];
 
-    if not Assigned(MapPage(RootFrame, KernelFrame, KernelPage, MemoryAccess, MemoryCache, @EarlyAllocateFrame)) then
-      Panic('Failed to map kernel.');
+    Ptr := MapPage(RootFrame, KernelFrame, KernelPage, MemoryAccess, MemoryCache, @EarlyAllocateFrame);
+    if not Assigned(Ptr) then Panic('Failed to map kernel.');
 
     Inc(KernelFrame, PageSize);
     Inc(KernelPage, PageSize);
   end;
 
-  // Use higher-half direct mapping.
+  // HHDM
   MemoryAccess := [MemoryAccessGlobal, MemoryAccessWrite];
 
   with MemoryMapRequest.Response^ do
@@ -64,8 +62,15 @@ begin
       else
         MemoryCache := MemoryCacheWriteBack;
 
-      if not Assigned(MapPageRange(RootFrame, Base, AddHhdmOffset(Base), Length,
-        MemoryAccess, MemoryCache, @EarlyAllocateFrame)) then Panic('Failed to map HHDM.');
+      Ptr := MapPageRange(
+        RootFrame,
+        Base,
+        AddHhdmOffset(Base),
+        Length, MemoryAccess,
+        MemoryCache,
+        @EarlyAllocateFrame
+      );
+      if not Assigned(Ptr) then Panic('Failed to map HHDM.');
     end;
 
   result := RootFrame;
@@ -76,9 +81,9 @@ begin
   KernelRootFrame := CreateKernelAddressSpace;
   LoadRootFrame(KernelRootFrame);
 
-{$ifndef NDEBUG}
+  {$ifndef NDEBUG}
   Log.DebugLn('VMM initialized.');
-{$endif}
+  {$endif}
 end;
 
 begin
