@@ -40,7 +40,7 @@ begin
 
   FillByte(Pointer(AddHhdmOffset(KernelRootFrame))^, PageSize, 0);
 
-  // Kernel
+  // Kernel segments
   MemoryCache := MemoryCacheWriteBack;
   KernelFrame := ExecutableAddressRequest.Response^.PhysicalBase;
   KernelPage := ExecutableAddressRequest.Response^.VirtualBase;
@@ -74,7 +74,8 @@ begin
         KernelRootFrame,
         Base,
         AddHhdmOffset(Base),
-        Length, MemoryAccess,
+        Length,
+        MemoryAccess,
         MemoryCache,
         @EarlyAllocateFrame
       );

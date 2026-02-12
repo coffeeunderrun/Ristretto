@@ -82,7 +82,7 @@ begin
     Shift := Shift - 9;
 
     // Is table entry present?
-    if TableEntry^ and $1 <> 0 then begin
+    if (PageLevelIndex > 1) and (TableEntry^ and $1 <> 0) then begin
       TableFrame := TableEntry^ and $FFFFFFFFFF000;
       Table := PPageTable(AddHhdmOffset(TableFrame));
       continue;
@@ -135,13 +135,53 @@ begin
   end;
 end;
 
+{ TODO: This should also unmap parent page table when all entries are not present. }
 procedure UnMapPage(
   RootFrame, Page: PtrUInt;
   const DeallocateFrame: TDeallocateFrameCallback;
   const InvalidatePage: TInvalidatePageCallback = nil
 ); public name '_arch_unmap_page';
+var
+  Shift, PageLevelIndex: UInt8;
+  Table: PPageTable;
+  TableFrame: PtrUInt;
+  TableEntry: PUInt64;
+  TableIndex: UInt16;
 begin
-  Log.WarnLn('UnMapPage is not implemented yet.');
+  // Start at root page table.
+  Table := PPageTable(AddHhdmOffset(RootFrame));
+
+  // Root page table entry index.
+  Shift := ((PageLevelMax - 1) * 9) + 12;
+
+  // Traverse page table levels.
+  for PageLevelIndex := PageLevelMax downto 1 do begin
+    TableIndex := (Page shr Shift) and $1FF;
+    TableEntry := @Table^[TableIndex];
+
+    Shift := Shift - 9;
+
+    // Is table entry present?
+    if (PageLevelIndex > 1) and (TableEntry^ and $1 <> 0) then begin
+      TableFrame := TableEntry^ and $FFFFFFFFFF000;
+      Table := PPageTable(AddHhdmOffset(TableFrame));
+      continue;
+    end;
+
+    // Page table not mapped.
+    if PageLevelIndex > 1 then exit;
+
+    // Page table entry is not present.
+    if TableEntry^ and $1 = 0 then exit;
+
+    TableFrame := TableEntry^ and $FFFFFFFFFF000;
+    TableEntry^ := 0;
+
+    WriteBarrier;
+    if Assigned(InvalidatePage) then InvalidatePage(Page);
+
+    DeallocateFrame(TableFrame);
+  end;
 end;
 
 procedure UnMapPageRange(
@@ -151,7 +191,13 @@ procedure UnMapPageRange(
   const InvalidatePage: TInvalidatePageCallback = nil
 ); public name '_arch_unmap_page_range';
 begin
-  Log.WarnLn('UnMapPageRange is not implemented yet.');
+  Size := Align(Size, PAGE_SIZE);
+
+  while Size > 0 do begin
+    UnMapPage(RootFrame, Page, DeallocateFrame, InvalidatePage);
+    Page += PAGE_SIZE;
+    Size -= PAGE_SIZE;
+  end;
 end;
 
 procedure Initialize;
