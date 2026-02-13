@@ -11,7 +11,7 @@ procedure DeallocateFrame(Frame: PtrUInt);
 
 implementation
 
-uses ArchApi, Limine, Log, Terminal, Utilities;
+uses ArchApi, Hhdm, Limine, Log, Terminal;
 
 const
   MEMORY_MAP_TYPE_NAMES: array [LIMINE_MEMMAP_USABLE..LIMINE_MEMMAP_ACPI_TABLES] of String = (

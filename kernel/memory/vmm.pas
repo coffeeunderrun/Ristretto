@@ -14,7 +14,7 @@ procedure DeallocateKernelPageRange(Page: Pointer; Size: SizeUInt);
 
 implementation
 
-uses Framebuffer, Limine, Log, Pmm, Utilities;
+uses Framebuffer, Hhdm, Limine, Log, Pmm;
 
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';

@@ -15,7 +15,7 @@ override CFLAGS += -ffreestanding -fno-builtin -fno-pic -ffunction-sections -fda
 LDFLAGS =
 override LDFLAGS += -nostdlib -static -zmax-page-size=0x1000
 
-override FPCFLAGS += -ap -Aelf -Cn -Cg-i-o-r-t- -Mobjfpc -n -Sagic
+override FPCFLAGS += -Cn -Cg-i-o-r-t- -Mobjfpc -n -Sagic
 FPCVERSION = $(shell fpc -iW)
 
 HOST_CC = cc
@@ -30,7 +30,7 @@ QEMUFLAGS = -m 128M -net none -monitor stdio
 ifeq ($(DEBUG), 1)
   override NASMFLAGS += -gdwarf -O0
   override CFLAGS += -g -O0
-  override FPCFLAGS += -g -O- -Si-
+  override FPCFLAGS += -gw3 -O- -Si-
   override HOST_CFLAGS += -g -O0
   override QEMUFLAGS += -gdb tcp::1234 -S -d int -no-shutdown -no-reboot
 else
@@ -39,14 +39,14 @@ else
   override LDFLAGS += -s
   override FPCFLAGS += -O2 -CX -XXs -dNDEBUG
   override HOST_CFLAGS += -O2
+
+  ifeq ($(TARGET_ARCH), $(HOST_ARCH))
+    override QEMUFLAGS += -enable-kvm -cpu host
+  endif
 endif
 
 ifeq ($(TARGET_ARCH), x86_64)
   override CFLAGS += -mcmodel=kernel -mabi=sysv -m64 -march=x86-64 -mno-red-zone \
     -mno-80387 -mno-mmx -mno-sse -mno-sse2
   override QEMUFLAGS += -M q35
-endif
-
-ifeq ($(TARGET_ARCH), $(HOST_ARCH))
-  override QEMUFLAGS += -enable-kvm -cpu host
 endif

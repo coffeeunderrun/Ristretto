@@ -10,12 +10,11 @@ begin
     OSes := [embedded];
     NeedLibC := false;
 
-    // Kernel sources
-    SourcePath.Add('src');
-    IncludePath.Add('inc');
-
-    // Architecture-specific units
-    UnitPath.Add('$(CPU)');
+    UnitPath.Add('arch');
+    UnitPath.Add('arch/$(CPU)');
+    UnitPath.Add('memory');
+    UnitPath.Add('platform');
+    UnitPath.Add('video');
 
     // Limine protocol
     UnitPath.Add('../vendor/limine-protocol');

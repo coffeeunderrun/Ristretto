@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses ArchApi, Limine, Log, Utilities;
+uses ArchApi, Hhdm, Limine, Log;
 
 const
   PAGE_SIZE = $1000;

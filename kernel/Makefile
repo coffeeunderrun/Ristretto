@@ -15,7 +15,7 @@ override FPCFLAGS += -vehinw -vm4055,4056,6058
 SRCS := $(addprefix uacpi/, $(notdir $(wildcard ../vendor/uacpi/source/*.c)))
 
 # Kernel source files
-SRCS += $(addprefix kernel/, $(notdir $(wildcard $(TARGET_ARCH)/*.asm)))
+SRCS += $(addprefix kernel/, $(notdir $(wildcard arch/$(TARGET_ARCH)/*.asm)))
 
 # Kernel resource files
 SRCS += $(addprefix kernel/, $(notdir $(wildcard res/*.psf)))
@@ -41,9 +41,9 @@ distclean:
 	rm -f fpmake *.o *.fpm rtl/fpmake rtl/*.o rtl/*.fpm
 
 # Kernel binary
-$(BINDIR)/kernel: compile $(OBJS) $(TARGET_ARCH)/link.ld
+$(BINDIR)/kernel: compile $(OBJS) arch/scripts/$(TARGET_ARCH).lds
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ $(wildcard $(OBJS) $(UNITDIR)/*.o $(RTLDIR)/*.o)
+	$(CC) $(CFLAGS) $(LDFLAGS) -Tarch/scripts/$(TARGET_ARCH).lds -o$@ $(wildcard $(OBJS) $(UNITDIR)/*.o $(RTLDIR)/*.o)
 
 .PHONY: compile
 compile: fpmake
@@ -53,7 +53,7 @@ fpmake: fpmake.pas
 	$(HOST_FPC) $(HOST_FPCFLAGS) -o$@ $<
 
 # Kernel *.asm files
-$(OBJDIR)/kernel/%.asm.o: $(TARGET_ARCH)/%.asm
+$(OBJDIR)/kernel/%.asm.o: arch/$(TARGET_ARCH)/%.asm
 	mkdir -p $(dir $@)
 ifeq ($(TARGET_ARCH), x86_64)
 	$(NASM) $(NASMFLAGS) -MD$(@:.o=.d) -MP -o$@ $<
