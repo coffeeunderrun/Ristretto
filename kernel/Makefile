@@ -4,10 +4,12 @@ include ../vars.mk
 
 BINDIR = bin/$(TARGET_ARCH)
 OBJDIR = obj/$(TARGET_ARCH)
-UNITDIR = units/$(TARGET_ARCH)-linux
-RTLUNITDIR = rtl/units/$(TARGET_ARCH)-linux
+RTLDIR = lib/fpc/$(FPCVERSION)/units/$(TARGET_ARCH)-embedded/rtl
+UNITDIR = units/$(TARGET_ARCH)-embedded
 
 UACPI_CFLAGS := -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
+
+override FPCFLAGS += -vehinw -vm4055,4056,6058
 
 # uACPI source files
 SRCS := $(addprefix uacpi/, $(notdir $(wildcard ../vendor/uacpi/source/*.c)))
@@ -39,26 +41,18 @@ distclean:
 	rm -f fpmake *.o *.fpm rtl/fpmake rtl/*.o rtl/*.fpm
 
 # Kernel binary
-$(BINDIR)/kernel: rtlobjs kernelobjs $(OBJS) $(TARGET_ARCH)/link.ld
+$(BINDIR)/kernel: compile $(OBJS) $(TARGET_ARCH)/link.ld
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ \
-		$(wildcard $(OBJS) $(UNITDIR)/*.o $(RTLUNITDIR)/*.o)
+	$(CC) $(CFLAGS) $(LDFLAGS) -T$(TARGET_ARCH)/link.ld -o$@ $(wildcard $(OBJS) $(UNITDIR)/*.o $(RTLDIR)/*.o)
 
-.PHONY: rtlobjs
-rtlobjs: rtl/fpmake
-	./rtl/fpmake install --prefix=. --options="$(FPCFLAGS)"
-
-rtl/fpmake: rtl/fpmake.pas
-	$(HOST_FPC) $(HOST_FPCFLAGS) -o$@ $<
-
-.PHONY: kernelobjs
-kernelobjs: fpmake
-	./fpmake compile --searchpath=lib/fpc/$(FPCVERSION)/ --options="$(FPCFLAGS)"
+.PHONY: compile
+compile: fpmake
+	./fpmake compile --cpu=$(TARGET_ARCH) --os=embedded --options="$(FPCFLAGS)" --searchpath=lib/fpc/$(FPCVERSION)/
 
 fpmake: fpmake.pas
 	$(HOST_FPC) $(HOST_FPCFLAGS) -o$@ $<
 
-# Kernel architecture *.asm files
+# Kernel *.asm files
 $(OBJDIR)/kernel/%.asm.o: $(TARGET_ARCH)/%.asm
 	mkdir -p $(dir $@)
 ifeq ($(TARGET_ARCH), x86_64)
@@ -77,5 +71,4 @@ $(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/source/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(UACPI_CFLAGS) -MMD -MP -o$@ -c $<
 
-# Dependencies
 -include $(DEPS)

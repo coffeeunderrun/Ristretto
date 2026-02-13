@@ -15,7 +15,7 @@ override CFLAGS += -ffreestanding -fno-builtin -fno-pic -ffunction-sections -fda
 LDFLAGS =
 override LDFLAGS += -nostdlib -static -zmax-page-size=0x1000
 
-override FPCFLAGS = -vehinw -vm4055,4056,6058
+override FPCFLAGS += -ap -Aelf -Cn -Cg-i-o-r-t- -Mobjfpc -n -Sagic
 FPCVERSION = $(shell fpc -iW)
 
 HOST_CC = cc

@@ -47,7 +47,7 @@ procedure Initialize;
 
 implementation
 
-uses Limine, Log, SysUtils, Utilities;
+uses Limine, Log, Utilities;
 
 var
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';

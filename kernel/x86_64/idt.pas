@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses Cpu, Log, SysUtils, Terminal;
+uses Cpu, Log, Terminal;
 
 const
   PIC1_CONTROL = $20;
@@ -88,9 +88,9 @@ var
 procedure AcknowledgeIrq(Irq: UInt8); assembler; nostackframe;
 asm
   // Assumes caller verfied IRQ is between 0 and 15.
-  mov al, $20   // End of interrupt command
-  test Irq, $08 // Is IRQ >= 8?
-  jnz @pic2     // If true, send EOI to pic 2
+  mov al, $20   // End of interrupt command.
+  test dil, $08 // Is IRQ >= 8? (IRQ in RDI; use DIL because TEST expects a byte).
+  jnz @pic2     // If true, send EOI to pic 2.
 
   @pic1:
   out PIC1_CONTROL, al

@@ -31,11 +31,13 @@ all: iso
 clean:
 	rm -rf $(IMGDIR)/ $(ISODIR)/
 	$(MAKE) -Ckernel clean
+	$(MAKE) -Crtl clean
 
 .PHONY: distclean
 distclean:
 	rm -rf img/ iso/ vendor/edk2-ovmf/
 	$(MAKE) -Ckernel distclean
+	$(MAKE) -Crtl distclean
 
 .PHONY: run
 run: $(ISODIR)/$(IMAGENAME).iso vendor/edk2-ovmf
@@ -56,8 +58,12 @@ iso: $(ISODIR)/$(IMAGENAME).iso
 img: $(IMGDIR)/$(IMAGENAME).img
 
 .PHONY: kernel
-kernel: vendor/limine-protocol vendor/uacpi
+kernel: rtl-kernel vendor/limine-protocol vendor/uacpi
 	$(MAKE) -Ckernel
+
+.PHONY: rtl-kernel
+rtl-kernel:
+	$(MAKE) -Crtl kernel
 
 $(ISODIR)/$(IMAGENAME).iso: kernel vendor/limine/limine
 	mkdir -p $(ISODIR)/root $(ISODIR)/root/boot/limine $(ISODIR)/root/EFI/BOOT
