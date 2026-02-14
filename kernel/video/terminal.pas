@@ -29,7 +29,7 @@ implementation
 {$define DEFAULT_BG_COLOR := ColorBlack}
 {$define DEFAULT_FG_COLOR := ColorAmber}
 
-uses Framebuffer;
+uses Framebuffer, Modules;
 
 const
   PSF_MAGIC: UInt16 = $0436;
@@ -49,7 +49,6 @@ type
   end;
 
 var
-  RawKernelFontStart: pointer; external name '_binary_res_kernel_psf_start';
   KernelFontPtr: PPCScreenFont;
   TerminalX: UInt64;
   TerminalY: UInt64;
@@ -166,5 +165,5 @@ begin
   TerminalY := 0;
   TerminalBgColor := DEFAULT_BG_COLOR;
   TerminalFgColor := DEFAULT_FG_COLOR;
-  KernelFontPtr := PPCScreenFont(@RawKernelFontStart);
+  KernelFontPtr := PPCScreenFont(Modules.GetFontModulePtr);
 end.

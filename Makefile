@@ -70,6 +70,7 @@ $(ISODIR)/$(IMAGENAME).iso: kernel vendor/limine/limine
 	cp $(addprefix vendor/limine/, $(LIMINE_BOOT)) $(ISODIR)/root/EFI/BOOT
 	cp limine.conf $(ISODIR)/root/boot/limine
 	cp kernel/bin/$(TARGET_ARCH)/kernel $(ISODIR)/root/boot
+	cp assets/kernel.psf $(ISODIR)/root/boot
 ifeq ($(TARGET_ARCH), x86_64)
 	cp $(addprefix vendor/limine/, limine-bios.sys limine-bios-cd.bin limine-uefi-cd.bin) $(ISODIR)/root/boot/limine/
 	xorriso $(ISOFLAGS) -o $@ $(ISODIR)/root \

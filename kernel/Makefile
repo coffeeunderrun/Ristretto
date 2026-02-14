@@ -17,15 +17,12 @@ SRCS := $(addprefix uacpi/, $(notdir $(wildcard ../vendor/uacpi/source/*.c)))
 # Kernel source files
 SRCS += $(addprefix kernel/, $(notdir $(wildcard arch/$(TARGET_ARCH)/*.asm)))
 
-# Kernel resource files
-SRCS += $(addprefix kernel/, $(notdir $(wildcard res/*.psf)))
-
 ASM_SRCS := $(filter %.asm, $(SRCS))
 C_SRCS   := $(filter %.c,   $(SRCS))
 PSF_SRCS := $(filter %.psf, $(SRCS))
 
-DEPS := $(addprefix $(OBJDIR)/, $(ASM_SRCS:.asm=.asm.d) $(C_SRCS:.c=.c.d))
-OBJS := $(addprefix $(OBJDIR)/, $(ASM_SRCS:.asm=.asm.o) $(C_SRCS:.c=.c.o) $(PSF_SRCS:.psf=.psf.o))
+OBJS := $(addprefix $(OBJDIR)/, $(ASM_SRCS:.asm=.asm.o) $(C_SRCS:.c=.c.o))
+DEPS := $(OBJS:.o=.d)
 
 .PHONY: all
 all: $(BINDIR)/kernel
@@ -60,11 +57,6 @@ ifeq ($(TARGET_ARCH), x86_64)
 else
 	$(CC) $(CFLAGS) -MMD -MP -o$@ $<
 endif
-
-# Kernel *.psf files
-$(OBJDIR)/kernel/%.psf.o: res/%.psf
-	mkdir -p $(dir $@)
-	$(CC) $(LDFLAGS) -Wl,-r -Wl,-b,binary -Wl,$< -o$@
 
 # uACPI *.c files
 $(OBJDIR)/uacpi/%.c.o: ../vendor/uacpi/source/%.c
