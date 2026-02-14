@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses Cpu, Log, Terminal;
+uses Cpu, Log, SysUtils, Terminal;
 
 const
   PIC1_CONTROL = $20;

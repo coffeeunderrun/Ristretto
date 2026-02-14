@@ -15,7 +15,7 @@ procedure Initialize;
 
 implementation
 
-uses Log;
+uses Log, SysUtils;
 
 procedure Initialize;
 var

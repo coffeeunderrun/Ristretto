@@ -29,8 +29,7 @@ all: $(BINDIR)/kernel
 
 .PHONY: clean
 clean:
-	rm -rf $(BINDIR) $(OBJDIR) $(UNITDIR) $(RTLUNITDIR)
-	rm -rf lib/fpc/$(FPCVERSION)/units/$(TARGET_ARCH)-linux
+	rm -rf $(BINDIR) $(OBJDIR) $(UNITDIR) $(RTLDIR)
 
 .PHONY: distclean
 distclean:
