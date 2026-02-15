@@ -2,7 +2,7 @@ unit Log;
 
 interface
 
-uses Color;
+uses Color, Ports;
 
 type
   TLogLevel = (
@@ -13,6 +13,15 @@ type
     LogLevelDebug,
     LogLevelTrace
   );
+
+  TLogger = object
+  private
+    constructor Initialize;
+  public
+    procedure Log(const Level: TLogLevel; const Text: String); virtual; abstract;
+  end;
+
+procedure Initialize;
 
 procedure Debug(const Text: String); inline;
 procedure Error(const Text: String); inline;
@@ -51,13 +60,27 @@ const
     '[TRACE] '
   );
 
+type
+  TSerialLogger = object(TLogger)
+    procedure Log(const Level: TLogLevel; const Text: String); virtual;
+  end;
+
+var
+  SerialLogger: TSerialLogger;
+
 procedure Log(const Level: TLogLevel; const Text: String);
 var
   BgColor, FgColor: TColor;
 begin
   if Level = LogLevelFatal then BgColor := ColorLightRed else BgColor := Terminal.GetBackground;
   FgColor := LogLevelColor[Level]^;
-  Terminal.Write(LogLevelPrefix[Level] + Text, FgColor, BgColor);
+  // Terminal.Write(LogLevelPrefix[Level] + Text, FgColor, BgColor);
+  SerialLogger.Log(Level, Text);
+end;
+
+procedure Initialize;
+begin
+  SerialLogger.Initialize;
 end;
 
 procedure Debug(const Text: String); begin Log(LogLevelDebug, Text); end;
@@ -73,5 +96,17 @@ procedure FatalLn(const Text: String); begin Log(LogLevelFatal, Text + #10); end
 procedure InfoLn(const Text: String); begin Log(LogLevelInfo, Text + #10); end;
 procedure TraceLn(const Text: String); begin Log(LogLevelTrace, Text + #10); end;
 procedure WarnLn(const Text: String); begin Log(LogLevelWarn, Text + #10); end;
+
+constructor TLogger.Initialize; begin end;
+
+procedure TSerialLogger.Log(const Level: TLogLevel; const Text: String);
+var
+  Ch: Char;
+begin
+  for Ch in LogLevelPrefix[Level] + Text do begin
+    while (Port[$3FD] and $20) = 0 do;
+    Port[$3F8] := Byte(Ch);
+  end;
+end;
 
 end.

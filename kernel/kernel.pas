@@ -1,6 +1,6 @@
 program Kernel;
 
-uses Acpi, Arch, Pmm, Terminal, Vmm;
+uses Acpi, Arch, Log, Pmm, Terminal, Vmm;
 
 const
   Logo: String =
@@ -12,6 +12,8 @@ const
 begin
   Terminal.Clear;
   Terminal.WriteLn(Logo);
+
+  Log.Initialize;
 
   Arch.Initialize;
   Vmm.Initialize;

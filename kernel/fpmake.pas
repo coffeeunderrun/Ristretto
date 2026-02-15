@@ -18,6 +18,7 @@ begin
     UnitPath.Add('memory');
     UnitPath.Add('platform');
     UnitPath.Add('platform/limine');
+    UnitPath.Add('shared');
     UnitPath.Add('video');
 
     UnitPath.Add('../vendor/limine-protocol');
