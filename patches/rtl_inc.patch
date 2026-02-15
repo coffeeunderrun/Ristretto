@@ -1,0 +1,40 @@
+diff -ru ../fpc-source/rtl/inc/compproc.inc rtl/inc/compproc.inc
+--- ../fpc-source/rtl/inc/compproc.inc	2026-01-06 19:19:43.855460847 -0500
++++ rtl/inc/compproc.inc	2026-02-14 19:23:49.017462598 -0500
+@@ -564,8 +564,10 @@
+ procedure fpc_read_text_enum_smallint(str2ordindex:pointer;var t:text;out ordinal:smallint); compilerproc;
+ procedure fpc_read_text_enum_shortint(str2ordindex:pointer;var t:text;out ordinal:shortint); compilerproc;
+ {$endif VER3_2}
++{$ifndef FPUNONE}
+ procedure fpc_Read_Text_Currency(var f : Text; out v : Currency); compilerproc;
+ procedure fpc_Read_Text_Currency_Iso(var f : Text; out v : Currency); compilerproc;
++{$endif FPUNONE}
+ {$ifndef CPU64}
+ Procedure fpc_Read_Text_QWord(var f : text; out q : qword); compilerproc;
+ procedure fpc_Read_Text_QWord_Iso(var f : text; out q : qword); compilerproc;
+diff -ru ../fpc-source/rtl/inc/text.inc rtl/inc/text.inc
+--- ../fpc-source/rtl/inc/text.inc	2026-02-13 15:00:30.818334905 -0500
++++ rtl/inc/text.inc	2026-02-14 18:59:39.314326331 -0500
+@@ -2159,6 +2159,7 @@
+ end;
+ {$endif VER3_2}
+ 
++{$ifndef FPUNONE}
+ procedure fpc_Read_Text_Currency(var f : Text; out v : Currency); iocheck; compilerproc;
+ var
+   hs : shortstring;
+@@ -2200,7 +2201,7 @@
+   If code<>0 Then
+    InOutRes:=106;
+ end;
+-
++{$endif FPUNONE}
+ 
+ {$ifndef cpu64}
+ 
+@@ -2755,5 +2756,3 @@
+    HandleError(102);
+   end;
+ end;
+-
+-

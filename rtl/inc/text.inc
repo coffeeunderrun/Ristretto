@@ -2159,6 +2159,7 @@ begin
 end;
 {$endif VER3_2}
 
+{$ifndef FPUNONE}
 procedure fpc_Read_Text_Currency(var f : Text; out v : Currency); iocheck; compilerproc;
 var
   hs : shortstring;
@@ -2200,7 +2201,7 @@ begin
   If code<>0 Then
    InOutRes:=106;
 end;
-
+{$endif FPUNONE}
 
 {$ifndef cpu64}
 
@@ -2755,5 +2756,3 @@ begin
    HandleError(102);
   end;
 end;
-
-

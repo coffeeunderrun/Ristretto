@@ -91,7 +91,9 @@ begin
     // Allocate new page table or set leaf entry.
     if PageLevelIndex = 1 then begin
       SetLeafEntry(TableEntry^, Frame, MemoryAccess, MemoryCache);
-      WriteBarrier;
+      { TODO: Look into spinlocks and TLB shootdown when implementing SMP.
+        May be able to utilize FPC's Interlocked functions. }
+      // WriteBarrier;
       if Assigned(InvalidatePage) then InvalidatePage(Page);
     end else begin
       TableFrame := AllocateFrame();
@@ -101,7 +103,7 @@ begin
       end;
 
       TableEntry^ := (UInt64(TableFrame) and $FFFFFFFFFF000) or PAGE_ENTRY_PRESENT or PAGE_ENTRY_WRITABLE;
-      WriteBarrier;
+      // WriteBarrier;
       if Assigned(InvalidatePage) then InvalidatePage(Page);
 
       Table := PPageTable(AddHhdmOffset(TableFrame));
@@ -177,7 +179,7 @@ begin
     TableFrame := TableEntry^ and $FFFFFFFFFF000;
     TableEntry^ := 0;
 
-    WriteBarrier;
+    // WriteBarrier;
     if Assigned(InvalidatePage) then InvalidatePage(Page);
 
     DeallocateFrame(TableFrame);

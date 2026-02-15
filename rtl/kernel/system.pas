@@ -37,7 +37,6 @@ const
 
   FileNameCaseSensitive : boolean = true;
   FileNameCasePreserving: boolean = true;
-
 {$endif FPC_HAS_FEATURE_FILEIO}
 
 procedure Panic; noreturn; external name '_arch_panic';
@@ -46,6 +45,9 @@ procedure Panic(Msg: String); noreturn; external name '_arch_panic_msg';
 implementation
 
 {$implicitexceptions off}
+
+{$undef SUPPORT_DOUBLE}
+{$undef SUPPORT_EXTENDED}
 
 {$define FPC_SYSTEM_EXIT_NO_RETURN}
 {$I system.inc}

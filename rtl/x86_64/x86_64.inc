@@ -1772,7 +1772,6 @@ procedure fpc_cpuinit;
         Default8087CW:=Get8087CW;
         DefaultMXCSR:=GetMXCSR;
       end;
-    SysInitFPU;
     SysResetFPU;
     asm
       xorl %eax,%eax
@@ -1814,20 +1813,10 @@ procedure fpc_cpuinit;
   end;
 
 {$define FPC_SYSTEM_HAS_SYSINITFPU}
-Procedure SysInitFPU;assembler;nostackframe;
-asm
-{$ifdef FPC_IS_KERNEL}
-  // Enable SSE for kernel so the RTL stops faulting.
-  movq %cr0, %rax
-  andq $0xFFFFFFFFFFFFFFFB, %rax
-  orq $0x2, %rax
-  movq %rax, %cr0
-
-  movq %cr4, %rax
-  orq $0x600, %rax
-  movq %rax, %cr4
-{$endif FPC_IS_KERNEL}
+Procedure SysInitFPU;
+begin
 end;
+
 
 {$define FPC_SYSTEM_HAS_SYSRESETFPU}
 Procedure SysResetFPU;assembler;nostackframe;

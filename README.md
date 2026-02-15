@@ -16,10 +16,10 @@ Barebones `uACPI` bindings with full support in progress.
 `qemu`
 
 `nasm`
-(build x86_64; might remove in favor of FPC asm)
+(build x86_64)
 
 `gcc`
-(build uACPI, link kernel)
+(build uACPI, FPC external assembler/linker)
 
 `curl`
 `gunzip`
@@ -35,6 +35,8 @@ Barebones `uACPI` bindings with full support in progress.
 
 ## Build
 
+> Override `DEBUG=0` to perform a release build.
+
 ```bash
 make
 ```
@@ -44,6 +46,8 @@ make img
 ```
 
 ## Run
+
+> Override `USEGDB=1` to use GDB debugger with QEMU.
 
 ```bash
 make run

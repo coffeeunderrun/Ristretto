@@ -564,8 +564,10 @@ procedure fpc_read_text_enum_longint(str2ordindex:pointer;var t:text;out ordinal
 procedure fpc_read_text_enum_smallint(str2ordindex:pointer;var t:text;out ordinal:smallint); compilerproc;
 procedure fpc_read_text_enum_shortint(str2ordindex:pointer;var t:text;out ordinal:shortint); compilerproc;
 {$endif VER3_2}
+{$ifndef FPUNONE}
 procedure fpc_Read_Text_Currency(var f : Text; out v : Currency); compilerproc;
 procedure fpc_Read_Text_Currency_Iso(var f : Text; out v : Currency); compilerproc;
+{$endif FPUNONE}
 {$ifndef CPU64}
 Procedure fpc_Read_Text_QWord(var f : text; out q : qword); compilerproc;
 procedure fpc_Read_Text_QWord_Iso(var f : text; out q : qword); compilerproc;

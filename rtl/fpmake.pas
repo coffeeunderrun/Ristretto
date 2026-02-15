@@ -8,35 +8,39 @@ begin
   with Installer.AddPackage('rtl') do begin
     Version := '3.3.1';
 
-    SourcePath.Add('$(CPU)');
+    // Disable FPU support in RTL.
+    Options.Add('-dFPUNONE');
+
     SourcePath.Add('inc');
     SourcePath.Add('objpas');
     SourcePath.Add('kernel');
 
-    IncludePath.Add('$(CPU)');
     IncludePath.Add('inc');
     IncludePath.Add('objpas');
     IncludePath.Add('kernel');
 
+    // Custom includes for CPU to avoid using FPU instructions/registers in kernel.
+    IncludePath.Add('kernel/$(CPU)');
+
     with Targets.AddUnit('system.pas') do begin
       Options.Add('-Us');
       Options.Add('-Sf-');
-      Options.Add('-SfANSISTRINGS');
+      // Options.Add('-SfANSISTRINGS');
       Options.Add('-SfCLASSES');
       // Options.Add('-SfCOMMANDARGS');
-      Options.Add('-SfDYNARRAYS');
+      // Options.Add('-SfDYNARRAYS');
       Options.Add('-SfEXCEPTIONS');
       Options.Add('-SfFILEIO');
       Options.Add('-SfHEAP');
       Options.Add('-SfOBJECTS');
       // Options.Add('-SfRANDOM');
-      Options.Add('-SfRESOURCES');
+      // Options.Add('-SfRESOURCES');
       Options.Add('-SfRTTI');
       // Options.Add('-SfSOFTFPU');
       Options.Add('-SfTEXTIO');
       // Options.Add('-SfTHREADING');
-      Options.Add('-SfVARIANTS');
-      Options.Add('-SfWIDESTRINGS');
+      // Options.Add('-SfVARIANTS');
+      // Options.Add('-SfWIDESTRINGS');
 
       with Dependencies do begin
         AddInclude('setjumph.inc');
