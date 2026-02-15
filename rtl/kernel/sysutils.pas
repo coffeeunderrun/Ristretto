@@ -24,7 +24,7 @@ function IntToHex(Value: UInt64): string; inline;
 
 implementation
 
-uses SysConst;
+uses HeapMgr, SysConst;
 
 function IntToStr(Value: LongInt): String;
 begin

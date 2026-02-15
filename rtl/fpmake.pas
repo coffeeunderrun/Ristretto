@@ -97,9 +97,19 @@ begin
     end;
 
     with Targets.AddUnit('objpas.pp') do Dependencies.AddUnit('system');
-    with Targets.AddUnit('sysconst.pp') do Dependencies.AddUnit('objpas');
-    with Targets.AddUnit('sysutils.pas') do Dependencies.AddUnit('sysconst');
+
+    with Targets.AddUnit('heapmgr.pas') do Dependencies.AddUnit('objpas');
+
     with Targets.AddUnit('ports.pas') do Dependencies.AddUnit('objpas');
+
+    with Targets.AddUnit('sysconst.pp') do Dependencies.AddUnit('objpas');
+
+    with Targets.AddUnit('sysutils.pas') do begin
+      with Dependencies do begin
+        AddUnit('heapmgr');
+        AddUnit('sysconst');
+      end;
+    end;
   end;
 
   Installer.Run;
