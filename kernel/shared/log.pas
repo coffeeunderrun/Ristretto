@@ -2,7 +2,7 @@ unit Log;
 
 interface
 
-uses Color, Ports;
+uses Color;
 
 type
   TLogLevel = (
@@ -39,7 +39,7 @@ procedure WarnLn(const Text: String); inline;
 
 implementation
 
-uses Terminal;
+uses Serial, Terminal;
 
 const
   LogLevelColor: array [TLogLevel] of PColor = (
@@ -100,13 +100,9 @@ procedure WarnLn(const Text: String); begin Log(LogLevelWarn, Text + #10); end;
 constructor TLogger.Initialize; begin end;
 
 procedure TSerialLogger.Log(const Level: TLogLevel; const Text: String);
-var
-  Ch: Char;
 begin
-  for Ch in LogLevelPrefix[Level] + Text do begin
-    while (Port[$3FD] and $20) = 0 do;
-    Port[$3F8] := Byte(Ch);
-  end;
+  { TODO: Don't use the serial unit directly. }
+  Serial.Write(LogLevelPrefix[Level] + Text);
 end;
 
 end.
