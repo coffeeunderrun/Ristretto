@@ -56,7 +56,6 @@ begin
         AddInclude('sysosh.inc');
         AddInclude('resh.inc');
         AddInclude('currh.inc');
-
         AddInclude('set.inc');
         AddInclude('int64p.inc');
         AddInclude('setjump.inc');
@@ -98,9 +97,24 @@ begin
 
     with Targets.AddUnit('objpas.pp') do Dependencies.AddUnit('system');
 
+    with Targets.AddUnit('strings.pp') do begin
+      IncludePath.Add('$(CPU)');
+      with Dependencies do begin
+        AddUnit('system');
+        AddInclude('strings.inc');
+        AddInclude('stringss.inc');
+        AddInclude('genstr.inc');
+        AddInclude('genstrs.inc');
+        AddInclude('stringsi.inc');
+      end;
+    end;
+
     with Targets.AddUnit('heapmgr.pas') do Dependencies.AddUnit('objpas');
 
-    with Targets.AddUnit('ports.pas') do Dependencies.AddUnit('objpas');
+    with Targets.AddUnit('ports.pas') do begin
+      IncludePath.Add('$(CPU)');
+      Dependencies.AddUnit('objpas');
+    end;
 
     with Targets.AddUnit('sysconst.pp') do Dependencies.AddUnit('objpas');
 
