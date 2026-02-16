@@ -21,8 +21,6 @@ type
     procedure Log(const Level: TLogLevel; const Text: String); virtual; abstract;
   end;
 
-procedure Initialize;
-
 procedure Debug(const Text: String); inline;
 procedure Error(const Text: String); inline;
 procedure Fatal(const Text: String); inline;
@@ -78,11 +76,6 @@ begin
   SerialLogger.Log(Level, Text);
 end;
 
-procedure Initialize;
-begin
-  SerialLogger.Initialize;
-end;
-
 procedure Debug(const Text: String); begin Log(LogLevelDebug, Text); end;
 procedure Error(const Text: String); begin Log(LogLevelError, Text); end;
 procedure Fatal(const Text: String); begin Log(LogLevelFatal, Text); end;
@@ -105,4 +98,6 @@ begin
   Serial.Write(LogLevelPrefix[Level] + Text);
 end;
 
+begin
+  SerialLogger.Initialize;
 end.

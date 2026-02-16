@@ -1,6 +1,7 @@
 program Kernel;
 
-uses Acpi, Arch, Log, Pmm, Terminal, Vmm;
+{ SysUtils should be first to ensure heap is initialized before any units attempt to use it. }
+uses SysUtils, Acpi, Arch, Terminal;
 
 const
   Logo: String =
@@ -10,13 +11,10 @@ const
     '|___|__|__|_____|____|__| |_____|____|____|_____|'#10;
 
 begin
+  Terminal.Initialize;
   Terminal.Clear;
   Terminal.WriteLn(Logo);
 
-  Log.Initialize;
-
   Arch.Initialize;
-  Vmm.Initialize;
-  Pmm.Initialize;
   Acpi.Initialize;
 end.

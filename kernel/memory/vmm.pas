@@ -4,13 +4,26 @@ interface
 
 uses ArchApi;
 
+type
+  TAddressSpace = record
+    RootFrame: PtrUInt;
+  end;
+
 procedure Initialize;
 
-function AllocateKernelPage(MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache): Pointer;
-function AllocateKernelPageRange(Size: SizeUInt; MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache): Pointer;
+function AllocatePage(
+  const AddressSpace: TAddressSpace;
+  MemoryAccess: TMemoryAccessSet;
+  MemoryCache: TMemoryCache): Pointer;
 
-procedure DeallocateKernelPage(Page: Pointer);
-procedure DeallocateKernelPageRange(Page: Pointer; Size: SizeUInt);
+function AllocatePageRange(
+  const AddressSpace: TAddressSpace;
+  Size: SizeUInt;
+  MemoryAccess: TMemoryAccessSet;
+  MemoryCache: TMemoryCache): Pointer;
+
+procedure DeallocatePage(const AddressSpace: TAddressSpace; const Page: Pointer);
+procedure DeallocatePageRange(const AddressSpace: TAddressSpace; const Page: Pointer; Size: SizeUInt);
 
 implementation
 
@@ -24,10 +37,11 @@ var
   KernelTextEnd: Pointer; external name '_kernel_text_end';
   KernelRodataStart: Pointer; external name '_kernel_rodata_start';
   KernelRodataEnd: Pointer; external name '_kernel_rodata_end';
-  KernelRootFrame: PtrUInt;
+
+  GlobalAddressSpace: TAddressSpace;
   BumpAllocatorKernelPage: PtrUInt;
 
-procedure CreateKernelAddressSpace;
+procedure CreateGlobalAddressSpace;
 var
   KernelFrame, KernelPage: PtrUInt;
   EntryIndex: SizeUInt;
@@ -35,10 +49,10 @@ var
   MemoryCache: TMemoryCache;
   Ptr: Pointer;
 begin
-  KernelRootFrame := EarlyAllocateFrame;
-  if KernelRootFrame = High(PtrUInt) then Panic('Failed to create kernel address space root frame.');
+  GlobalAddressSpace.RootFrame := EarlyAllocateFrame;
+  if GlobalAddressSpace.RootFrame = High(PtrUInt) then Panic('Failed to create kernel address space root frame.');
 
-  FillByte(Pointer(AddHhdmOffset(KernelRootFrame))^, PageSize, 0);
+  FillByte(Pointer(AddHhdmOffset(GlobalAddressSpace.RootFrame))^, PageSize, 0);
 
   // Kernel segments
   MemoryCache := MemoryCacheWriteBack;
@@ -53,7 +67,14 @@ begin
     else
       MemoryAccess := [MemoryAccessGlobal, MemoryAccessWrite];
 
-    Ptr := MapPage(KernelRootFrame, KernelFrame, KernelPage, MemoryAccess, MemoryCache, @EarlyAllocateFrame);
+    Ptr := MapPage(
+      GlobalAddressSpace.RootFrame,
+      KernelFrame,
+      KernelPage,
+      MemoryAccess,
+      MemoryCache,
+      @EarlyAllocateFrame
+    );
     if not Assigned(Ptr) then Panic('Failed to map kernel.');
 
     Inc(KernelFrame, PageSize);
@@ -71,7 +92,7 @@ begin
         MemoryCache := MemoryCacheWriteBack;
 
       Ptr := MapPageRange(
-        KernelRootFrame,
+        GlobalAddressSpace.RootFrame,
         Base,
         AddHhdmOffset(Base),
         Length,
@@ -85,18 +106,22 @@ end;
 
 procedure Initialize;
 begin
-  CreateKernelAddressSpace;
-  LoadRootFrame(KernelRootFrame);
+  CreateGlobalAddressSpace;
+  LoadRootFrame(GlobalAddressSpace.RootFrame);
 
   {$ifndef NDEBUG}
   Log.DebugLn('VMM initialized.');
   {$endif}
 end;
 
-function AllocateKernelPage(MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache): Pointer;
+function AllocatePage(
+  const AddressSpace: TAddressSpace;
+  MemoryAccess: TMemoryAccessSet;
+  MemoryCache: TMemoryCache
+): Pointer;
 begin
   result := MapPage(
-    KernelRootFrame,
+    AddressSpace.RootFrame,
     AllocateFrame,
     BumpAllocatorKernelPage,
     MemoryAccess,
@@ -113,10 +138,15 @@ begin
   BumpAllocatorKernelPage += PageSize;
 end;
 
-function AllocateKernelPageRange(Size: SizeUInt; MemoryAccess: TMemoryAccessSet; MemoryCache: TMemoryCache): Pointer;
+function AllocatePageRange(
+  const AddressSpace: TAddressSpace;
+  Size: SizeUInt;
+  MemoryAccess: TMemoryAccessSet;
+  MemoryCache: TMemoryCache
+): Pointer;
 begin
   result := MapPageRange(
-    KernelRootFrame,
+    AddressSpace.RootFrame,
     AllocateFrame,
     BumpAllocatorKernelPage,
     Size,
@@ -134,14 +164,14 @@ begin
   BumpAllocatorKernelPage += Align(Size, PageSize);
 end;
 
-procedure DeallocateKernelPage(Page: Pointer);
+procedure DeallocatePage(const AddressSpace: TAddressSpace; const Page: Pointer);
 begin
-  UnMapPage(KernelRootFrame, PtrUInt(Page), @DeallocateFrame, @InvalidatePage);
+  UnMapPage(AddressSpace.RootFrame, PtrUInt(Page), @DeallocateFrame, @InvalidatePage);
 end;
 
-procedure DeallocateKernelPageRange(Page: Pointer; Size: SizeUInt);
+procedure DeallocatePageRange(const AddressSpace: TAddressSpace; const Page: Pointer; Size: SizeUInt);
 begin
-  UnMapPageRange(KernelRootFrame, PtrUInt(Page), Size, @DeallocateFrame, @InvalidatePage);
+  UnMapPageRange(AddressSpace.RootFrame, PtrUInt(Page), Size, @DeallocateFrame, @InvalidatePage);
 end;
 
 begin

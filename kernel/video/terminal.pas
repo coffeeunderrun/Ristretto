@@ -4,6 +4,7 @@ interface
 
 uses Color;
 
+procedure Initialize;
 procedure Clear;
 
 procedure SetX(X: UInt64); inline;
@@ -54,6 +55,12 @@ var
   TerminalY: UInt64;
   TerminalBgColor: TColor;
   TerminalFgColor: TColor;
+
+procedure Initialize;
+begin
+  KernelFontPtr := PPCScreenFont(Modules.FindModule('KernelFont'));
+  if not Assigned(KernelFontPtr) then Panic;
+end;
 
 procedure Clear;
 begin
@@ -165,5 +172,4 @@ begin
   TerminalY := 0;
   TerminalBgColor := DEFAULT_BG_COLOR;
   TerminalFgColor := DEFAULT_FG_COLOR;
-  KernelFontPtr := PPCScreenFont(Modules.GetFontModulePtr);
 end.

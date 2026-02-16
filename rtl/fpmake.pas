@@ -28,7 +28,7 @@ begin
       // Options.Add('-SfANSISTRINGS');
       Options.Add('-SfCLASSES');
       // Options.Add('-SfCOMMANDARGS');
-      // Options.Add('-SfDYNARRAYS');
+      Options.Add('-SfDYNARRAYS');
       Options.Add('-SfEXCEPTIONS');
       Options.Add('-SfFILEIO');
       Options.Add('-SfHEAP');
