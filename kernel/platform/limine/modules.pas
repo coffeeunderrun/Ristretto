@@ -32,13 +32,13 @@ begin
   if Length(Name) = 0 then exit(nil);
   Hash := HashString(Name);
 
-  WriteLn(LogTrace, 'Looking for module `', Name, '`, hash ', IntToHex(Hash), '...');
+  WriteLn(LogTrace, Format('Looking for module `%s`, hash %.16X...', [Name, Hash]));
 
   { TODO: The Classes unit would likely be overkill for kernel space.
     I should look into implementing a hashmap type; maybe a minimal Classes unit like I did with SysUtils. }
   for ModuleHash in ModuleHashArr do
     if (ModuleHash.Hash = Hash) and (ModuleHash.Info.Name = Name) then begin
-      WriteLn(LogTrace, 'Found module `', Name, '`, hash ', IntToHex(Hash), '.');
+      WriteLn(LogTrace, Format('Found module `%s`, hash %.16X.', [Name, Hash]));
       exit(ModuleHash.Info.Ptr);
     end;
 

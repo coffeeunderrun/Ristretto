@@ -31,8 +31,7 @@ begin
   end ['rax', 'rbx', 'rcx', 'rdx'];
 
   {$ifndef NDEBUG}
-  WriteLn(LogDebug, 'CPUID: EAX=', IntToHex(Version), ', EBX=', IntToHex(Additional),
-    ', ECX=', IntToHex(Features1), ', EDX=', IntToHex(Features2));
+  WriteLn(LogDebug,Format('CPUID: EAX=%.8X, EBX=%.8X, ECX=%.8X, EDX=%.8X', [Version, Additional, Features1, Features2]));
   {$endif}
 
   // Set up PAT, if supported, using defaults; except for PAT5 = Write Combining

@@ -24,7 +24,7 @@ type
 
 procedure TSerialLogger.Write(const Level: TLogLevel);
 begin
-  Serial.Write(LogLevelPrefix[Level] + ' ');
+  Serial.Write(LogLevelPrefix[Level]);
 end;
 
 procedure TSerialLogger.Write(Ch: Char);

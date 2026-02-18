@@ -67,7 +67,7 @@ begin
       Inc(Index);
     end;
 
-  WriteLn('Available physical memory: ', IntToStr((AvailablePages * PageSize) div MIB), ' MiB');
+  WriteLn(Format('Available physical memory: %d MiB', [(AvailablePages * PageSize) div MIB]));
 end;
 
 procedure Initialize;

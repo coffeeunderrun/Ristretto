@@ -58,7 +58,7 @@ begin
     // Limine protocol base revision 4 states that the RSDP address will be virtual (HHDM).
     AddressPtr^ := uacpi_phys_addr(RemoveHhdmOffset(PtrUInt(RsdpRequest.Response^.Address)));
     {$ifndef NDEBUG}
-    WriteLn(LogTrace, 'uACPI RSDP found at physical address ' + IntToHex(AddressPtr^));
+    WriteLn(LogTrace, Format('uACPI RSDP found at physical address %.16X.', [AddressPtr^]));
     {$endif}
     exit(UACPI_STATUS_OK);
   end;
@@ -80,18 +80,16 @@ end;
 function uacpi_kernel_map(Address: uacpi_phys_addr; Size: uacpi_size): Pointer; cdecl; public;
 begin
   result := Pointer(AddHhdmOffset(Address));
-  // {$ifndef NDEBUG}
-  // WriteLn(LogTrace, 'uACPI map called on address ', IntToHex(Address),
-  //   ' of size ', IntToStr(Size), '. Mapped to ', IntToHex(PtrUInt(result)), '.');
-  // {$endif}
+  {$ifndef NDEBUG}
+  WriteLn(LogTrace, Format('uACPI map frame %.16X to page %.16X, %d bytes.', [Address, PtrUInt(result), Size]));
+  {$endif}
 end;
 
 procedure uacpi_kernel_unmap(Ptr: Pointer; Size: uacpi_size); cdecl; public;
 begin
-  // {$ifndef NDEBUG}
-  // WriteLn(LogTrace, 'uACPI unmap called on pointer ', IntToHex(PtrUInt(Ptr)),
-  //   ' of size ', IntToStr(Size), '. No action taken.');
-  // {$endif}
+  {$ifndef NDEBUG}
+  WriteLn(LogTrace, Format('uACPI unmap page %.16X, %d bytes.', [PtrUInt(Ptr), Size]));
+  {$endif}
 end;
 
 procedure Initialize;
@@ -106,10 +104,10 @@ begin
     {$endif}
 
     UACPI_STATUS_MAPPING_FAILED..UACPI_STATUS_DENIED:
-      WriteLn(LogFatal, 'uACPI status: ', UACPI_STATUS_MESSAGE[Status]);
+      WriteLn(LogFatal, Format('uACPI status: %s', [UACPI_STATUS_MESSAGE[Status]]));
 
     UACPI_STATUS_AML_UNDEFINED_REFERENCE..UACPI_STATUS_AML_CALL_STACK_DEPTH_LIMIT:
-      WriteLn(LogFatal, 'uACPI status: ', UACPI_STATUS_AML_MESSAGE[Status]);
+      WriteLn(LogFatal, Format('uACPI status: %s', [UACPI_STATUS_AML_MESSAGE[Status]]));
   end;
 end;
 

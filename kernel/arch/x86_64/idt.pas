@@ -110,13 +110,14 @@ begin
       exit;
     end;
 
-    WriteLn('Interrupt: ', Descriptions[Vector]);
-    WriteLn('RAX=', IntToHex(RAX),    ' RBX=', IntToHex(RBX),  ' RCX=', IntToHex(RCX), ' RDX=', IntToHex(RDX));
-    WriteLn('RSI=', IntToHex(RSI),    ' RDI=', IntToHex(RDI),  ' RBP=', IntToHex(RBP), ' RSP=', IntToHex(RSP));
-    WriteLn('R8 =', IntToHex(R8),     ' R9 =', IntToHex(R9),   ' R10=', IntToHex(R10), ' R11=', IntToHex(R11));
-    WriteLn('R12=', IntToHex(R12),    ' R13=', IntToHex(R13),  ' R14=', IntToHex(R14), ' R15=', IntToHex(R15));
-    WriteLn('RIP=', IntToHex(RIP),    ' CS =', IntToHex(CS),   ' RSP=', IntToHex(RSP), ' SS =', IntToHex(SS));
-    WriteLn('VEC=', IntToHex(Vector), ' ERR=', IntToHex(Code), ' RFL=', IntToHex(RFlags));
+    WriteLn(Format('Interrupt: %s', [Descriptions[Vector]]));
+    WriteLn(Format('RAX=%.16X RBX=%.16X RCX=%.16X RDX=%.16X', [RAX, RBX, RCX, RDX]));
+    WriteLn(Format('RSI=%.16X RDI=%.16X RBP=%.16X RSP=%.16X', [RSI, RDI, RBP, RSP]));
+    WriteLn(Format('R8 =%.16X R9 =%.16X R10=%.16X R11=%.16X', [R8, R9, R10, R11]));
+    WriteLn(Format('R12=%.16X R13=%.16X R14=%.16X R15=%.16X', [R12, R13, R14, R15]));
+    WriteLn(Format('RIP=%.16X CS =%.16X RSP=%.16X SS =%.16X', [RIP, CS, RSP, SS]));
+    WriteLn(Format('VEC=%.16X ERR=%.16X RFL=%.16X', [Vector, Code, RFlags]));
+
     Halt;
   end;
 end;
