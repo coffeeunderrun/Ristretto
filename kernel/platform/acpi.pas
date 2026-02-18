@@ -47,7 +47,7 @@ procedure Initialize;
 
 implementation
 
-uses Hhdm, Limine, Log, SysUtils;
+uses Hhdm, Limine, SysUtils;
 
 var
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
@@ -58,7 +58,7 @@ begin
     // Limine protocol base revision 4 states that the RSDP address will be virtual (HHDM).
     AddressPtr^ := uacpi_phys_addr(RemoveHhdmOffset(PtrUInt(RsdpRequest.Response^.Address)));
     {$ifndef NDEBUG}
-    Log.TraceLn('uACPI RSDP found at physical address ' + IntToHex(AddressPtr^));
+    WriteLn(LogTrace, 'uACPI RSDP found at physical address ' + IntToHex(AddressPtr^));
     {$endif}
     exit(UACPI_STATUS_OK);
   end;
@@ -69,11 +69,11 @@ end;
 procedure uacpi_kernel_log(LogLevel: uacpi_log_level; const Message: puacpi_char); cdecl; public;
 begin
   case LogLevel of
-    UACPI_LOG_ERROR: Log.Error(Message);
-    UACPI_LOG_WARN: Log.Warn(Message);
-    UACPI_LOG_INFO: Log.Info(Message);
-    UACPI_LOG_TRACE: Log.Trace(Message);
-    UACPI_LOG_DEBUG: Log.Debug(Message);
+    UACPI_LOG_ERROR: Write(LogError, Message);
+    UACPI_LOG_WARN: Write(LogWarn, Message);
+    UACPI_LOG_INFO: Write(LogInfo, Message);
+    UACPI_LOG_TRACE: Write(LogTrace, Message);
+    UACPI_LOG_DEBUG: Write(LogDebug, Message);
   end;
 end;
 
@@ -81,16 +81,16 @@ function uacpi_kernel_map(Address: uacpi_phys_addr; Size: uacpi_size): Pointer; 
 begin
   result := Pointer(AddHhdmOffset(Address));
   // {$ifndef NDEBUG}
-  // Log.TraceLn('uACPI map called on address ' + IntToHex(Address) +
-  //   ' of size ' + IntToStr(Size) + '. Mapped to ' + IntToHex(PtrUInt(result)) + '.');
+  // WriteLn(LogTrace, 'uACPI map called on address ', IntToHex(Address),
+  //   ' of size ', IntToStr(Size), '. Mapped to ', IntToHex(PtrUInt(result)), '.');
   // {$endif}
 end;
 
 procedure uacpi_kernel_unmap(Ptr: Pointer; Size: uacpi_size); cdecl; public;
 begin
   // {$ifndef NDEBUG}
-  // Log.TraceLn('uACPI unmap called on pointer ' + IntToHex(PtrUInt(Ptr)) +
-  //   ' of size ' + IntToStr(Size) + '. No action taken.');
+  // WriteLn(LogTrace, 'uACPI unmap called on pointer ', IntToHex(PtrUInt(Ptr)),
+  //   ' of size ', IntToStr(Size), '. No action taken.');
   // {$endif}
 end;
 
@@ -102,14 +102,14 @@ begin
   Status := uacpi_setup_early_table_access(@Buffer, SizeOf(Buffer));
   case Status of
     {$ifndef NDEBUG}
-    UACPI_STATUS_OK: Log.DebugLn('ACPI initialized.');
+    UACPI_STATUS_OK: WriteLn(LogDebug, 'ACPI initialized.');
     {$endif}
 
     UACPI_STATUS_MAPPING_FAILED..UACPI_STATUS_DENIED:
-      Log.FatalLn('uACPI status: ' + UACPI_STATUS_MESSAGE[Status]);
+      WriteLn(LogFatal, 'uACPI status: ', UACPI_STATUS_MESSAGE[Status]);
 
     UACPI_STATUS_AML_UNDEFINED_REFERENCE..UACPI_STATUS_AML_CALL_STACK_DEPTH_LIMIT:
-      Log.FatalLn('uACPI status: ' + UACPI_STATUS_AML_MESSAGE[Status]);
+      WriteLn(LogFatal, 'uACPI status: ', UACPI_STATUS_AML_MESSAGE[Status]);
   end;
 end;
 

@@ -25,7 +25,9 @@ end;
 
 procedure Panic(Msg: String); noreturn; public name '_arch_panic_msg';
 begin
-  Terminal.WriteLn('Panic: ' + Msg, ColorWhite, ColorLightRed);
+  Terminal.SetBackground(ColorLightRed);
+  Terminal.SetForeground(ColorWhite);
+  WriteLn('Panic: ', Msg);
   Halt;
 end;
 

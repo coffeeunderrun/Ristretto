@@ -11,7 +11,7 @@ procedure DeallocateFrame(Frame: PtrUInt);
 
 implementation
 
-uses ArchApi, Hhdm, Limine, Log, SysUtils, Terminal;
+uses ArchApi, Hhdm, Limine, SysUtils;
 
 const
   MEMORY_MAP_TYPE_NAMES: array [LIMINE_MEMMAP_USABLE..LIMINE_MEMMAP_ACPI_TABLES] of String = (
@@ -42,8 +42,7 @@ begin
   Index := MemoryMapIndex;
   Offset := MemoryMapOffset;
 
-  Log.TraceLn('Populating free list from memory map: entry index ' + IntToStr(Index) +
-    ', offset ' + IntToHex(Offset) + '.');
+  WriteLn(LogTrace, 'Populating free list from memory map: entry index ', IntToStr(Index), ', offset ', IntToHex(Offset), '.');
 
   with MemoryMapRequest.Response^ do
     while Index < EntryCount do begin
@@ -68,7 +67,7 @@ begin
       Inc(Index);
     end;
 
-  Terminal.WriteLn('Available physical memory: ' + IntToStr((AvailablePages * PageSize) div MIB) + ' MiB');
+  WriteLn('Available physical memory: ', IntToStr((AvailablePages * PageSize) div MIB), ' MiB');
 end;
 
 procedure Initialize;
@@ -76,7 +75,7 @@ begin
   PopulateFreeList;
 
   {$ifndef NDEBUG}
-  Log.DebugLn('PMM initialized.');
+  WriteLn(LogDebug, 'PMM initialized.');
   {$endif}
 end;
 
@@ -98,7 +97,7 @@ begin
       end;
     end;
 
-  Log.ErrorLn('Out of memory in early frame allocator.');
+  WriteLn(LogError, 'Out of memory in early frame allocator.');
   result := High(PtrUInt);
 end;
 
@@ -109,7 +108,7 @@ var
 begin
   FramePtr := PPtrUInt(FreeListHead);
   if FramePtr^ = High(PtrUInt) then begin
-    Log.ErrorLn('Out of memory in frame allocator.');
+    WriteLn(LogError, 'Out of memory in frame allocator.');
     exit(High(PtrUInt));
   end;
 

@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses ArchApi, Hhdm, Limine, Log;
+uses ArchApi, Hhdm, Limine;
 
 const
   PAGE_SIZE = $1000;
@@ -98,7 +98,7 @@ begin
     end else begin
       TableFrame := AllocateFrame();
       if TableFrame = 0 then begin
-        Log.ErrorLn('Failed to allocate page table frame.');
+        WriteLn(LogError, 'Failed to allocate page table frame.');
         exit(nil);
       end;
 
@@ -205,7 +205,7 @@ end;
 procedure Initialize;
 begin
   {$ifndef NDEBUG}
-  Log.DebugLn('Paging initialized.');
+  WriteLn(LogDebug, 'Paging initialized.');
   {$endif}
 end;
 

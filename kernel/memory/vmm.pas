@@ -27,7 +27,7 @@ procedure DeallocatePageRange(const AddressSpace: TAddressSpace; const Page: Poi
 
 implementation
 
-uses Framebuffer, Hhdm, Limine, Log, Pmm;
+uses Framebuffer, Hhdm, Limine, Pmm;
 
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';
@@ -110,7 +110,7 @@ begin
   LoadRootFrame(GlobalAddressSpace.RootFrame);
 
   {$ifndef NDEBUG}
-  Log.DebugLn('VMM initialized.');
+  WriteLn(LogDebug, 'VMM initialized.');
   {$endif}
 end;
 
@@ -131,7 +131,7 @@ begin
   );
 
   if not Assigned(result) then begin
-    Log.ErrorLn('Failed to allocate kernel page.');
+    WriteLn(LogError, 'Failed to allocate kernel page.');
     exit(nil);
   end;
 
@@ -157,7 +157,7 @@ begin
   );
 
   if not Assigned(result) then begin
-    Log.ErrorLn('Failed to allocate kernel page range.');
+    WriteLn(LogError, 'Failed to allocate kernel page range.');
     exit(nil);
   end;
 

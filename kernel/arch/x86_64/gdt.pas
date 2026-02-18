@@ -6,8 +6,6 @@ procedure Initialize;
 
 implementation
 
-uses Log;
-
 type
   TGdtEntry = packed record case UInt64 of
     0: (Descriptor: UInt64);
@@ -63,7 +61,7 @@ begin
   end ['rax'];
 
   {$ifndef NDEBUG}
-  Log.DebugLn('GDT initialized.');
+  WriteLn(LogDebug, 'GDT initialized.');
   {$endif}
 end;
 

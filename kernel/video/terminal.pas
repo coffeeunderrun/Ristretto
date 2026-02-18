@@ -16,14 +16,6 @@ procedure SetForeground(Color: TColor); inline;
 function GetBackground: TColor; inline;
 function GetForeground: TColor; inline;
 
-procedure Write(const Text: String); inline;
-procedure Write(const Text: String; FgColor: TColor); inline;
-procedure Write(const Text: String; FgColor, BgColor: TColor);
-
-procedure WriteLn(const Text: String); inline;
-procedure WriteLn(const Text: String; FgColor: TColor); inline;
-procedure WriteLn(const Text: String; FgColor, BgColor: TColor);
-
 implementation
 
 {$macro on}
@@ -71,6 +63,15 @@ begin
   Framebuffer.Clear(TerminalBgColor);
 end;
 
+procedure SetX(X: UInt64); begin TerminalX := X; end;
+procedure SetY(Y: UInt64); begin TerminalY := Y; end;
+
+procedure SetBackground(Color: TColor); begin TerminalBgColor := Color; end;
+procedure SetForeground(Color: TColor); begin TerminalFgColor := Color; end;
+
+function GetBackground: TColor; begin result := TerminalBgColor; end;
+function GetForeground: TColor; begin result := TerminalFgColor; end;
+
 procedure PutChar(X, Y: UInt64; FgColor, BgColor: TColor; Ch: Char);
 var
   GlyphX, GlyphY: UInt8;
@@ -103,15 +104,6 @@ begin
   end;
 end;
 
-procedure SetX(X: UInt64); begin TerminalX := X; end;
-procedure SetY(Y: UInt64); begin TerminalY := Y; end;
-
-procedure SetBackground(Color: TColor); begin TerminalBgColor := Color; end;
-procedure SetForeground(Color: TColor); begin TerminalFgColor := Color; end;
-
-function GetBackground: TColor; begin result := TerminalBgColor; end;
-function GetForeground: TColor; begin result := TerminalFgColor; end;
-
 procedure NewLine;
 begin
   TerminalX := 0;
@@ -121,21 +113,15 @@ begin
     TerminalY += KernelFontPtr^.GlyphSize;
 end;
 
-procedure Write(const Text: String);
+procedure WriteChar(Ch: Char; FgColor, BgColor: TColor);
 begin
-  Write(Text, TerminalFgColor, TerminalBgColor);
-end;
+  case Ch of
+    // Line feed.
+    #10: NewLine;
 
-procedure Write(const Text: String; FgColor: TColor);
-begin
-  Write(Text, FgColor, TerminalBgColor);
-end;
+    // Carriage return.
+    #13: TerminalX := 0;
 
-procedure Write(const Text: String; FgColor, BgColor: TColor);
-var
-  Ch: Char;
-begin
-  for Ch in Text do case Ch of
     // Printable characters.
     #32..#255: begin
       // Wrap to next line if character will go beyond the screen width.
@@ -143,28 +129,27 @@ begin
       PutChar(TerminalX, TerminalY, FgColor, BgColor, Ch);
       TerminalX += 8;
     end;
-
-    // Line feed.
-    #10: NewLine;
-
-    // Carriage return.
-    #13: TerminalX := 0;
   end;
 end;
 
-procedure WriteLn(const Text: String);
+function Open: Integer;
 begin
-  WriteLn(Text, TerminalFgColor, TerminalBgColor);
+  result := 0;
 end;
 
-procedure WriteLn(const Text: String; FgColor: TColor);
+function Close: Integer;
 begin
-  WriteLn(Text, FgColor, TerminalBgColor);
+  result := 0;
 end;
 
-procedure WriteLn(const Text: String; FgColor, BgColor: TColor);
+function Write(var Text: TextRec): Integer;
+var
+  I: Integer;
 begin
-  Write(Text + #10, FgColor, BgColor);
+  if Text.BufPos = 0 then exit;
+  for I := 0 to Text.BufPos - 1 do WriteChar(PChar(Text.BufPtr)[I], TerminalFgColor, TerminalBgColor);
+  Text.BufPos := 0;
+  result := 0;
 end;
 
 begin
@@ -172,4 +157,13 @@ begin
   TerminalY := 0;
   TerminalBgColor := DEFAULT_BG_COLOR;
   TerminalFgColor := DEFAULT_FG_COLOR;
+
+  Assign(Output, '');
+  with TextRec(Output) do begin
+    OpenFunc := @Open;
+    InOutFunc := @Write;
+    FlushFunc := @Write;
+    CloseFunc := @Close;
+  end;
+  Rewrite(Output);
 end.

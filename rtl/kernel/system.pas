@@ -3,7 +3,6 @@ unit System;
 interface
 
 {$define FPC_IS_SYSTEM}
-{$define FPC_IS_KERNEL}
 
 {$define DISABLE_NO_THREAD_MANAGER}
 { Do not use standard memory manager }
@@ -13,6 +12,19 @@ interface
 {$define FPC_ANSI_TEXTFILEREC}
 
 {$I systemh.inc}
+
+type
+  TLogLevel = (
+    LogLevelFatal,
+    LogLevelError,
+    LogLevelWarn,
+    LogLevelInfo,
+    LogLevelDebug,
+    LogLevelTrace
+  );
+
+var
+  LogFatal, LogError, LogWarn, LogInfo, LogDebug, LogTrace: Text;
 
 const
 {$ifdef FPC_HAS_FEATURE_TEXTIO}

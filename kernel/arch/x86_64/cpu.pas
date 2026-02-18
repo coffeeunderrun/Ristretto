@@ -15,7 +15,7 @@ procedure Initialize;
 
 implementation
 
-uses Log, SysUtils;
+uses SysUtils;
 
 procedure Initialize;
 var
@@ -31,10 +31,8 @@ begin
   end ['rax', 'rbx', 'rcx', 'rdx'];
 
   {$ifndef NDEBUG}
-  Log.DebugLn('CPUID: EAX=' + IntToHex(Version) +
-    ', EBX=' + IntToHex(Additional) +
-    ', ECX=' + IntToHex(Features1) +
-    ', EDX=' + IntToHex(Features2));
+  WriteLn(LogDebug, 'CPUID: EAX=', IntToHex(Version), ', EBX=', IntToHex(Additional),
+    ', ECX=', IntToHex(Features1), ', EDX=', IntToHex(Features2));
   {$endif}
 
   // Set up PAT, if supported, using defaults; except for PAT5 = Write Combining
