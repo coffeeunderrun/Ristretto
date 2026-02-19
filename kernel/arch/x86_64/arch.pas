@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses Color, Cpu, Gdt, Idt, Paging, Pmm, Terminal, Vmm;
+uses Color, Cpu, Gdt, Idt, Isr, Paging, Pmm, Vmm;
 
 procedure Initialize;
 begin
@@ -25,8 +25,6 @@ end;
 
 procedure Panic(Msg: String); noreturn; public name '_arch_panic_msg';
 begin
-  Terminal.SetBackground(ColorLightRed);
-  Terminal.SetForeground(ColorWhite);
   WriteLn('Panic: ', Msg);
   Halt;
 end;
