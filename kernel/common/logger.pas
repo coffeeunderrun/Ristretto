@@ -3,8 +3,20 @@ unit Logger;
 interface
 
 type
+  TLogLevel = (
+    LogLevelFatal,
+    LogLevelError,
+    LogLevelWarn,
+    LogLevelInfo,
+    LogLevelDebug,
+    LogLevelTrace
+  );
+
   TLogger = object
-    constructor Initialize;
+  private
+    FMinLogLevel: TLogLevel;
+  public
+    constructor Create(AMinLogLevel: TLogLevel = LogLevelInfo);
     procedure Write(const Level: TLogLevel); virtual; abstract;
     procedure Write(Ch: Char); virtual; abstract;
   end;
@@ -16,7 +28,10 @@ implementation
 var
   LoggerArr: array of TLogger;
 
-constructor TLogger.Initialize; begin end;
+constructor TLogger.Create(AMinLogLevel: TLogLevel);
+begin
+  FMinLogLevel := AMinLogLevel;
+end;
 
 procedure Register(const Logger: TLogger);
 begin
@@ -37,14 +52,19 @@ end;
 function Write(var Text: TextRec): Integer;
 var
   Logger: TLogger;
+  LogLevel: TLogLevel;
   I: Integer;
 begin
-  if Text.BufPos = 0 then exit;
-  for Logger in LoggerArr do begin
-    Logger.Write(TLogLevel(Text.UserData[1]));
-    for I := 0 to Text.BufPos - 1 do Logger.Write(PChar(Text.BufPtr)[I]);
+  with Text do begin
+    if BufPos = 0 then exit;
+    LogLevel := TLogLevel(UserData[1]);
+    for Logger in LoggerArr do begin
+      if Logger.FMinLogLevel < LogLevel then continue;
+      Logger.Write(LogLevel);
+      for I := 0 to BufPos - 1 do Logger.Write(PChar(BufPtr)[I]);
+    end;
+    BufPos := 0;
   end;
-  Text.BufPos := 0;
   result := 0;
 end;
 

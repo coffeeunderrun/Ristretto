@@ -60,9 +60,7 @@ begin
     mov es, ax
   end ['rax'];
 
-  {$ifndef NDEBUG}
-  WriteLn(LogDebug, 'GDT initialized.');
-  {$endif}
+  WriteLn(LogInfo, 'GDT initialized.');
 end;
 
 end.

@@ -52,6 +52,7 @@ procedure Initialize;
 begin
   KernelFontPtr := PPCScreenFont(Modules.FindModule('KernelFont'));
   if not Assigned(KernelFontPtr) then Panic;
+  WriteLn(LogInfo, 'Terminal initialized.');
 end;
 
 procedure Clear;

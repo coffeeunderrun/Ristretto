@@ -74,7 +74,7 @@ var
 begin
   with RegsPtr^ do begin
     if Vector > 255 then begin
-      WriteLn(LogError, 'Handler: invalid vector ', Vector);
+      WriteLn(LogError, Format('%s:%s - Invalid vector %d.', [{$I %FILE%}, {$I %LINE%}, Vector]));
       Panic;
     end;
 
@@ -100,13 +100,13 @@ end;
 procedure RegisterHandler(Vector: UInt8; Handler: TIsrHandler);
 begin
   if Vector > 255 then begin
-    WriteLn(LogError, 'RegisterHandler: invalid vector ', Vector);
+    WriteLn(LogError, Format('%s:%s - Invalid vector %d.', [{$I %FILE%}, {$I %LINE%}, Vector]));
     exit;
   end;
 
   SetLength(IsrHandlers[Vector], Length(IsrHandlers[Vector]) + 1);
   IsrHandlers[Vector][High(IsrHandlers[Vector])] := Handler;
-  WriteLn(LogTrace, 'Registered handler for vector ', Vector);
+  WriteLn(LogTrace, Format('Registered handler for vector %d.', [Vector]));
 end;
 
 end.

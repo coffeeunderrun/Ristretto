@@ -29,13 +29,13 @@ end;
 
 procedure TSerialLogger.Write(Ch: Char);
 begin
-  Serial.Write(Ch);
+  Serial.Write(Ord(Ch));
 end;
 
 var
   SerialLogger: TSerialLogger;
 
 begin
-  SerialLogger.Initialize;
+  SerialLogger.Create(LogLevelTrace);
   Logger.Register(SerialLogger);
 end.

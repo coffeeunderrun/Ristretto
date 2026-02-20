@@ -114,9 +114,7 @@ begin
   InitializePics;
   PopulateIdt;
   LoadIdt;
-  {$ifndef NDEBUG}
-  WriteLn(LogDebug, 'IDT initialized.');
-  {$endif}
+  WriteLn(LogInfo, 'IDT initialized.');
 end;
 
 end.

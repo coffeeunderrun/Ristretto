@@ -99,9 +99,7 @@ var
 begin
   Status := uacpi_setup_early_table_access(@Buffer, SizeOf(Buffer));
   case Status of
-    {$ifndef NDEBUG}
-    UACPI_STATUS_OK: WriteLn(LogDebug, 'ACPI initialized.');
-    {$endif}
+    UACPI_STATUS_OK: WriteLn(LogInfo, 'ACPI initialized.');
 
     UACPI_STATUS_MAPPING_FAILED..UACPI_STATUS_DENIED:
       WriteLn(LogFatal, Format('uACPI status: %s', [UACPI_STATUS_MESSAGE[Status]]));

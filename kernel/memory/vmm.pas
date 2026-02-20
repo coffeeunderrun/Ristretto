@@ -108,10 +108,7 @@ procedure Initialize;
 begin
   CreateGlobalAddressSpace;
   LoadRootFrame(GlobalAddressSpace.RootFrame);
-
-  {$ifndef NDEBUG}
-  WriteLn(LogDebug, 'VMM initialized.');
-  {$endif}
+  WriteLn(LogInfo, 'VMM initialized.');
 end;
 
 function AllocatePage(

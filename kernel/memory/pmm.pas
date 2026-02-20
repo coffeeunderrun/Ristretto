@@ -42,7 +42,7 @@ begin
   Index := MemoryMapIndex;
   Offset := MemoryMapOffset;
 
-  WriteLn(LogTrace, 'Populating free list from memory map: entry index ', IntToStr(Index), ', offset ', IntToHex(Offset), '.');
+  WriteLn(LogTrace, Format('Populate free list from memory map: index %d, offset %x.', [Index, Offset]));
 
   with MemoryMapRequest.Response^ do
     while Index < EntryCount do begin
@@ -73,10 +73,7 @@ end;
 procedure Initialize;
 begin
   PopulateFreeList;
-
-  {$ifndef NDEBUG}
-  WriteLn(LogDebug, 'PMM initialized.');
-  {$endif}
+  WriteLn(LogInfo, 'PMM initialized.');
 end;
 
 function EarlyAllocateFrame: PtrUInt;

@@ -13,16 +13,6 @@ interface
 
 {$I systemh.inc}
 
-type
-  TLogLevel = (
-    LogLevelFatal,
-    LogLevelError,
-    LogLevelWarn,
-    LogLevelInfo,
-    LogLevelDebug,
-    LogLevelTrace
-  );
-
 var
   LogFatal, LogError, LogWarn, LogInfo, LogDebug, LogTrace: Text;
 

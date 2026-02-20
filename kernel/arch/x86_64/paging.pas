@@ -204,9 +204,7 @@ end;
 
 procedure Initialize;
 begin
-  {$ifndef NDEBUG}
-  WriteLn(LogDebug, 'Paging initialized.');
-  {$endif}
+  WriteLn(LogInfo, 'Paging initialized.');
 end;
 
 begin
