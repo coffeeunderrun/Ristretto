@@ -52,7 +52,7 @@ begin
   end;
 end;
 
-  function MapPage(
+function MapPage(
   RootFrame, Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;

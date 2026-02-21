@@ -13,7 +13,3 @@
 	path = vendor/uacpi-bindings
 	url = https://codeberg.org/coffeeunderrun/uacpi-bindings-pascal.git
 	ignore = dirty
-[submodule "vendor/fpcdep"]
-	path = vendor/fpcdep
-	url = https://codeberg.org/coffeeunderrun/fpcdep.git
-	ignore = dirty

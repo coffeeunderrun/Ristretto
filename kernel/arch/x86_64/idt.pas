@@ -97,9 +97,9 @@ begin
       Segment := $08;
       Flags := $8E;
       case Vector of
-        1: Ist := 1; // Debug exception
-        2: Ist := 2; // Non-maskable interrupt
-        8: Ist := 3; // Double fault
+        1:  Ist := 1; // Debug exception
+        2:  Ist := 2; // Non-maskable interrupt
+        8:  Ist := 3; // Double fault
         12: Ist := 4; // Stack segment fault
         18: Ist := 5; // Machine check
       end;

@@ -2,10 +2,6 @@ unit Cpu;
 
 interface
 
-const
-  IA32_GS_BASE = $C0000101;
-  IA32_KERNEL_GS_BASE = $C0000102;
-
 type
   PRegisters = ^TRegisters;
   TRegisters = record
@@ -15,13 +11,6 @@ type
     RIP, CS, RFlags, RSP, SS: UInt64;
   end;
 
-  PCpu = ^TCpu;
-  TCpu = record
-    CpuPtr: PCpu;
-    GdtPtr: Pointer;
-    TssPtr: Pointer;
-  end;
-
 procedure Initialize;
 
 function ReadCR0: UInt64; inline;
@@ -29,11 +18,32 @@ function ReadCR2: UInt64; inline;
 function ReadCR3: UInt64; inline;
 function ReadCR4: UInt64; inline;
 
-function GetCpuPtr: PCpu; inline;
+function GetProcId: UInt32; inline;
+function GetGdtPtr: Pointer; inline;
+function GetTssPtr: Pointer; inline;
+function GetThreadId: TThreadId; inline;
+
+procedure SetProcId(Id: UInt32); inline;
+procedure SetGdtPtr(GdtPtr: Pointer); inline;
+procedure SetTssPtr(TssPtr: Pointer); inline;
+procedure SetThreadId(Id: TThreadId); inline;
 
 implementation
 
 uses HeapMgr, SysUtils;
+
+const
+  IA32_GS_BASE = $C0000101;
+  IA32_KERNEL_GS_BASE = $C0000102;
+
+type
+  PCpu = ^TCpu;
+  TCpu = record
+    ProcId: UInt32;
+    GdtPtr: Pointer;
+    TssPtr: Pointer;
+    ThreadId: TThreadId;
+  end;
 
 procedure CreateCpuStructure;
 var
@@ -41,9 +51,6 @@ var
 begin
   CpuPtr := GetAlignedMem(SizeOf(TCpu), 64);
   if not Assigned(CpuPtr) then Panic('Failed to allocate CPU structure.');
-
-  // Self reference
-  CpuPtr^.CpuPtr := CpuPtr;
 
   {$ifndef NDEBUG}
   WriteLn(LogDebug, Format('Allocate CPU structure: addr=$%.16X, size=%d bytes.', [PtrUInt(CpuPtr), SizeOf(TCpu)]));
@@ -61,7 +68,6 @@ end;
 procedure Initialize;
 var
   Version, Additional, Features1, Features2: UInt32;
-  CpuPtr: PCpu;
 begin
   asm
     mov eax, 1
@@ -120,9 +126,44 @@ asm
   invlpg [rax]
 end;
 
-function GetCpuPtr: PCpu; assembler; nostackframe;
+function GetProcId: UInt32; assembler; nostackframe;
 asm
-  mov rax, gs:[0]
+  mov eax, gs:[TCpu.ProcId]
+end;
+
+function GetGdtPtr: Pointer; assembler; nostackframe;
+asm
+  mov rax, gs:[TCpu.GdtPtr]
+end;
+
+function GetTssPtr: Pointer; assembler; nostackframe;
+asm
+  mov rax, gs:[TCpu.TssPtr]
+end;
+
+function GetThreadId: TThreadId; assembler; nostackframe;
+asm
+  mov rax, gs:[TCpu.ThreadId]
+end;
+
+procedure SetProcId(Id: UInt32); assembler; nostackframe;
+asm
+  mov gs:[TCpu.ProcId], edi
+end;
+
+procedure SetGdtPtr(GdtPtr: Pointer); assembler; nostackframe;
+asm
+  mov gs:[TCpu.GdtPtr], rdi
+end;
+
+procedure SetTssPtr(TssPtr: Pointer); assembler; nostackframe;
+asm
+  mov gs:[TCpu.TssPtr], rdi
+end;
+
+procedure SetThreadId(Id: TThreadId); assembler; nostackframe;
+asm
+  mov gs:[TCpu.ThreadId], rdi
 end;
 
 end.

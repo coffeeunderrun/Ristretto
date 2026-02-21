@@ -23,15 +23,12 @@ type
 procedure Initialize;
 var
   TssPtr: PTss;
-  CpuPtr: PCpu;
 begin
   TssPtr := GetAlignedMem(SizeOf(TTss), 8);
   if not Assigned(TssPtr) then Panic('Failed to allocate TSS.');
 
-  CpuPtr := GetCpuPtr;
-  CpuPtr^.TssPtr := TssPtr;
-
-  SetGdtTssEntry(TssPtr, SizeOf(TTss) - 1);
+  Cpu.SetTssPtr(TssPtr);
+  Gdt.SetTssEntry(TssPtr, SizeOf(TTss) - 1);
 
   {$ifndef NDEBUG}
   WriteLn(LogDebug, Format('Allocate TSS: addr=$%.16X.', [PtrUInt(TssPtr)]));

@@ -15,6 +15,7 @@ begin
 
     UnitPath.Add('arch');
     UnitPath.Add('arch/$(CPU)');
+    UnitPath.Add('arch/$(CPU)/cpu');
     UnitPath.Add('arch/$(CPU)/device');
     UnitPath.Add('common');
     UnitPath.Add('memory');

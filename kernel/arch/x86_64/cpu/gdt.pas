@@ -4,7 +4,7 @@ interface
 
 procedure Initialize;
 
-procedure SetGdtTssEntry(TssPtr: Pointer; TssSize: UInt16);
+procedure SetTssEntry(TssPtr: Pointer; TssSize: UInt16);
 
 implementation
 
@@ -37,12 +37,12 @@ type
     Base: PtrUInt;
   end;
 
-procedure SetGdtTssEntry(TssPtr: Pointer; TssSize: UInt16);
+procedure SetTssEntry(TssPtr: Pointer; TssSize: UInt16);
 var
   TssAddr: UInt64 absolute TssPtr;
   GdtPtr: PGdt;
 begin
-  GdtPtr := GetCpuPtr^.GdtPtr;
+  GdtPtr := Cpu.GetGdtPtr;
   GdtPtr^[6].Descriptor := TssAddr shr 32;
 
   with GdtPtr^[5] do begin
@@ -69,13 +69,11 @@ procedure Initialize;
 var
   GdtPointer: TGdtPointer;
   GdtPtr: PGdt;
-  CpuPtr: PCpu;
 begin
   GdtPtr := GetAlignedMem(SizeOf(TGdt), 8);
   if not Assigned(GdtPtr) then Panic('Failed to allocate GDT.');
 
-  CpuPtr := GetCpuPtr;
-  CpuPtr^.GdtPtr := GdtPtr;
+  Cpu.SetGdtPtr(GdtPtr);
 
   {$ifndef NDEBUG}
   WriteLn(LogDebug, Format('Allocate GDT: addr=$%.16X, size=%d bytes.', [PtrUInt(GdtPtr), SizeOf(TGdt)]));
