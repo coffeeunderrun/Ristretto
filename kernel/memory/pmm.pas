@@ -42,7 +42,9 @@ begin
   Index := MemoryMapIndex;
   Offset := MemoryMapOffset;
 
-  WriteLn(LogTrace, Format('Populate free list from memory map: index %d, offset %x.', [Index, Offset]));
+  {$ifndef NDEBUG}
+  WriteLn(LogDebug, Format('Populate free list from memory map: index=%d, offset=$%.8X.', [Index, Offset]));
+  {$endif NDEBUG}
 
   with MemoryMapRequest.Response^ do
     while Index < EntryCount do begin
@@ -94,7 +96,7 @@ begin
       end;
     end;
 
-  WriteLn(LogError, 'Out of memory in early frame allocator.');
+  WriteLn(LogError, Format('%s:%s - Out of memory in early frame allocator.', [{$I %FILE%}, {$I %LINE%}]));
   result := High(PtrUInt);
 end;
 
@@ -105,7 +107,7 @@ var
 begin
   FramePtr := PPtrUInt(FreeListHead);
   if FramePtr^ = High(PtrUInt) then begin
-    WriteLn(LogError, 'Out of memory in frame allocator.');
+    WriteLn(LogError, Format('%s:%s - Out of memory in frame allocator.', [{$I %FILE%}, {$I %LINE%}]));
     exit(High(PtrUInt));
   end;
 

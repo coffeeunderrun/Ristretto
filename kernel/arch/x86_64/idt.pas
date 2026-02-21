@@ -8,6 +8,8 @@ procedure AcknowledgeIrq(Irq: UInt8);
 
 implementation
 
+uses SysUtils;
+
 const
   PIC1_CONTROL = $20;
   PIC1_DATA    = $21;
@@ -80,18 +82,30 @@ end;
 procedure PopulateIdt;
 var
   Offset: PtrUInt;
-  I: UInt8;
+  Vector: UInt8;
 begin
   FillByte(IdtEntries, SizeOf(IdtEntries), 0);
 
-  for I := 0 to 255 do begin
-    Offset := IsrStubs[I];
-    if Offset <> 0 then with IdtEntries[I] do begin
+  for Vector := 0 to 255 do begin
+    Offset := IsrStubs[Vector];
+    if Offset = 0 then continue;
+
+    with IdtEntries[Vector] do begin
       OffsetHigh := Offset shr 32;
       OffsetMid := (Offset shr 16) and $FFFF;
       OffsetLow := Offset and $FFFF;
       Segment := $08;
       Flags := $8E;
+      case Vector of
+        1: Ist := 1; // Debug exception
+        2: Ist := 2; // Non-maskable interrupt
+        8: Ist := 3; // Double fault
+        12: Ist := 4; // Stack segment fault
+        18: Ist := 5; // Machine check
+      end;
+      {$ifndef NDEBUG}
+      WriteLn(LogDebug, Format('Set IDT entry: vector=%d, offset=$%.16X, ist=%d, flags=$%.2X.', [Vector, Offset, Ist, Flags]));
+      {$endif NDEBUG}
     end;
   end;
 end;

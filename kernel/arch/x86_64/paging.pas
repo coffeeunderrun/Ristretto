@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses ArchApi, Hhdm, Limine;
+uses ArchApi, Hhdm, Limine, SysUtils;
 
 const
   PAGE_SIZE = $1000;
@@ -98,7 +98,7 @@ begin
     end else begin
       TableFrame := AllocateFrame();
       if TableFrame = 0 then begin
-        WriteLn(LogError, 'Failed to allocate page table frame.');
+        WriteLn(LogError, Format('%s:%s - Failed to allocate page table frame.', [{$I %FILE%}, {$I %LINE%}]));
         exit(nil);
       end;
 

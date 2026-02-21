@@ -32,13 +32,17 @@ begin
   if Length(Name) = 0 then exit(nil);
   Hash := HashString(Name);
 
-  WriteLn(LogTrace, Format('Looking for module `%s`, hash %.16X...', [Name, Hash]));
+  {$ifndef NDEBUG}
+  WriteLn(LogDebug, Format('Looking for module: name=`%s`, hash=$%.16X.', [Name, Hash]));
+  {$endif NDEBUG}
 
   { TODO: The FGL unit depends on the Types unit which fails to compile with FPUNONE defined.
     Perhaps a minimal Types unit, or a custom hashmap implementation. }
   for ModuleHash in ModuleHashArr do
     if (ModuleHash.Hash = Hash) and (ModuleHash.Info.Name = Name) then begin
-      WriteLn(LogTrace, Format('Found module `%s`, hash %.16X.', [Name, Hash]));
+      {$ifndef NDEBUG}
+      WriteLn(LogDebug, Format('Found module: name=`%s`, hash=$%.16X.', [Name, Hash]));
+      {$endif NDEBUG}
       exit(ModuleHash.Info.Ptr);
     end;
 

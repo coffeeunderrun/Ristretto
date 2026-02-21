@@ -87,7 +87,8 @@ $(IMGDIR)/$(IMAGENAME).img: kernel vendor/limine/limine
 		&& mmd -i $@ ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine \
 		&& mcopy -i $@ $(addprefix vendor/limine/, $(LIMINE_BOOT)) ::/EFI/BOOT \
 		&& mcopy -i $@ limine.conf ::/boot/limine \
-		&& mcopy -i $@ kernel/bin/$(TARGET_ARCH)/kernel ::/boot
+		&& mcopy -i $@ kernel/bin/$(TARGET_ARCH)/kernel ::/boot \
+		&& mcopy -i $@ assets/kernel.psf ::/boot
 
 vendor/edk2-ovmf:
 	curl -L https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/edk2-ovmf.tar.gz | gunzip | tar -xf - -C vendor

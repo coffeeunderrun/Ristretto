@@ -75,7 +75,7 @@ begin
   with RegsPtr^ do begin
     if Vector > 255 then begin
       WriteLn(LogError, Format('%s:%s - Invalid vector %d.', [{$I %FILE%}, {$I %LINE%}, Vector]));
-      Panic;
+      exit;
     end;
 
     for IsrHandler in IsrHandlers[Vector] do IsrHandler;
@@ -86,12 +86,13 @@ begin
     end;
 
     WriteLn(Format('Interrupt: %s', [Descriptions[Vector]]));
-    WriteLn(Format('RAX=%.16X RBX=%.16X RCX=%.16X RDX=%.16X', [RAX, RBX, RCX, RDX]));
-    WriteLn(Format('RSI=%.16X RDI=%.16X RBP=%.16X RSP=%.16X', [RSI, RDI, RBP, RSP]));
-    WriteLn(Format('R8 =%.16X R9 =%.16X R10=%.16X R11=%.16X', [R8, R9, R10, R11]));
-    WriteLn(Format('R12=%.16X R13=%.16X R14=%.16X R15=%.16X', [R12, R13, R14, R15]));
-    WriteLn(Format('RIP=%.16X CS =%.16X RSP=%.16X SS =%.16X', [RIP, CS, RSP, SS]));
-    WriteLn(Format('VEC=%.16X ERR=%.16X RFL=%.16X', [Vector, Code, RFlags]));
+    WriteLn(Format('RAX=$%.16X RBX=$%.16X RCX=$%.16X RDX=$%.16X', [RAX, RBX, RCX, RDX]));
+    WriteLn(Format('RSI=$%.16X RDI=$%.16X RBP=$%.16X RSP=$%.16X', [RSI, RDI, RBP, RSP]));
+    WriteLn(Format('R8 =$%.16X R9 =$%.16X R10=$%.16X R11=$%.16X', [R8, R9, R10, R11]));
+    WriteLn(Format('R12=$%.16X R13=$%.16X R14=$%.16X R15=$%.16X', [R12, R13, R14, R15]));
+    WriteLn(Format('RIP=$%.16X CS =$%.16X SS =$%.16X', [RIP, CS, SS]));
+    WriteLn(Format('VEC=$%.16X ERR=$%.16X RFL=$%.16X', [Vector, Code, RFlags]));
+    WriteLn(Format('CR0=$%.16X CR2=$%.16X CR3=$%.16X CR4=$%.16X', [ReadCR0, ReadCR2, ReadCR3, ReadCR4]));
 
     Halt;
   end;
@@ -99,14 +100,11 @@ end;
 
 procedure RegisterHandler(Vector: UInt8; Handler: TIsrHandler);
 begin
-  if Vector > 255 then begin
-    WriteLn(LogError, Format('%s:%s - Invalid vector %d.', [{$I %FILE%}, {$I %LINE%}, Vector]));
-    exit;
-  end;
-
   SetLength(IsrHandlers[Vector], Length(IsrHandlers[Vector]) + 1);
   IsrHandlers[Vector][High(IsrHandlers[Vector])] := Handler;
-  WriteLn(LogTrace, Format('Registered handler for vector %d.', [Vector]));
+  {$ifndef NDEBUG}
+  WriteLn(LogDebug, Format('Register handler: vector=%d.', [Vector]));
+  {$endif}
 end;
 
 end.

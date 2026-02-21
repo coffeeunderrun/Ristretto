@@ -27,7 +27,7 @@ procedure DeallocatePageRange(const AddressSpace: TAddressSpace; const Page: Poi
 
 implementation
 
-uses Framebuffer, Hhdm, Limine, Pmm;
+uses Framebuffer, Hhdm, Limine, Pmm, SysUtils;
 
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';
@@ -108,6 +108,9 @@ procedure Initialize;
 begin
   CreateGlobalAddressSpace;
   LoadRootFrame(GlobalAddressSpace.RootFrame);
+  {$ifndef NDEBUG}
+  WriteLn(LogDebug, Format('Global address space root frame: $%.16X.', [GlobalAddressSpace.RootFrame]));
+  {$endif NDEBUG}
   WriteLn(LogInfo, 'VMM initialized.');
 end;
 

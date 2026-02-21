@@ -4,7 +4,17 @@ interface
 
 procedure Initialize;
 
+procedure SetGdtTssEntry(TssPtr: Pointer; TssSize: UInt16);
+
 implementation
+
+uses Cpu, HeapMgr, SysUtils;
+
+const
+  GDT_KERNEL_CODE = UInt64($00209A0000000000);
+  GDT_KERNEL_DATA = UInt64($0000920000000000);
+  GDT_USER_CODE = UInt64($0020FA0000000000);
+  GDT_USER_DATA = UInt64($0000F20000000000);
 
 type
   TGdtEntry = packed record case UInt64 of
@@ -19,28 +29,70 @@ type
     );
   end;
 
+  PGdt = ^TGdt;
+  TGdt = array [0..6] of TGdtEntry;
+
   TGdtPointer = packed record
     Limit: UInt16;
     Base: PtrUInt;
   end;
 
+procedure SetGdtTssEntry(TssPtr: Pointer; TssSize: UInt16);
 var
-  GdtEntries: array [0..6] of TGdtEntry = (
-    (Descriptor: $0000000000000000), // $00 Null
-    (Descriptor: $00209A0000000000), // $08 Kernel Code
-    (Descriptor: $0000920000000000), // $10 Kernel Data
-    (Descriptor: $0020FA0000000000), // $18 User Code
-    (Descriptor: $0000F20000000000), // $20 User Data
-    (Descriptor: $0000000000000000), // $28 TSS
-    (Descriptor: $0000000000000000)
-  );
+  TssAddr: UInt64 absolute TssPtr;
+  GdtPtr: PGdt;
+begin
+  GdtPtr := GetCpuPtr^.GdtPtr;
+  GdtPtr^[6].Descriptor := TssAddr shr 32;
+
+  with GdtPtr^[5] do begin
+    Limit := TssSize;
+    BaseLow := UInt16(TssAddr and $FFFF);
+    BaseMid := UInt8(TssAddr shr 16);
+    BaseHigh := UInt8(TssAddr shr 24);
+    Flags := %00100000 or UInt8(TssSize shr 16);
+    Access := %10001001;
+
+    {$ifndef NDEBUG}
+    WriteLn(LogDebug, Format('Set GDT TSS entry: offset=$%.16X, limit=%d, flags=$%.2X, access=$%.2X.',
+      [TssAddr, TssSize, Flags, Access]));
+    {$endif}
+  end;
+
+  asm
+    mov ax, $28
+    ltr ax
+  end ['rax'];
+end;
 
 procedure Initialize;
 var
   GdtPointer: TGdtPointer;
+  GdtPtr: PGdt;
+  CpuPtr: PCpu;
 begin
-  GdtPointer.Limit := SizeOf(GdtEntries) - 1;
-  GdtPointer.Base := PtrUInt(@GdtEntries);
+  GdtPtr := GetAlignedMem(SizeOf(TGdt), 8);
+  if not Assigned(GdtPtr) then Panic('Failed to allocate GDT.');
+
+  CpuPtr := GetCpuPtr;
+  CpuPtr^.GdtPtr := GdtPtr;
+
+  {$ifndef NDEBUG}
+  WriteLn(LogDebug, Format('Allocate GDT: addr=$%.16X, size=%d bytes.', [PtrUInt(GdtPtr), SizeOf(TGdt)]));
+  {$endif}
+
+  FillByte(GdtPtr^, SizeOf(TGdt), 0);
+  {$ifndef NDEBUG}
+  WriteLn(LogDebug, Format('Zero GDT: addr=$%.16X, size=%d bytes.', [PtrUInt(GdtPtr), SizeOf(TGdt)]));
+  {$endif}
+
+  GdtPtr^[1].Descriptor := GDT_KERNEL_CODE;
+  GdtPtr^[2].Descriptor := GDT_KERNEL_DATA;
+  GdtPtr^[3].Descriptor := GDT_USER_CODE;
+  GdtPtr^[4].Descriptor := GDT_USER_DATA;
+
+  GdtPointer.Limit := SizeOf(TGdt) - 1;
+  GdtPointer.Base := PtrUInt(GdtPtr);
 
   asm
     lgdt [GdtPointer]

@@ -16,6 +16,7 @@ begin
 
   WriteLn(Logo);
 
-  Arch.Initialize;
+  Arch.PerProcInitialize;
+  Arch.OneTimeInitialize;
   Acpi.Initialize;
 end.
