@@ -114,18 +114,6 @@ asm
   mov rax, cr4
 end;
 
-procedure WriteCR3(Value: UInt64); assembler; nostackframe; public name '_arch_load_root_frame';
-asm
-  mov rax, Value
-  mov cr3, rax
-end;
-
-procedure InvalidatePage(Page: PtrUInt); assembler; nostackframe; public name '_arch_invalidate_page';
-asm
-  mov rax, Page
-  invlpg [rax]
-end;
-
 function GetProcId: UInt32; assembler; nostackframe;
 asm
   mov eax, gs:[TCpu.ProcId]

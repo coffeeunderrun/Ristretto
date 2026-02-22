@@ -6,10 +6,9 @@ procedure Initialize;
 
 implementation
 
-uses ArchApi, Hhdm, Limine, SysUtils;
+uses Arch, Hhdm, Limine, SysUtils;
 
 const
-  PAGE_SIZE = $1000;
   DEFAULT_PAGE_LEVEL_MAX = 4;
 
   PAGE_ENTRY_PRESENT = $1;
@@ -27,7 +26,6 @@ type
 
 var
   PagingModeRequest: TLiminePagingModeRequest; external name '_limine_request_paging_mode';
-  PageSize: SizeUInt = PAGE_SIZE; public name '_arch_page_size';
   PageLevelMax: UInt8;
 
 procedure SetLeafEntry(

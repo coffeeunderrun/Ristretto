@@ -17,6 +17,7 @@ begin
     UnitPath.Add('arch/$(CPU)');
     UnitPath.Add('arch/$(CPU)/cpu');
     UnitPath.Add('arch/$(CPU)/device');
+    IncludePath.Add('arch/$(CPU)');
 
     UnitPath.Add('acpi');
     UnitPath.Add('boot');

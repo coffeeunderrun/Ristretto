@@ -11,7 +11,7 @@ procedure DeallocateFrame(Frame: PtrUInt);
 
 implementation
 
-uses ArchApi, Hhdm, Limine, SysUtils;
+uses Arch, Hhdm, Limine, SysUtils;
 
 const
   MEMORY_MAP_TYPE_NAMES: array [LIMINE_MEMMAP_USABLE..LIMINE_MEMMAP_ACPI_TABLES] of String = (
@@ -51,17 +51,17 @@ begin
       with Entries^[Index] do begin
         case Entries^[Index].EntryType of
           LIMINE_MEMMAP_USABLE: begin
-            AvailablePages += (Entries^[Index].Length - Offset) div PageSize;
+            AvailablePages += (Entries^[Index].Length - Offset) div PAGE_SIZE;
             while Offset < Length do begin
               DeallocateFrame(Base + Offset);
-              Inc(Offset, PageSize);
+              Inc(Offset, PAGE_SIZE);
             end;
           end;
 
           // Reclaimable frames will be deallocated after initialization.
           LIMINE_MEMMAP_ACPI_RECLAIMABLE,
           LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
-            AvailablePages += Entries^[Index].Length div PageSize;
+            AvailablePages += Entries^[Index].Length div PAGE_SIZE;
         end;
       end;
 
@@ -69,7 +69,7 @@ begin
       Inc(Index);
     end;
 
-  WriteLn(Format('Available physical memory: %d MiB', [(AvailablePages * PageSize) div MIB]));
+  WriteLn(Format('Available physical memory: %d MiB', [(AvailablePages * PAGE_SIZE) div MIB]));
 end;
 
 procedure Initialize;
@@ -87,7 +87,7 @@ begin
       with Entries^[MemoryMapIndex] do begin
         if (EntryType = LIMINE_MEMMAP_USABLE) and (MemoryMapOffset < Length) then begin
           Frame := Base + MemoryMapOffset;
-          Inc(MemoryMapOffset, PageSize);
+          Inc(MemoryMapOffset, PAGE_SIZE);
           exit(Frame);
         end;
 

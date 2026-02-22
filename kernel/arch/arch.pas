@@ -1,6 +1,9 @@
-unit ArchApi;
+unit Arch;
 
 interface
+
+const
+  PAGE_SIZE: SizeUInt = 0;
 
 type
   TAllocateFrameCallback = function: PtrUInt;
@@ -22,12 +25,11 @@ type
     MemoryCacheWriteThrough
   );
 
-var
-  PageSize: SizeUInt; external name '_arch_page_size';
+procedure OneTimeInitialize; inline;
+procedure PerProcInitialize; inline;
 
-procedure LoadRootFrame(RootFrame: PtrUInt); external name '_arch_load_root_frame';
-
-procedure InvalidatePage(Page: PtrUInt); external name '_arch_invalidate_page';
+procedure LoadRootFrame(RootFrame: PtrUInt); inline;
+procedure InvalidatePage(Page: PtrUInt); inline;
 
 function MapPage(
   RootFrame, Frame, Page: PtrUInt;
@@ -60,5 +62,7 @@ procedure UnMapPageRange(
 ); external name '_arch_unmap_page_range';
 
 implementation
+
+{$I arch.inc}
 
 end.

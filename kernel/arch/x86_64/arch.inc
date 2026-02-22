@@ -1,20 +1,9 @@
-unit Arch;
-
-interface
-
-procedure OneTimeInitialize;
-procedure PerProcInitialize;
-
-implementation
-
-uses Color, Cpu, Gdt, Idt, Isr, Paging, Pmm, Tss, Vmm;
+uses Cpu, Gdt, Idt, Isr, Paging, Tss;
 
 procedure OneTimeInitialize;
 begin
   Idt.Initialize;
   Paging.Initialize;
-  Vmm.Initialize;
-  Pmm.Initialize;
 end;
 
 procedure PerProcInitialize;
@@ -22,6 +11,18 @@ begin
   Cpu.Initialize;
   Gdt.Initialize;
   Tss.Initialize;
+end;
+
+procedure LoadRootFrame(RootFrame: PtrUInt); assembler; nostackframe;
+asm
+  mov rax, RootFrame
+  mov cr3, rax
+end;
+
+procedure InvalidatePage(Page: PtrUInt); assembler; nostackframe;
+asm
+  mov rax, Page
+  invlpg [rax]
 end;
 
 procedure Panic; noreturn; public name '_arch_panic';
@@ -38,4 +39,6 @@ begin
   Halt;
 end;
 
+begin
+  PAGE_SIZE := $1000;
 end.

@@ -2,7 +2,7 @@ unit Vmm;
 
 interface
 
-uses ArchApi;
+uses Arch;
 
 type
   TAddressSpace = record
@@ -52,7 +52,7 @@ begin
   GlobalAddressSpace.RootFrame := EarlyAllocateFrame;
   if GlobalAddressSpace.RootFrame = High(PtrUInt) then Panic('Failed to create kernel address space root frame.');
 
-  FillByte(Pointer(AddHhdmOffset(GlobalAddressSpace.RootFrame))^, PageSize, 0);
+  FillByte(Pointer(AddHhdmOffset(GlobalAddressSpace.RootFrame))^, PAGE_SIZE, 0);
 
   // Kernel segments
   MemoryCache := MemoryCacheWriteBack;
@@ -77,8 +77,8 @@ begin
     );
     if not Assigned(Ptr) then Panic('Failed to map kernel.');
 
-    Inc(KernelFrame, PageSize);
-    Inc(KernelPage, PageSize);
+    Inc(KernelFrame, PAGE_SIZE);
+    Inc(KernelPage, PAGE_SIZE);
   end;
 
   // HHDM
@@ -135,7 +135,7 @@ begin
     exit(nil);
   end;
 
-  BumpAllocatorKernelPage += PageSize;
+  BumpAllocatorKernelPage += PAGE_SIZE;
 end;
 
 function AllocatePageRange(
@@ -161,7 +161,7 @@ begin
     exit(nil);
   end;
 
-  BumpAllocatorKernelPage += Align(Size, PageSize);
+  BumpAllocatorKernelPage += Align(Size, PAGE_SIZE);
 end;
 
 procedure DeallocatePage(const AddressSpace: TAddressSpace; const Page: Pointer);
@@ -178,5 +178,5 @@ begin
   if not Assigned(ExecutableAddressRequest.Response) then Panic('No executable address response.');
   if not Assigned(MemoryMapRequest.Response) then Panic('No memory map response.');
 
-  BumpAllocatorKernelPage := PtrUInt(Align(@KernelEnd, PageSize));
+  BumpAllocatorKernelPage := PtrUInt(Align(@KernelEnd, PAGE_SIZE));
 end.
