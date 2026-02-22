@@ -7,7 +7,7 @@ OBJDIR = obj/$(TARGET_ARCH)
 RTLDIR = lib/fpc/$(FPCVERSION)/units/$(TARGET_ARCH)-embedded/rtl
 UNITDIR = units/$(TARGET_ARCH)-embedded
 
-UACPI_CFLAGS := -I../vendor/uacpi/include -DUACPI_BAREBONES_MODE -DUACPI_USE_BUILTIN_STRING
+UACPI_CFLAGS := -I../vendor/uacpi/include -DUACPI_USE_BUILTIN_STRING
 
 override FPCFLAGS += -vehinw -vm4055,4056,6058
 

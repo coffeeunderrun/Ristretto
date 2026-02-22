@@ -1,4 +1,4 @@
-unit Serial_Logger;
+unit Logger.Serial;
 
 interface
 

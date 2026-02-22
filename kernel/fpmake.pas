@@ -17,10 +17,12 @@ begin
     UnitPath.Add('arch/$(CPU)');
     UnitPath.Add('arch/$(CPU)/cpu');
     UnitPath.Add('arch/$(CPU)/device');
+
+    UnitPath.Add('acpi');
+    UnitPath.Add('boot');
+    UnitPath.Add('boot/limine');
     UnitPath.Add('common');
     UnitPath.Add('memory');
-    UnitPath.Add('platform');
-    UnitPath.Add('platform/limine');
     UnitPath.Add('video');
 
     UnitPath.Add('../vendor/limine-protocol');
