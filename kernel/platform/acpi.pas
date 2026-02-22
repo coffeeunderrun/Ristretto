@@ -4,45 +4,6 @@ interface
 
 uses Uacpi;
 
-const
-  UACPI_STATUS_MESSAGE: array [UACPI_STATUS_OK..UACPI_STATUS_DENIED] of String = (
-    'OK',
-    'MAPPING_FAILED',
-    'OUT_OF_MEMORY',
-    'BAD_CHECKSUM',
-    'INVALID_SIGNATURE',
-    'INVALID_TABLE_LENGTH',
-    'NOT_FOUND',
-    'INVALID_ARGUMENT',
-    'UNIMPLEMENTED',
-    'ALREADY_EXISTS',
-    'INTERNAL_ERROR',
-    'TYPE_MISMATCH',
-    'INIT_LEVEL_MISMATCH',
-    'NAMESPACE_NODE_DANGLING',
-    'NO_HANDLER',
-    'NO_RESOURCE_END_TAG',
-    'COMPILED_OUT',
-    'HARDWARE_TIMEOUT',
-    'TIMEOUT',
-    'OVERRIDDEN',
-    'DENIED'
-  );
-
-  UACPI_STATUS_AML_MESSAGE: array [UACPI_STATUS_AML_UNDEFINED_REFERENCE..UACPI_STATUS_AML_CALL_STACK_DEPTH_LIMIT] of String = (
-    'AML_UNDEFINED_REFERENCE',
-    'AML_INVALID_NAMESTRING',
-    'AML_OBJECT_ALREADY_EXISTS',
-    'AML_INVALID_OPCODE',
-    'AML_INCOMPATIBLE_OBJECT_TYPE',
-    'AML_BAD_ENCODING',
-    'AML_OUT_OF_BOUNDS_INDEX',
-    'AML_SYNC_LEVEL_TOO_HIGH',
-    'AML_INVALID_RESOURCE',
-    'AML_LOOP_TIMEOUT',
-    'AML_CALL_STACK_DEPTH_LIMIT'
-  );
-
 procedure Initialize;
 
 implementation
@@ -81,14 +42,14 @@ function uacpi_kernel_map(Address: uacpi_phys_addr; Size: uacpi_size): Pointer; 
 begin
   result := Pointer(AddHhdmOffset(Address));
   {$ifndef NDEBUG}
-  WriteLn(LogTrace, Format('uACPI map: paddr=$%.16X, vaddr=$%.16X, size=%d bytes.', [Address, PtrUInt(result), Size]));
+  WriteLn(LogDebug, Format('uACPI map: paddr=$%.16X, vaddr=$%.16X, size=%d bytes.', [Address, PtrUInt(result), Size]));
   {$endif}
 end;
 
 procedure uacpi_kernel_unmap(Ptr: Pointer; Size: uacpi_size); cdecl; public;
 begin
   {$ifndef NDEBUG}
-  WriteLn(LogTrace, Format('uACPI unmap: vaddr=$%.16X, size=%d bytes.', [PtrUInt(Ptr), Size]));
+  WriteLn(LogDebug, Format('uACPI unmap: vaddr=$%.16X, size=%d bytes.', [PtrUInt(Ptr), Size]));
   {$endif}
 end;
 
@@ -98,14 +59,10 @@ var
   Status: uacpi_status;
 begin
   Status := uacpi_setup_early_table_access(@Buffer, SizeOf(Buffer));
-  case Status of
-    UACPI_STATUS_OK: WriteLn(LogInfo, 'ACPI initialized.');
-
-    UACPI_STATUS_MAPPING_FAILED..UACPI_STATUS_DENIED:
-      WriteLn(LogFatal, Format('uACPI status: %s.', [UACPI_STATUS_MESSAGE[Status]]));
-
-    UACPI_STATUS_AML_UNDEFINED_REFERENCE..UACPI_STATUS_AML_CALL_STACK_DEPTH_LIMIT:
-      WriteLn(LogFatal, Format('uACPI status: %s.', [UACPI_STATUS_AML_MESSAGE[Status]]));
+  if Status <> UACPI_STATUS_OK then begin
+    WriteLn(LogFatal, Format('uACPI status: %s.', [uacpi_status_to_string(Status)]));
+    uacpi_state_reset;
+    exit;
   end;
 end;
 
