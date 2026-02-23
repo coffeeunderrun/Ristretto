@@ -29,6 +29,17 @@ begin
   WriteLn(LogTrace, 'uacpi_kernel_uninstall_interrupt_handler called.');
 end;
 
+function uacpi_kernel_disable_interrupts: Tuacpi_interrupt_state; cdecl; public;
+begin
+  result := 0;
+  WriteLn(LogTrace, 'uacpi_kernel_disable_interrupts called.');
+end;
+
+procedure uacpi_kernel_restore_interrupts(state: Tuacpi_interrupt_state); cdecl; public;
+begin
+  WriteLn(LogTrace, 'uacpi_kernel_restore_interrupts called.');
+end;
+
 {$endif UACPI_BAREBONES_MODE}
 
 end.
