@@ -14,7 +14,7 @@ implementation
 uses Arch, Hhdm, Limine, SysUtils;
 
 const
-  MEMORY_MAP_TYPE_NAMES: array [LIMINE_MEMMAP_USABLE..LIMINE_MEMMAP_ACPI_TABLES] of String = (
+  MEMORY_MAP_TYPE_NAMES: array [LIMINE_MEMMAP_USABLE..LIMINE_MEMMAP_RESERVED_MAPPED] of String = (
     'USABLE',
     'RESERVED',
     'ACPI_RECLAIMABLE',
@@ -23,7 +23,7 @@ const
     'BOOTLOADER_RECLAIMABLE',
     'EXECUTABLE_AND_MODULES',
     'FRAMEBUFFER',
-    'ACPI_TABLES'
+    'RESERVED_MAPPED'
   );
 
 var
