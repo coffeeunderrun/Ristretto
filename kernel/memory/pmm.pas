@@ -11,7 +11,7 @@ procedure DeallocateFrame(Frame: PtrUInt);
 
 implementation
 
-uses Arch, Hhdm, Limine, SysUtils;
+uses Hhdm, Limine, Paging, SysUtils;
 
 const
   MEMORY_MAP_TYPE_NAMES: array [LIMINE_MEMMAP_USABLE..LIMINE_MEMMAP_RESERVED_MAPPED] of String = (

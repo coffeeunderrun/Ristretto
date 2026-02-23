@@ -1,4 +1,4 @@
-unit Arch;
+unit Paging;
 
 interface
 
@@ -25,19 +25,13 @@ type
     MemoryCacheWriteThrough
   );
 
-procedure OneTimeInitialize; inline;
-procedure PerProcInitialize; inline;
-
-procedure LoadRootFrame(RootFrame: PtrUInt); inline;
-procedure InvalidatePage(Page: PtrUInt); inline;
-
 function MapPage(
   RootFrame, Frame, Page: PtrUInt;
   MemoryAccess: TMemoryAccessSet;
   MemoryCache: TMemoryCache;
   const AllocateFrame: TAllocateFrameCallback;
   const InvalidatePage: TInvalidatePageCallback = nil
-): Pointer; external name '_arch_map_page';
+): Pointer;
 
 function MapPageRange(
   RootFrame, Frame, Page: PtrUInt;
@@ -46,23 +40,27 @@ function MapPageRange(
   MemoryCache: TMemoryCache;
   const AllocateFrame: TAllocateFrameCallback;
   const InvalidatePage: TInvalidatePageCallback = nil
-): Pointer; external name '_arch_map_page_range';
+): Pointer;
 
 procedure UnMapPage(
   RootFrame, Page: PtrUInt;
   const DeallocateFrame: TDeallocateFrameCallback;
   const InvalidatePage: TInvalidatePageCallback = nil
-); external name '_arch_unmap_page';
+);
 
 procedure UnMapPageRange(
   RootFrame, Page: PtrUInt;
   Size: SizeUInt;
   const DeallocateFrame: TDeallocateFrameCallback;
   const InvalidatePage: TInvalidatePageCallback = nil
-); external name '_arch_unmap_page_range';
+);
+
+procedure LoadRootFrame(RootFrame: PtrUInt); inline;
+
+procedure InvalidatePage(Page: PtrUInt); inline;
 
 implementation
 
-{$I arch.inc}
+{$I paging.inc}
 
 end.

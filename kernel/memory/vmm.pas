@@ -2,7 +2,7 @@ unit Vmm;
 
 interface
 
-uses Arch;
+uses Paging;
 
 type
   TAddressSpace = record

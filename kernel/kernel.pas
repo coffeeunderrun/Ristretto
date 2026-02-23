@@ -1,7 +1,7 @@
 program Kernel;
 
 { SysUtils should be first to ensure heap is initialized before any units attempt to use it. }
-uses SysUtils, Terminal, Logger.Serial, Arch, Vmm, Pmm, Acpi;
+uses SysUtils, Terminal, Logger.Serial, Processor, Interrupts, Paging, Vmm, Pmm, Acpi;
 
 const
   Logo: String =
@@ -16,9 +16,11 @@ begin
 
   WriteLn(Logo);
 
-  Arch.PerProcInitialize;
-  Arch.OneTimeInitialize;
+  Processor.Initialize;
+  Interrupts.Initialize;
   Vmm.Initialize;
   Pmm.Initialize;
   Acpi.Initialize;
+
+  WriteLn(LogTrace, 'Kernel initialization complete.');
 end.

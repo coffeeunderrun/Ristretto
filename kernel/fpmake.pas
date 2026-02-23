@@ -19,7 +19,6 @@ begin
     UnitPath.Add('arch/$(CPU)/device');
     IncludePath.Add('arch/$(CPU)');
 
-    UnitPath.Add('acpi');
     UnitPath.Add('boot');
     UnitPath.Add('boot/limine');
     UnitPath.Add('common');

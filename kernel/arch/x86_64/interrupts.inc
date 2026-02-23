@@ -1,20 +1,61 @@
-unit Idt;
-
-interface
-
-procedure Initialize;
-
-procedure AcknowledgeIrq(Irq: UInt8);
-
-implementation
-
-uses SysUtils;
+uses Cpu, SysUtils;
 
 const
   PIC1_CONTROL = $20;
   PIC1_DATA    = $21;
   PIC2_CONTROL = $A0;
   PIC2_DATA    = $A1;
+
+  Descriptions: array [0..47] of String = (
+    'Divide by zero',
+    'Debug',
+    'Non-maskable',
+    'Breakpoint',
+    'Overflow',
+    'Bound range exceeded',
+    'Invalid opcode',
+    'Device not available',
+    'Double fault',
+    'Reserved',
+    'Invalid TSS',
+    'Segment not present',
+    'Stack segment fault',
+    'General protection fault',
+    'Page fault',
+    'Reserved',
+    'x87 floating point exception',
+    'Alignment check',
+    'Machine check',
+    'SIMD floating point exception',
+    'Virtualization exception',
+    'Control protection exception',
+    'Reserved',
+    'Reserved',
+    'Reserved',
+    'Reserved',
+    'Reserved',
+    'Reserved',
+    'Hypervisor injection exception',
+    'VMM communication exception',
+    'Security exception',
+    'Reserved',
+    'PIT',
+    'Keyboard',
+    'PIC cascade',
+    'COM2/COM4',
+    'COM1/COM3',
+    'LPT2',
+    'FDC',
+    'LPT1',
+    'RTC',
+    'Available',
+    'Available',
+    'Available',
+    'Mouse',
+    'FPU',
+    'HDC1',
+    'HDC2'
+  );
 
 type
   TIdtPointer = packed record
@@ -35,6 +76,7 @@ type
 var
   IdtEntries: array [0..255] of TIdtEntry; external name '_idt';
   IsrStubs: array [0..255] of PtrUInt; external name '_isr_stubs';
+  IsrHandlers: array [0..255] of array of TIsrHandler;
 
 procedure AcknowledgeIrq(Irq: UInt8); assembler; nostackframe;
 asm
@@ -123,6 +165,36 @@ begin
   end;
 end;
 
+procedure Handler(RegsPtr: PRegisters); public name '_handler';
+var
+  IsrHandler: TIsrHandler;
+begin
+  with RegsPtr^ do begin
+    if Vector > 255 then begin
+      WriteLn(LogError, Format('%s:%s - Invalid vector %d.', [{$I %FILE%}, {$I %LINE%}, Vector]));
+      exit;
+    end;
+
+    for IsrHandler in IsrHandlers[Vector] do IsrHandler;
+
+    if (Vector > 31) and (Vector < 48) then begin
+      AcknowledgeIrq(Code);
+      exit;
+    end;
+
+    WriteLn(Format('Interrupt: %s', [Descriptions[Vector]]));
+    WriteLn(Format('RAX=$%.16X RBX=$%.16X RCX=$%.16X RDX=$%.16X', [RAX, RBX, RCX, RDX]));
+    WriteLn(Format('RSI=$%.16X RDI=$%.16X RBP=$%.16X RSP=$%.16X', [RSI, RDI, RBP, RSP]));
+    WriteLn(Format('R8 =$%.16X R9 =$%.16X R10=$%.16X R11=$%.16X', [R8, R9, R10, R11]));
+    WriteLn(Format('R12=$%.16X R13=$%.16X R14=$%.16X R15=$%.16X', [R12, R13, R14, R15]));
+    WriteLn(Format('RIP=$%.16X CS =$%.16X SS =$%.16X', [RIP, CS, SS]));
+    WriteLn(Format('VEC=$%.16X ERR=$%.16X RFL=$%.16X', [Vector, Code, RFlags]));
+    WriteLn(Format('CR0=$%.16X CR2=$%.16X CR3=$%.16X CR4=$%.16X', [ReadCR0, ReadCR2, ReadCR3, ReadCR4]));
+
+    Halt;
+  end;
+end;
+
 procedure Initialize;
 begin
   InitializePics;
@@ -131,4 +203,11 @@ begin
   WriteLn(LogInfo, 'IDT initialized.');
 end;
 
-end.
+procedure RegisterHandler(Vector: UInt8; Handler: TIsrHandler);
+begin
+  SetLength(IsrHandlers[Vector], Length(IsrHandlers[Vector]) + 1);
+  IsrHandlers[Vector][High(IsrHandlers[Vector])] := Handler;
+  {$ifndef NDEBUG}
+  WriteLn(LogDebug, Format('Register handler: vector=%d.', [Vector]));
+  {$endif}
+end;

@@ -1,12 +1,4 @@
-unit Paging;
-
-interface
-
-procedure Initialize;
-
-implementation
-
-uses Arch, Hhdm, Limine, SysUtils;
+uses Hhdm, Limine, SysUtils;
 
 const
   DEFAULT_PAGE_LEVEL_MAX = 4;
@@ -200,12 +192,21 @@ begin
   end;
 end;
 
-procedure Initialize;
-begin
-  WriteLn(LogInfo, 'Paging initialized.');
+procedure LoadRootFrame(RootFrame: PtrUInt); assembler; nostackframe;
+asm
+  mov rax, RootFrame
+  mov cr3, rax
 end;
 
-begin
+procedure InvalidatePage(Page: PtrUInt); assembler; nostackframe;
+asm
+  mov rax, Page
+  invlpg [rax]
+end;
+
+initialization
+  PAGE_SIZE := $1000;
+
   if Assigned(PagingModeRequest.Response) then
     case PagingModeRequest.Response^.Mode of
       LIMINE_PAGING_MODE_X86_64_4LVL: PageLevelMax := 4;
@@ -215,4 +216,3 @@ begin
     end
   else
     PageLevelMax := DEFAULT_PAGE_LEVEL_MAX;
-end.
