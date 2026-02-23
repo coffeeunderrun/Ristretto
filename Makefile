@@ -97,9 +97,11 @@ vendor/limine/limine:
 	git submodule update --init vendor/limine
 	$(MAKE) -Cvendor/limine CC="$(HOST_CC)" CFLAGS="$(HOST_CFLAGS)" LDFLAGS="$(HOST_LDFLAGS)" LIBS="$(HOST_LIBS)"
 
+.PHONY: vendor/limine-protocol
 vendor/limine-protocol:
 	git submodule update --init vendor/limine-protocol
 
+.PHONY: vendor/uacpi
 vendor/uacpi:
 	git submodule update --init vendor/uacpi
 	git submodule update --init vendor/uacpi-bindings

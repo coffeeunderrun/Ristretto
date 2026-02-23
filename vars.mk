@@ -18,7 +18,7 @@ LDFLAGS =
 override LDFLAGS += -nostdlib -static -zmax-page-size=0x1000
 
 override FPCFLAGS += -Cn -Cg-i-o-r-t- -Mobjfpc -n -Sagc
-FPCVERSION = $(shell fpc -iW)
+FPCVERSION = $(shell fpc -iW | sed 's/\+.*//')
 
 HOST_CC = cc
 HOST_CFLAGS = -pipe
