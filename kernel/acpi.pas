@@ -41,6 +41,13 @@ begin
     exit;
   end;
   WriteLn(LogInfo, 'uACPI namespace initialized.');
+
+  Status := uacpi_finalize_gpe_initialization;
+  if Status <> UACPI_STATUS_OK then begin
+    WriteLn(LogFatal, Format('uACPI status: %s.', [uacpi_status_to_string(Status)]));
+    exit;
+  end;
+  WriteLn(LogInfo, 'uACPI GPEs initialized.');
 end;
 
 function uacpi_kernel_get_rsdp(out Address: Tuacpi_phys_addr): Tuacpi_status; cdecl; public;
