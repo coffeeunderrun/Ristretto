@@ -25,6 +25,9 @@ function AllocatePageRange(
 procedure DeallocatePage(const AddressSpace: TAddressSpace; const Page: Pointer);
 procedure DeallocatePageRange(const AddressSpace: TAddressSpace; const Page: Pointer; Size: SizeUInt);
 
+function MapDirectPageRange(Frame: PtrUInt; Size: SizeUInt): Pointer;
+procedure UnMapDirectPageRange(Page: Pointer; Size: SizeUInt);
+
 implementation
 
 uses Framebuffer, Hhdm, Limine, Pmm, SysUtils;
@@ -172,6 +175,53 @@ end;
 procedure DeallocatePageRange(const AddressSpace: TAddressSpace; const Page: Pointer; Size: SizeUInt);
 begin
   UnMapPageRange(AddressSpace.RootFrame, PtrUInt(Page), Size, @DeallocateFrame, @InvalidatePage);
+end;
+
+function MapDirectPageRange(Frame: PtrUInt; Size: SizeUInt): Pointer;
+var
+  EntryIndex: SizeUInt;
+begin
+  { TODO: Iterating over the memory map every time is not optimal. }
+  // Avoid remapping HHDM memory.
+  with MemoryMapRequest.Response^ do
+    for EntryIndex := 0 to EntryCount - 1 do with Entries^[EntryIndex] do begin
+      { TODO: Should check if size is within the entry, not just the start frame. }
+      if (Frame >= Base) and (Frame < Base + Length) then exit(Pointer(AddHhdmOffset(Frame)));
+    end;
+
+  result := MapPageRange(
+    GlobalAddressSpace.RootFrame,
+    Frame,
+    AddHhdmOffset(Frame),
+    Size,
+    [MemoryAccessGlobal, MemoryAccessWrite],
+    MemoryCacheNone,
+    @AllocateFrame
+  );
+end;
+
+procedure UnMapDirectPageRange(Page: Pointer; Size: SizeUInt);
+var
+  Frame: PtrUInt;
+  EntryIndex: SizeUInt;
+begin
+  Frame := RemoveHhdmOffset(PtrUInt(Page));
+
+  { TODO: Iterating over the memory map every time is not optimal. }
+  // Avoid unmapping HHDM memory.
+  with MemoryMapRequest.Response^ do
+    for EntryIndex := 0 to EntryCount - 1 do with Entries^[EntryIndex] do begin
+      { TODO: Should check if size is within the entry, not just the start frame. }
+      if (Frame >= Base) and (Frame < Base + Length) then exit;
+    end;
+
+  UnMapPageRange(
+    GlobalAddressSpace.RootFrame,
+    PtrUInt(Page),
+    Size,
+    @DeallocateFrame,
+    @InvalidatePage
+  );
 end;
 
 begin

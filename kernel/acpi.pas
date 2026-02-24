@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi;
+uses HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Vmm;
 
 var
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
@@ -34,15 +34,22 @@ begin
     exit;
   end;
   WriteLn(LogInfo, 'uACPI namespace loaded.');
+
+  Status := uacpi_namespace_initialize;
+  if Status <> UACPI_STATUS_OK then begin
+    WriteLn(LogFatal, Format('uACPI status: %s.', [uacpi_status_to_string(Status)]));
+    exit;
+  end;
+  WriteLn(LogInfo, 'uACPI namespace initialized.');
 end;
 
-function uacpi_kernel_get_rsdp(AddressPtr: Puacpi_phys_addr): Tuacpi_status; cdecl; public;
+function uacpi_kernel_get_rsdp(out Address: Tuacpi_phys_addr): Tuacpi_status; cdecl; public;
 begin
   if Assigned(RsdpRequest.Response) then begin
     // Limine protocol base revision 4 states that the RSDP address will be virtual (HHDM).
-    AddressPtr^ := Tuacpi_phys_addr(RemoveHhdmOffset(PtrUInt(RsdpRequest.Response^.Address)));
+    Address := Tuacpi_phys_addr(RemoveHhdmOffset(PtrUInt(RsdpRequest.Response^.Address)));
     {$ifndef NDEBUG}
-    WriteLn(LogDebug, Format('uACPI RSDP found: paddr=$%.16X.', [AddressPtr^]));
+    WriteLn(LogDebug, Format('uACPI RSDP found: paddr=$%.16X.', [Address]));
     {$endif}
     exit(UACPI_STATUS_OK);
   end;
@@ -52,7 +59,7 @@ end;
 
 function uacpi_kernel_map(Address: Tuacpi_phys_addr; Size: Tuacpi_size): Pointer; cdecl; public;
 begin
-  result := Pointer(AddHhdmOffset(Address));
+  result := MapDirectPageRange(Address, Size);
   {$ifndef NDEBUG}
   WriteLn(LogDebug, Format('uACPI map: paddr=$%.16X, vaddr=$%P, size=%d bytes.', [Address, result, Size]));
   {$endif}
@@ -60,6 +67,7 @@ end;
 
 procedure uacpi_kernel_unmap(Ptr: Pointer; Size: Tuacpi_size); cdecl; public;
 begin
+  UnMapDirectPageRange(Ptr, Size);
   {$ifndef NDEBUG}
   WriteLn(LogDebug, Format('uACPI unmap: vaddr=$%P, size=%d bytes.', [Ptr, Size]));
   {$endif}
