@@ -2,12 +2,25 @@ unit Vmm;
 
 interface
 
-uses Paging;
-
 type
   TAddressSpace = record
     RootFrame: PtrUInt;
   end;
+
+  TMemoryAccess = (
+    MemoryAccessExecute,
+    MemoryAccessGlobal,
+    MemoryAccessUser,
+    MemoryAccessWrite
+  );
+  TMemoryAccessSet = set of TMemoryAccess;
+
+  TMemoryCache = (
+    MemoryCacheNone,
+    MemoryCacheWriteBack,
+    MemoryCacheWriteCombining,
+    MemoryCacheWriteThrough
+  );
 
 procedure Initialize;
 
@@ -30,7 +43,7 @@ procedure UnMapDirectPageRange(Page: Pointer; Size: SizeUInt);
 
 implementation
 
-uses Framebuffer, Hhdm, Limine, Pmm, SysUtils;
+uses Framebuffer, Hhdm, Limine, Paging, Pmm, SysUtils;
 
 var
   ExecutableAddressRequest: TLimineExecutableAddressRequest; external name '_limine_request_executable_address';

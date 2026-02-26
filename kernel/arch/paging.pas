@@ -2,6 +2,8 @@ unit Paging;
 
 interface
 
+uses Vmm;
+
 const
   PAGE_SIZE: SizeUInt = 0;
 
@@ -9,21 +11,6 @@ type
   TAllocateFrameCallback = function: PtrUInt;
   TDeallocateFrameCallback = procedure(Frame: PtrUInt);
   TInvalidatePageCallback = procedure(Page: PtrUInt);
-
-  TMemoryAccess = (
-    MemoryAccessExecute,
-    MemoryAccessGlobal,
-    MemoryAccessUser,
-    MemoryAccessWrite
-  );
-  TMemoryAccessSet = set of TMemoryAccess;
-
-  TMemoryCache = (
-    MemoryCacheNone,
-    MemoryCacheWriteBack,
-    MemoryCacheWriteCombining,
-    MemoryCacheWriteThrough
-  );
 
 function MapPage(
   RootFrame, Frame, Page: PtrUInt;
