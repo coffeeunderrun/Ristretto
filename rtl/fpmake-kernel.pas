@@ -6,8 +6,6 @@ uses fpmkunit;
 
 begin
   with Installer.AddPackage('rtl') do begin
-    Version := '3.3.1';
-
     // Disable FPU support in RTL.
     Options.Add('-dFPUNONE');
 

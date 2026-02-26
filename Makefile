@@ -65,6 +65,10 @@ kernel: rtl-kernel vendor/limine-protocol vendor/uacpi
 rtl-kernel:
 	$(MAKE) -Crtl kernel
 
+.PHONY: rtl-module
+rtl-module:
+	$(MAKE) -Crtl module
+
 $(ISODIR)/$(IMAGENAME).iso: kernel vendor/limine/limine
 	mkdir -p $(ISODIR)/root $(ISODIR)/root/boot/limine $(ISODIR)/root/EFI/BOOT
 	cp $(addprefix vendor/limine/, $(LIMINE_BOOT)) $(ISODIR)/root/EFI/BOOT

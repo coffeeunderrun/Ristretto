@@ -9,5 +9,5 @@ iso/
 vendor/edk2-ovmf/
 
 *.fpm
-fpmake
-fpmake.o
+fpmake*
+!fpmake*.pas

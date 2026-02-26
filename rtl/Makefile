@@ -5,16 +5,34 @@ include ../vars.mk
 override FPCFLAGS += -vh-n-w-
 
 .PHONY: kernel
-kernel: fpmake
-	./fpmake install --cpu=$(TARGET_ARCH) --os=embedded --options="$(FPCFLAGS)" --prefix=../kernel
+kernel: fpmake-kernel
+	./fpmake-kernel install --cpu=$(TARGET_ARCH) --os=embedded --options="$(FPCFLAGS)" --prefix=../kernel
 
-fpmake: fpmake.pas
+.PHONY: module
+module: fpmake-module
+	./fpmake-module install --cpu=$(TARGET_ARCH) --os=embedded --options="$(FPCFLAGS)" --prefix=../modules
+
+%: %.pas
 	$(HOST_FPC) $(HOST_FPCFLAGS) -o$@ $<
 
 .PHONY: clean
-clean:
-	rm -rf units/$(TARGET_ARCH)-embedded
+clean: clean-kernel clean-module
+
+.PHONY: clean-kernel
+clean-kernel: fpmake-kernel
+	./fpmake-kernel clean --cpu=$(TARGET_ARCH) --os=embedded
+
+.PHONY: clean-module
+clean-module: fpmake-module
+	./fpmake-module clean --cpu=$(TARGET_ARCH) --os=embedded
 
 .PHONY: distclean
-distclean:
-	rm -rf units/ fpmake *.o *.fpm
+distclean: distclean-kernel distclean-module
+
+.PHONY: distclean-kernel
+distclean-kernel: fpmake-kernel
+	./fpmake-kernel distclean
+
+.PHONY: distclean-module
+distclean-module: fpmake-module
+	./fpmake-module distclean

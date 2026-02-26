@@ -28,13 +28,14 @@ DEPS := $(OBJS:.o=.d)
 all: $(BINDIR)/kernel
 
 .PHONY: clean
-clean:
-	rm -rf $(BINDIR) $(OBJDIR) $(UNITDIR) $(RTLDIR)
+clean: fpmake
+	./fpmake clean --cpu=$(TARGET_ARCH) --os=embedded
+	rm -rf $(BINDIR) $(OBJDIR) $(RTLDIR)
 
 .PHONY: distclean
-distclean:
-	rm -rf bin/ lib/ obj/ units/ rtl/units
-	rm -f fpmake *.o *.fpm rtl/fpmake rtl/*.o rtl/*.fpm
+distclean: fpmake
+	./fpmake distclean
+	rm -rf bin/ obj/ lib/
 
 # Kernel binary
 $(BINDIR)/kernel: compile $(OBJS) arch/scripts/$(TARGET_ARCH).lds
