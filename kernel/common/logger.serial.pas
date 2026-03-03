@@ -4,7 +4,7 @@ interface
 
 implementation
 
-uses Logger, Serial;
+uses Logger, IoPort;
 
 const
   LogLevelPrefix: array [TLogLevel] of String = (
@@ -23,13 +23,16 @@ type
   end;
 
 procedure TSerialLogger.Write(const Level: TLogLevel);
+var
+  Ch: Char;
 begin
-  Serial.Write(LogLevelPrefix[Level]);
+  for Ch in LogLevelPrefix[Level] do TSerialLogger.Write(Ch);
 end;
 
 procedure TSerialLogger.Write(Ch: Char);
 begin
-  Serial.Write(Ord(Ch));
+  while (IoPort.ReadIoPort8($3FD) and $20) = 0 do;
+  IoPort.WriteIoPort8($3F8, Ord(Ch));
 end;
 
 var

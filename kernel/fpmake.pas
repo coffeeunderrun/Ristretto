@@ -16,14 +16,18 @@ begin
     UnitPath.Add('arch');
     UnitPath.Add('arch/$(CPU)');
     UnitPath.Add('arch/$(CPU)/cpu');
-    UnitPath.Add('arch/$(CPU)/device');
     IncludePath.Add('arch/$(CPU)');
+    SourcePath.Add('arch/$(CPU)/drivers');
 
     UnitPath.Add('boot');
     UnitPath.Add('boot/limine');
     UnitPath.Add('common');
     UnitPath.Add('memory');
+    UnitPath.Add('platform');
     UnitPath.Add('video');
+
+    UnitPath.Add('../common');
+    IncludePath.Add('../common');
 
     UnitPath.Add('../vendor/limine-protocol');
     IncludePath.Add('../vendor/limine-protocol');
@@ -32,6 +36,8 @@ begin
     IncludePath.Add('../vendor/uacpi-bindings/inc');
 
     Targets.AddProgram('kernel.pas');
+
+    Targets.AddUnit('driver.hpet.pas');
   end;
 
   Installer.Run;

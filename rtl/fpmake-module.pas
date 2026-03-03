@@ -6,7 +6,7 @@ uses fpmkunit;
 
 begin
   with Installer.AddPackage('rtl') do begin
-    SourcePath.Add('minimal');
+    SourcePath.Add('module');
 
     with Targets.AddUnit('system.pas') do begin
       Options.Add('-Us');

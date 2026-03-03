@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Vmm;
+uses Device.Common, DeviceMgr, HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Vmm;
 
 var
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
@@ -14,6 +14,45 @@ var
 type
   Tuacpi_work_type = (UACPI_WORK_GPE_EXECUTION, UACPI_WORK_NOTIFICATION);
   Tuacpi_work_handler = procedure(Ctx: Tuacpi_handle); cdecl;
+
+function InitializeDevice(User: Pointer; Node: Puacpi_namespace_node; NodeDepth: Tuacpi_u32): Tuacpi_iteration_decision; cdecl;
+var
+  Status: Tuacpi_status;
+  NodeInfo: Puacpi_namespace_node_info;
+  Path: Puacpi_char;
+  Device: TDevice;
+  PnpIndex: SizeUInt;
+  PnpId: Puacpi_id_string;
+begin
+  Status := uacpi_get_namespace_node_info(Node, NodeInfo);
+  if Status <> UACPI_STATUS_OK then begin
+    Path := uacpi_namespace_node_generate_absolute_path(Node);
+    WriteLn(LogError, Format('uACPI device: path=%s, status=%s.', [Path, uacpi_status_to_string(Status)]));
+    uacpi_free_absolute_path(Path);
+    exit(UACPI_ITERATION_DECISION_CONTINUE);
+  end;
+
+  WriteLn(LogDebug, Format('uACPI device: depth=%d, name=%s, hid=%s.',
+    [NodeDepth, String(NodeInfo^.Obj_Name.Text), NodeInfo^.Hid.Value]));
+
+  with NodeInfo^, Device.Descriptor do begin
+    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then begin
+      SetLength(PnpIdArr, 1);
+      PnpIdArr[0] := NodeInfo^.Hid.Value;
+    end;
+
+    if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then begin
+      PnpId := @Cid.Ids;
+      SetLength(PnpIdArr, Length(PnpIdArr) + Cid.Num_Ids);
+      for PnpIndex := 0 to Cid.Num_Ids - 1 do PnpIdArr[Length(PnpIdArr) - Cid.Num_Ids + PnpIndex] := PnpId[PnpIndex].Value;
+    end;
+  end;
+
+  DeviceMgr.RegisterDevice(Device);
+
+  uacpi_free_namespace_node_info(NodeInfo);
+  result := UACPI_ITERATION_DECISION_CONTINUE;
+end;
 
 procedure Initialize;
 var
@@ -48,6 +87,15 @@ begin
     exit;
   end;
   WriteLn(LogInfo, 'uACPI GPEs initialized.');
+
+  uacpi_namespace_for_each_child(
+    uacpi_namespace_root,
+    @InitializeDevice,
+    UACPI_NULL,
+    UACPI_OBJECT_DEVICE_BIT,
+    UACPI_MAX_DEPTH_ANY,
+    UACPI_NULL
+  );
 end;
 
 function uacpi_kernel_get_rsdp(out Address: Tuacpi_phys_addr): Tuacpi_status; cdecl; public;
@@ -68,7 +116,7 @@ function uacpi_kernel_map(Address: Tuacpi_phys_addr; Size: Tuacpi_size): Pointer
 begin
   result := MapDirectPageRange(Address, Size);
   {$ifndef NDEBUG}
-  WriteLn(LogDebug, Format('uACPI map: paddr=$%.16X, vaddr=$%P, size=%d bytes.', [Address, result, Size]));
+  // WriteLn(LogDebug, Format('uACPI map: paddr=$%.16X, vaddr=$%P, size=%d bytes.', [Address, result, Size]));
   {$endif}
 end;
 
@@ -76,7 +124,7 @@ procedure uacpi_kernel_unmap(Ptr: Pointer; Size: Tuacpi_size); cdecl; public;
 begin
   UnMapDirectPageRange(Ptr, Size);
   {$ifndef NDEBUG}
-  WriteLn(LogDebug, Format('uACPI unmap: vaddr=$%P, size=%d bytes.', [Ptr, Size]));
+  // WriteLn(LogDebug, Format('uACPI unmap: vaddr=$%P, size=%d bytes.', [Ptr, Size]));
   {$endif}
 end;
 
@@ -200,7 +248,7 @@ function uacpi_kernel_alloc(Size: Tuacpi_size): Pointer; cdecl; public;
 begin
   result := GetMem(Size);
   {$ifndef NDEBUG}
-  WriteLn(LogDebug, Format('uACPI alloc: vaddr=$%P, size=%d bytes.', [result, Size]));
+  // WriteLn(LogDebug, Format('uACPI alloc: vaddr=$%P, size=%d bytes.', [result, Size]));
   {$endif}
 end;
 
@@ -208,7 +256,7 @@ procedure uacpi_kernel_free(Mem: Pointer); cdecl; public;
 begin
   FreeMem(Mem);
   {$ifndef NDEBUG}
-  WriteLn(LogDebug, Format('uACPI free: vaddr=$%P.', [Mem]));
+  // WriteLn(LogDebug, Format('uACPI free: vaddr=$%P.', [Mem]));
   {$endif}
 end;
 
@@ -270,12 +318,12 @@ end;
 function uacpi_kernel_acquire_mutex(Mutex: Tuacpi_handle; Timeout: Tuacpi_u16): Tuacpi_status; cdecl; public;
 begin
   result := UACPI_STATUS_OK;
-  WriteLn(LogTrace, 'uacpi_kernel_acquire_mutex called.');
+  // WriteLn(LogTrace, 'uacpi_kernel_acquire_mutex called.');
 end;
 
 procedure uacpi_kernel_release_mutex(Mutex: Tuacpi_handle); cdecl; public;
 begin
-  WriteLn(LogTrace, 'uacpi_kernel_release_mutex called.');
+  // WriteLn(LogTrace, 'uacpi_kernel_release_mutex called.');
 end;
 
 function uacpi_kernel_wait_for_event(Event: Tuacpi_handle; Timeout: Tuacpi_u16): Tuacpi_bool; cdecl; public;
