@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses Device.Common, DeviceMgr, HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Vmm;
+uses Device, DeviceMgr, HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Vmm;
 
 var
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
@@ -20,9 +20,9 @@ var
   Status: Tuacpi_status;
   NodeInfo: Puacpi_namespace_node_info;
   Path: Puacpi_char;
-  Device: TDevice;
-  PnpIndex: SizeUInt;
-  PnpId: Puacpi_id_string;
+  DeviceDescriptor: TDeviceDescriptor;
+  IdIndex, IdCount: SizeUInt;
+  IdArr: Puacpi_id_string;
 begin
   Status := uacpi_get_namespace_node_info(Node, NodeInfo);
   if Status <> UACPI_STATUS_OK then begin
@@ -35,20 +35,25 @@ begin
   WriteLn(LogDebug, Format('uACPI device: depth=%d, name=%s, hid=%s.',
     [NodeDepth, String(NodeInfo^.Obj_Name.Text), NodeInfo^.Hid.Value]));
 
-  with NodeInfo^, Device.Descriptor do begin
-    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then begin
-      SetLength(PnpIdArr, 1);
-      PnpIdArr[0] := NodeInfo^.Hid.Value;
-    end;
+  // Construct a device descriptor for device manager registration.
+  DeviceDescriptor := default(TDeviceDescriptor);
+  with NodeInfo^ do begin
+    // Get ID count for dynamic array length.
+    IdCount := 0;
+    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then Inc(IdCount);
+    if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then Inc(IdCount, Cid.Num_Ids);
+    SetLength(DeviceDescriptor.IdArr, IdCount);
 
+    // Populate ID dynamic array.
+    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then DeviceDescriptor.IdArr[0].Value := NodeInfo^.Hid.Value;
     if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then begin
-      PnpId := @Cid.Ids;
-      SetLength(PnpIdArr, Length(PnpIdArr) + Cid.Num_Ids);
-      for PnpIndex := 0 to Cid.Num_Ids - 1 do PnpIdArr[Length(PnpIdArr) - Cid.Num_Ids + PnpIndex] := PnpId[PnpIndex].Value;
+      IdArr := @Cid.Ids;
+      for IdIndex := 0 to Cid.Num_Ids - 1 do
+        DeviceDescriptor.IdArr[IdIndex + 1].Value := IdArr[IdIndex].Value;
     end;
   end;
 
-  DeviceMgr.RegisterDevice(Device);
+  DeviceMgr.RegisterDevice(DeviceDescriptor);
 
   uacpi_free_namespace_node_info(NodeInfo);
   result := UACPI_ITERATION_DECISION_CONTINUE;

@@ -4,46 +4,45 @@ interface
 
 implementation
 
-uses Device.Common, Driver.Common, SysUtils;
+uses Device, Driver, SysUtils;
 
-function Probe(DeviceDescriptor: PDeviceDescriptor): Boolean; forward;
-function Attach(DeviceDescriptor: PDeviceDescriptor): Boolean; forward;
-procedure Detach(DeviceDescriptor: PDeviceDescriptor); forward;
+function MatchDevice(const DeviceDescriptor: TDeviceDescriptor): Integer; forward;
+function ProbeDevice(const Device: PDevice): Boolean; forward;
+function AttachDevice(const Device: PDevice): Boolean; forward;
+procedure DetachDevice(const Device: PDevice); forward;
 
 const
   HpetDriver: TDriver = (
-    Descriptor: (
-      PnpIdArr: ('PNP0103');
+    FName: 'HPET';
+    FIdArr: (
+      (Value: 'PNP0103')
     );
 
     Initialize: nil;
     Finalize: nil;
 
-    Probe: @Probe;
-    Attach: @Attach;
-    Detach: @Detach;
+    MatchDevice: @MatchDevice;
+    ProbeDevice: @ProbeDevice;
+    AttachDevice: @AttachDevice;
+    DetachDevice: @DetachDevice;
   ); public name '_driver_hpet';
 
-function Probe(DeviceDescriptor: PDeviceDescriptor): Boolean;
-var
-  DevIndex, DrvIndex: SizeInt;
+function MatchDevice(const DeviceDescriptor: TDeviceDescriptor): Integer;
 begin
-  if not Assigned(DeviceDescriptor) then exit(false);
-  if Length(DeviceDescriptor^.PnpIdArr) = 0 then exit(false);
+  result := 0;
+end;
 
-  for DevIndex := 0 to High(DeviceDescriptor^.PnpIdArr) do
-    for DrvIndex := 0 to High(HpetDriver.Descriptor.PnpIdArr) do
-      if DeviceDescriptor^.PnpIdArr[DevIndex] = HpetDriver.Descriptor.PnpIdArr[DrvIndex] then exit(true);
-
+function ProbeDevice(const Device: PDevice): Boolean;
+begin
   result := false;
 end;
 
-function Attach(DeviceDescriptor: PDeviceDescriptor): Boolean;
+function AttachDevice(const Device: PDevice): Boolean;
 begin
-  result := true;
+  result := false;
 end;
 
-procedure Detach(DeviceDescriptor: PDeviceDescriptor);
+procedure DetachDevice(const Device: PDevice);
 begin
 end;
 
