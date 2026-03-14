@@ -69,4 +69,12 @@ begin
   for Ch in Str do result := (result xor Ord(Ch)) * FNV_PRIME;
 end;
 
+procedure AssertHandler(const Msg, FileName: ShortString; Line: LongInt; ErrorPtr: Pointer);
+begin
+  WriteLn(LogFatal, 'Assert failed: ', Msg, ' in ', FileName, ' line ', Line);
+  Halt;
+end;
+
+begin
+  AssertErrorProc := @AssertHandler;
 end.

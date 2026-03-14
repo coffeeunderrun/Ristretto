@@ -17,7 +17,7 @@ override CFLAGS += -ffreestanding -fno-builtin -fno-pic -ffunction-sections -fda
 LDFLAGS =
 override LDFLAGS += -nostdlib -static -zmax-page-size=0x1000
 
-override FPCFLAGS += -Cn -Cg-i-o-r-t- -Mobjfpc -n -Sagc
+override FPCFLAGS += -Cn -Cg-i-o-r-t- -Mobjfpc -n -Sgc
 FPCVERSION = $(shell fpc -iW | sed 's/\+.*//')
 
 HOST_CC = cc
@@ -32,14 +32,14 @@ QEMUFLAGS = -m 128M -net none -serial mon:stdio
 ifeq ($(DEBUG), 1)
   override NASMFLAGS += -gdwarf -O0
   override CFLAGS += -g -O0
-  override FPCFLAGS += -gw3 -O- -Si-
+  override FPCFLAGS += -gw3 -O- -Si- -Sa
   override HOST_CFLAGS += -g -O0
   override QEMUFLAGS += -d int -no-shutdown -no-reboot
 else
   override NASMFLAGS += -Ox
   override CFLAGS += -O2 -DNDEBUG
   override LDFLAGS += -s
-  override FPCFLAGS += -O2 -CX -Si -XXs -dNDEBUG
+  override FPCFLAGS += -O2 -CX -Si -Sa- -XXs -dNDEBUG
   override HOST_CFLAGS += -O2
 endif
 
