@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses Device, DeviceMgr, HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Vmm;
+uses Device, DeviceMgr, HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Uacpi.Helpers, Vmm;
 
 var
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
@@ -22,7 +22,6 @@ var
   Path: Puacpi_char;
   DeviceDescriptor: TDeviceDescriptor;
   IdIndex, IdCount: SizeUInt;
-  IdArr: Puacpi_id_string;
 begin
   Status := uacpi_get_namespace_node_info(Node, NodeInfo);
   if Status <> UACPI_STATUS_OK then begin
@@ -37,20 +36,17 @@ begin
 
   // Construct a device descriptor for device manager registration.
   DeviceDescriptor := default(TDeviceDescriptor);
-  with NodeInfo^ do begin
+  with NodeInfo^, DeviceDescriptor do begin
     // Get ID count for dynamic array length.
     IdCount := 0;
     if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then Inc(IdCount);
     if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then Inc(IdCount, Cid.Num_Ids);
-    SetLength(DeviceDescriptor.IdArr, IdCount);
+    SetLength(IdArr, IdCount);
 
     // Populate ID dynamic array.
-    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then DeviceDescriptor.IdArr[0].Value := NodeInfo^.Hid.Value;
-    if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then begin
-      IdArr := @Cid.Ids;
-      for IdIndex := 0 to Cid.Num_Ids - 1 do
-        DeviceDescriptor.IdArr[IdIndex + 1].Value := IdArr[IdIndex].Value;
-    end;
+    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then IdArr[0].Value := NodeInfo^.Hid.Value;
+    if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then
+      for IdIndex := 0 to Cid.Num_Ids - 1 do IdArr[IdIndex + 1].Value := Cid.GetId(IdIndex).Value;
   end;
 
   DeviceMgr.RegisterDevice(DeviceDescriptor);
