@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses Device, DeviceMgr, HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Uacpi.Helpers, Vmm;
+uses Device, DeviceMgr, HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Vmm;
 
 var
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
