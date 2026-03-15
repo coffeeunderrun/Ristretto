@@ -24,16 +24,17 @@ type
     FDriverPtr: Pointer;
     FLockPtr: Pointer;
     FReferenceCount: SizeUInt;
+
+    class operator Initialize(var Device: TDevice);
+
   public
     property Descriptor: TDeviceDescriptor read FDescriptor;
     property Parent: PDevice read FParent;
     property Children: PDeviceArray read FChildren;
     property DriverPtr: Pointer read FDriverPtr;
 
-    class operator Initialize(var Device: TDevice);
-    class operator Finalize(var Device: TDevice);
-
-    constructor Create(const ADescriptor: TDeviceDescriptor; const AParent: PDevice);
+    procedure Initialize(const ADescriptor: TDeviceDescriptor; const AParent: PDevice);
+    procedure Finalize;
 
     procedure AddChild(const Child: PDevice);
     procedure AddReference;
@@ -48,44 +49,46 @@ uses SysUtils;
 
 class operator TDevice.Initialize(var Device: TDevice);
 begin
-  Device.FDescriptor := default(TDeviceDescriptor);
-  Device.FParent := nil;
-  Device.FChildren := [];
-  Device.FDriverPtr := nil;
-  Device.FLockPtr := nil;
-  Device.FReferenceCount := 0;
-end;
-
-class operator TDevice.Finalize(var Device: TDevice);
-var
-  I: SizeUInt;
-begin
-  with Device.FDescriptor do begin
-    if (not Assigned(IdArr)) or (Length(IdArr) = 0) then exit;
-
-    for I := 0 to High(IdArr) do begin
-      if not Assigned(IdArr[I].Value) then continue;
-      FreeMem(IdArr[I].Value);
-    end;
+  with Device do begin
+    FDescriptor := default(TDeviceDescriptor);
+    FParent := nil;
+    FChildren := [];
+    FDriverPtr := nil;
+    FLockPtr := nil;
+    FReferenceCount := 0;
   end;
+  WriteLn(LogTrace, 'TDevice.Initialize called.');
 end;
 
-constructor TDevice.Create(const ADescriptor: TDeviceDescriptor; const AParent: PDevice);
+procedure TDevice.Initialize(const ADescriptor: TDeviceDescriptor; const AParent: PDevice);
 var
   I: SizeUInt;
 begin
-  if Assigned(FParent) then FParent^.AddChild(@Self);
-  if (not Assigned(ADescriptor.IdArr)) or (Length(ADescriptor.IdArr) = 0) then exit;
+  assert(Length(FDescriptor.IdArr) = 0, 'Length(FDescriptor.IdArr) = 0');
 
+  FParent := AParent;
+  if Assigned(FParent) then FParent^.AddChild(@Self);
+
+  // Deep copy IDs if provided descriptor contains any.
+  if (not Assigned(ADescriptor.IdArr)) or (Length(ADescriptor.IdArr) = 0) then exit;
   SetLength(FDescriptor.IdArr, Length(ADescriptor.IdArr));
 
-  // Deep copy ID strings from provided descriptor.
   with ADescriptor do for I := 0 to High(IdArr) do begin
     if not Assigned(IdArr[I].Value) then continue;
     GetMem(FDescriptor.IdArr[I].Value, StrLen(IdArr[I].Value) + 1);
     Move(IdArr[I].Value^, FDescriptor.IdArr[I].Value^, StrLen(IdArr[I].Value) + 1);
     WriteLn(LogDebug, Format('Device ID: %s.', [FDescriptor.IdArr[I].Value]));
   end;
+end;
+
+procedure TDevice.Finalize;
+var
+  I: SizeUInt;
+begin
+  with FDescriptor do
+    if Assigned(IdArr) and (Length(IdArr) > 0) then
+      for I := 0 to High(IdArr) do
+        if Assigned(IdArr[I].Value) then FreeMem(IdArr[I].Value);
 end;
 
 procedure TDevice.AddChild(const Child: PDevice);

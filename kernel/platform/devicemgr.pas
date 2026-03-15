@@ -16,7 +16,7 @@ var
 procedure RegisterDevice(const Descriptor: TDeviceDescriptor);
 begin
   SetLength(DeviceArr, Length(DeviceArr) + 1);
-  DeviceArr[High(DeviceArr)] := TDevice.Create(Descriptor, nil);
+  DeviceArr[High(DeviceArr)].Initialize(Descriptor, nil);
   if Length(Descriptor.IdArr) > 0 then Writeln(LogInfo, Format('Registered device: %s.', [Descriptor.IdArr[0].Value]));
 end;
 
