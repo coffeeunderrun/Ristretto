@@ -1,15 +1,13 @@
 [submodule "vendor/limine"]
 	path = vendor/limine
-	url = https://codeberg.org/Limine/Limine.git
-	branch = v10.x-binary
+	url = https://github.com/Limine-Bootloader/Limine.git
+	branch = v11.x-binary
 [submodule "vendor/limine-protocol"]
 	path = vendor/limine-protocol
-	url = https://codeberg.org/coffeeunderrun/limine-protocol-pascal.git
-	ignore = dirty
+	url = https://github.com/coffeeunderrun/limine-protocol-pascal.git
 [submodule "vendor/uacpi"]
 	path = vendor/uacpi
 	url = https://github.com/uACPI/uACPI.git
 [submodule "vendor/uacpi-bindings"]
 	path = vendor/uacpi-bindings
-	url = https://codeberg.org/coffeeunderrun/uacpi-bindings-pascal.git
-	ignore = dirty
+	url = https://github.com/coffeeunderrun/uacpi-bindings-pascal.git
