@@ -6,7 +6,7 @@ procedure Initialize;
 
 implementation
 
-uses Device, DeviceMgr, HeapMgr, Hhdm, IoPort, Limine, SysUtils, Uacpi, Vmm;
+uses SysUtils, Device.Common, Device.Manager, HeapMgr, Hhdm, IoPort, Limine, Uacpi, Vmm;
 
 var
   RsdpRequest: TLimineRsdpRequest; external name '_limine_request_rsdp';
@@ -21,6 +21,7 @@ var
   NodeInfo: Puacpi_namespace_node_info;
   Path: Puacpi_char;
   DeviceDescriptor: TDeviceDescriptor;
+  IdArray: array of TDeviceId;
   IdIndex, IdCount: SizeUInt;
 begin
   Status := uacpi_get_namespace_node_info(Node, NodeInfo);
@@ -36,20 +37,22 @@ begin
 
   // Construct a device descriptor for device manager registration.
   DeviceDescriptor := default(TDeviceDescriptor);
-  with NodeInfo^, DeviceDescriptor do begin
+  with NodeInfo^ do begin
     // Get ID count for dynamic array length.
-    IdCount := 0;
-    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then Inc(IdCount);
-    if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then Inc(IdCount, Cid.Num_Ids);
-    SetLength(IdArr, IdCount);
+    DeviceDescriptor.IdCount := 0;
+    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then Inc(DeviceDescriptor.IdCount);
+    if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then Inc(DeviceDescriptor.IdCount, Cid.Num_Ids);
+    SetLength(IdArray, DeviceDescriptor.IdCount);
 
     // Populate ID dynamic array.
-    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then IdArr[0].Value := NodeInfo^.Hid.Value;
+    if (Flags and UACPI_NS_NODE_INFO_HAS_HID) <> 0 then IdArray[0].Value := NodeInfo^.Hid.Value;
     if (Flags and UACPI_NS_NODE_INFO_HAS_CID) <> 0 then
-      for IdIndex := 0 to Cid.Num_Ids - 1 do IdArr[IdIndex + 1].Value := Cid.GetId(IdIndex).Value;
+      for IdIndex := 0 to Cid.Num_Ids - 1 do IdArray[IdIndex + 1].Value := Cid.GetId(IdIndex).Value;
+
+    DeviceDescriptor.IdArray := @IdArray[0];
   end;
 
-  DeviceMgr.RegisterDevice(DeviceDescriptor);
+  Device.Manager.RegisterDevice(DeviceDescriptor);
 
   uacpi_free_namespace_node_info(NodeInfo);
   result := UACPI_ITERATION_DECISION_CONTINUE;

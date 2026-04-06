@@ -32,10 +32,10 @@ SECTIONS {
     _kernel_rodata_end = .;
   } :rodata
 
-  .driver BLOCK(CONSTANT(MAXPAGESIZE)) : {
-    _driver_start = .;
-    *(.data.*_driver_*)
-    _driver_end = .;
+  .driver_info BLOCK(CONSTANT(MAXPAGESIZE)) : {
+    _driver_info_start = .;
+    *(.data.*_driver_info_*)
+    _driver_info_end = .;
   } :data
 
   .data BLOCK(CONSTANT(MAXPAGESIZE)) : {

@@ -24,6 +24,8 @@ begin
     UnitPath.Add('common');
     UnitPath.Add('memory');
     UnitPath.Add('platform');
+    UnitPath.Add('platform/device');
+    UnitPath.Add('platform/driver');
     UnitPath.Add('video');
 
     UnitPath.Add('../common');
