@@ -59,7 +59,7 @@ begin
   WasAssigned := false;
   if Length(DriverArray) > 0 then
     for DriverIndex := 0 to High(DriverArray) do
-      if Assigned(DriverArray[DriverIndex]) then begin
+      if not Assigned(DriverArray[DriverIndex]) then begin
         DriverArray[DriverIndex] := Driver;
         WasAssigned := true;
         break;

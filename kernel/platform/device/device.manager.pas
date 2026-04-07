@@ -33,7 +33,7 @@ begin
   WasAssigned := false;
   if Length(DeviceArray) > 0 then
     for DeviceIndex := 0 to High(DeviceArray) do
-      if Assigned(DeviceArray[DeviceIndex]) then begin
+      if not Assigned(DeviceArray[DeviceIndex]) then begin
         DeviceArray[DeviceIndex] := Device;
         WasAssigned := true;
         break;
