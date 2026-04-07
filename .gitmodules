@@ -5,9 +5,11 @@
 [submodule "vendor/limine-protocol"]
 	path = vendor/limine-protocol
 	url = https://github.com/coffeeunderrun/limine-protocol-pascal.git
+	ignore = dirty
 [submodule "vendor/uacpi"]
 	path = vendor/uacpi
 	url = https://github.com/uACPI/uACPI.git
 [submodule "vendor/uacpi-bindings"]
 	path = vendor/uacpi-bindings
 	url = https://github.com/coffeeunderrun/uacpi-bindings-pascal.git
+	ignore = dirty
